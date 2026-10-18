@@ -1,0 +1,236 @@
+{
+  "request": {
+    "category": "washing-machines",
+    "budget": 35000,
+    "mode": "budget",
+    "brand": ""
+  },
+  "source_url": "https://api.trustfolio.in/api/products/top?category=washing-machines&budget=35000&limit=5",
+  "observed_at": "2026-10-18T14:43:32.895920+00:00",
+  "response_sha256": "904948cb89f7ac4263845c781366b63fbbd3a2839bfb8eb32c8672e626168b79",
+  "response": {
+    "success": true,
+    "message": "Top products retrieved successfully",
+    "data": {
+      "category": "washing-machines",
+      "budget": 35000,
+      "count": 5,
+      "totalMatches": 76,
+      "matchType": "within_budget",
+      "requestedBrand": null,
+      "brandFilterApplied": false,
+      "fallbackApplied": false,
+      "partialBrandFill": false,
+      "brandMatchCount": 0,
+      "similarFillCount": 0,
+      "fallbackMessage": null,
+      "priceWindow": {
+        "min": 31500,
+        "max": 35000
+      },
+      "catalogPriceRange": {
+        "min": 5390,
+        "max": 331170,
+        "count": 0,
+        "source": "category_metadata_fast"
+      },
+      "livePriceRefreshCompleted": true,
+      "livePriceCandidatesChecked": 5,
+      "message": "Showing top 5 between ₹31,500 and ₹35,000 (entered budget: ₹35,000; prices include up to this amount).",
+      "selection_note": "Eligible prices run from zero up to your entered budget (see priceWindow). Selection tries 2 Amazon + 2 Flipkart + 1 Croma (top-ranked per platform); remaining slots fill in round‑robin across Amazon → Flipkart → Croma → other when inventory allows. The returned list is ordered by rating (highest first), then by specifications when ratings tie. Ranking prefers rating, then specifications; Flipkart/Croma rely on specifications when rating is missing.",
+      "products": [
+        {
+          "id": "69f34f481dafb58cccdbddf8",
+          "asin": "69f34f481dafb58cccdbddf8",
+          "title": "SAMSUNG 7 kg 5 Star Inverter Fully Automatic Front Load Washing Machine (WW70R22EK0X/TL, Eco Bubble Technology, Inox Grey)",
+          "description": null,
+          "is_active": true,
+          "brand": "Samsung",
+          "price_inr": 32994,
+          "original_price_inr": null,
+          "price_usd": "$397.52",
+          "average_rating": "5.0",
+          "main_image": "https://media.tatacroma.com/Croma%20Assets/Large%20Appliances/Washers%20and%20Dryers/Images/303545_0_5eF9YO_0a.png?updatedAt=1766430777086",
+          "images": [
+            "https://media.tatacroma.com/Croma%20Assets/Large%20Appliances/Washers%20and%20Dryers/Images/303545_0_5eF9YO_0a.png?updatedAt=1766430777086"
+          ],
+          "product_category": "washing-machines",
+          "feature_bullets": null,
+          "product_information": {
+            "Capacity": "7 kg",
+            "Automation Type": "Fully Automatic",
+            "Load Type": "Front Load",
+            "Energy Rating": "5 Star"
+          },
+          "product_details": null,
+          "platform": "croma",
+          "product_url": "https://crma.clnk.in/Cejk",
+          "availability_status": "In Stock",
+          "in_stock": true,
+          "specifications": {
+            "Capacity": "7 kg",
+            "Automation Type": "Fully Automatic",
+            "Load Type": "Front Load",
+            "Energy Rating": "5 Star"
+          },
+          "rank": 1,
+          "price_source": "website_catalog",
+          "live_price_status": null
+        },
+        {
+          "id": "69f89bf49a622ea2d7ce0e5b",
+          "asin": "B0DFLL8FND",
+          "title": "IFB 7 Kg 5 Star, DeepClean® Technology, AI Powered, WiFi, Fully Automatic Front Load Washing Machine (SERENA GXN 7012 CMS, PowerSteam®, 9 Swirl, Steam Refresh, Inbuilt Heater, Eco Inverter, Grey)",
+          "description": null,
+          "is_active": true,
+          "brand": "IFB",
+          "price_inr": 31990,
+          "original_price_inr": null,
+          "price_usd": "$385.42",
+          "average_rating": "4.5",
+          "main_image": "https://m.media-amazon.com/images/I/71Y7TtQzs3L._AC_UY218_.jpg",
+          "images": [
+            "https://m.media-amazon.com/images/I/71Y7TtQzs3L._AC_UY218_.jpg"
+          ],
+          "product_category": "washing-machines",
+          "feature_bullets": null,
+          "product_information": {
+            "Capacity": "7 kg",
+            "Energy Rating": "5 Star",
+            "Load Type": "Front Load",
+            "Washing Machine Type": "Fully Automatic"
+          },
+          "product_details": null,
+          "platform": "amazon",
+          "product_url": "https://www.amazon.in/dp/B0DFLL8FND",
+          "availability_status": "In Stock",
+          "in_stock": true,
+          "specifications": {
+            "Capacity": "7 kg",
+            "Energy Rating": "5 Star",
+            "Load Type": "Front Load",
+            "Washing Machine Type": "Fully Automatic"
+          },
+          "rank": 2,
+          "price_source": "website_catalog",
+          "live_price_status": "no_price"
+        },
+        {
+          "id": "69fb4f98637ff7988f83047b",
+          "asin": "B0DG8RPQNS",
+          "title": "LG 7 Kg, 5 Star, DD Technology, Steam Wash, 6 Motion DD, Fully-Automatic Front Load Washing Machine (FHB1207Z2M, Allergy Care, In-Built Heater, Touch Panel, Middle Black)",
+          "description": null,
+          "is_active": true,
+          "brand": "LG",
+          "price_inr": 29990,
+          "original_price_inr": null,
+          "price_usd": "$397.47",
+          "average_rating": "4.3",
+          "main_image": "https://m.media-amazon.com/images/I/71XcZiTlQuL._AC_UY218_.jpg",
+          "images": [
+            "https://m.media-amazon.com/images/I/71XcZiTlQuL._AC_UY218_.jpg"
+          ],
+          "product_category": "washing-machines",
+          "feature_bullets": null,
+          "product_information": {
+            "Capacity": "7 kg",
+            "Energy Rating": "5 Star",
+            "Load Type": "Front Load",
+            "Washing Machine Type": "Fully Automatic"
+          },
+          "product_details": null,
+          "platform": "amazon",
+          "product_url": "https://www.amazon.in/dp/B0DG8RPQNS",
+          "availability_status": "In Stock",
+          "in_stock": true,
+          "specifications": {
+            "Capacity": "7 kg",
+            "Energy Rating": "5 Star",
+            "Load Type": "Front Load",
+            "Washing Machine Type": "Fully Automatic"
+          },
+          "rank": 3,
+          "price_source": "website_live_price_api",
+          "live_price_status": "ok"
+        },
+        {
+          "id": "69f419329a622ea2d7ccb736",
+          "asin": "69f419329a622ea2d7ccb736",
+          "title": "Godrej 9 kg with AI Tech Fully Automatic Front Load Washing Machine with In-built Heater White, Grey",
+          "description": null,
+          "is_active": true,
+          "brand": "Godrej",
+          "price_inr": 29990,
+          "original_price_inr": null,
+          "price_usd": "$415.54",
+          "average_rating": "4.2",
+          "main_image": "https://rukminim2.flixcart.com/image/300/300/xif0q/washing-machine-new/t/r/k/-original-imahmjqskyzfjeys.jpeg?q=90",
+          "images": [
+            "https://rukminim2.flixcart.com/image/300/300/xif0q/washing-machine-new/t/r/k/-original-imahmjqskyzfjeys.jpeg?q=90"
+          ],
+          "product_category": "washing-machines",
+          "feature_bullets": null,
+          "product_information": {
+            "Capacity": "9 kg",
+            "Automation Type": "Fully Automatic",
+            "Load Type": "Front Load",
+            "Wash Features": "In-built Heater"
+          },
+          "product_details": null,
+          "platform": "flipkart",
+          "product_url": "https://fkrt.clnk.in/CfvV",
+          "availability_status": "In Stock",
+          "in_stock": true,
+          "specifications": {
+            "Capacity": "9 kg",
+            "Automation Type": "Fully Automatic",
+            "Load Type": "Front Load",
+            "Wash Features": "In-built Heater"
+          },
+          "rank": 4,
+          "price_source": "website_live_price_api",
+          "live_price_status": "ok"
+        },
+        {
+          "id": "6a9e8263b4dc2990b1624944",
+          "asin": "6a9e8263b4dc2990b1624944",
+          "title": "LG 7 kg Fully Automatic Front Load Black (FHB1207Z2MA)",
+          "description": null,
+          "is_active": true,
+          "brand": "LG",
+          "price_inr": 35000,
+          "original_price_inr": null,
+          "price_usd": "$421.69",
+          "average_rating": null,
+          "main_image": "https://rukminim2.flixcart.com/image/300/300/xif0q/washing-machine-new/b/o/r/-original-imahnjd2uytzkfgj.jpeg",
+          "images": [
+            "https://rukminim2.flixcart.com/image/300/300/xif0q/washing-machine-new/b/o/r/-original-imahnjd2uytzkfgj.jpeg"
+          ],
+          "product_category": "washing-machines",
+          "feature_bullets": null,
+          "product_information": {
+            "Capacity": "7 kg",
+            "Automation Type": "Fully Automatic",
+            "Load Type": "Front Load",
+            "Spin Speed": "1200 RPM"
+          },
+          "product_details": null,
+          "platform": "flipkart",
+          "product_url": "https://fkrt.clnk.in/Cvh1",
+          "availability_status": "In Stock",
+          "in_stock": true,
+          "specifications": {
+            "Capacity": "7 kg",
+            "Automation Type": "Fully Automatic",
+            "Load Type": "Front Load",
+            "Spin Speed": "1200 RPM"
+          },
+          "rank": 5,
+          "price_source": "website_live_price_api",
+          "live_price_status": "ok"
+        }
+      ]
+    },
+    "errors": null
+  }
+}

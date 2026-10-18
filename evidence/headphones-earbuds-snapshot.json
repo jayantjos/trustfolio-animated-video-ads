@@ -1,0 +1,236 @@
+{
+  "request": {
+    "category": "headphones-earbuds",
+    "budget": 3000,
+    "mode": "comparison",
+    "brand": ""
+  },
+  "source_url": "https://api.trustfolio.in/api/products/top?category=headphones-earbuds&budget=3000&limit=5",
+  "observed_at": "2026-10-18T14:43:32.901077+00:00",
+  "response_sha256": "e86845b57cbf0fc3c06d5290e08ebdd50b0d0984de98a6fc2f6fb9ded2cb598c",
+  "response": {
+    "success": true,
+    "message": "Top products retrieved successfully",
+    "data": {
+      "category": "headphones-earbuds",
+      "budget": 3000,
+      "count": 5,
+      "totalMatches": 145,
+      "matchType": "within_budget",
+      "requestedBrand": null,
+      "brandFilterApplied": false,
+      "fallbackApplied": false,
+      "partialBrandFill": false,
+      "brandMatchCount": 0,
+      "similarFillCount": 0,
+      "fallbackMessage": null,
+      "priceWindow": {
+        "min": 2700,
+        "max": 3000
+      },
+      "catalogPriceRange": {
+        "min": 253,
+        "max": 140000,
+        "count": 0,
+        "source": "category_metadata_fast"
+      },
+      "livePriceRefreshCompleted": true,
+      "livePriceCandidatesChecked": 5,
+      "message": "Showing top 5 between ₹2,700 and ₹3,000 (entered budget: ₹3,000; prices include up to this amount).",
+      "selection_note": "Eligible prices run from zero up to your entered budget (see priceWindow). Selection tries 2 Amazon + 2 Flipkart + 1 Croma (top-ranked per platform); remaining slots fill in round‑robin across Amazon → Flipkart → Croma → other when inventory allows. The returned list is ordered by rating (highest first), then by specifications when ratings tie. Ranking prefers rating, then specifications; Flipkart/Croma rely on specifications when rating is missing.",
+      "products": [
+        {
+          "id": "6a35047a24120ddc2f6d2bff",
+          "asin": "B0GQ9D332T",
+          "title": "DOMA VM Premium True Wireless Earbuds with Active Noise Cancellation, IPX5 Waterproof, Metal Charging Case",
+          "description": null,
+          "is_active": true,
+          "brand": "DOMA",
+          "price_inr": 2999,
+          "original_price_inr": null,
+          "price_usd": "$36.13",
+          "average_rating": 5,
+          "main_image": "https://m.media-amazon.com/images/I/21n4qysFZ8L._SX300_SY300_QL70_FMwebp_.jpg",
+          "images": [
+            "https://m.media-amazon.com/images/I/21n4qysFZ8L._SX300_SY300_QL70_FMwebp_.jpg"
+          ],
+          "product_category": "headphones-earbuds",
+          "feature_bullets": null,
+          "product_information": {
+            "Connectivity": "Bluetooth",
+            "Form Factor": "Earbuds",
+            "Noise Cancellation": "ANC",
+            "Water Resistance": "IPX5"
+          },
+          "product_details": null,
+          "platform": "amazon",
+          "product_url": "https://www.amazon.in/dp/B0GQ9D332T",
+          "availability_status": "In Stock",
+          "in_stock": true,
+          "specifications": {
+            "Connectivity": "Bluetooth",
+            "Form Factor": "Earbuds",
+            "Noise Cancellation": "ANC",
+            "Water Resistance": "IPX5"
+          },
+          "rank": 1,
+          "price_source": "website_live_price_api",
+          "live_price_status": "ok"
+        },
+        {
+          "id": "6a3503f724120ddc2f6d262c",
+          "asin": "B0DSTCN81X",
+          "title": "Wireless Earbuds, 2025 Bluetooth Headphones 5.3 HiFi Stereo Headphone with 20 Hours of Playback Life in-Ear Earbuds, IP7 Waterproof Headphones Sport Headphones for Android iOS (Black)",
+          "description": null,
+          "is_active": true,
+          "brand": "Wireless",
+          "price_inr": 2817,
+          "original_price_inr": null,
+          "price_usd": "$34.23",
+          "average_rating": 5,
+          "main_image": "https://m.media-amazon.com/images/I/3138tiWeRAL._SY300_SX300_QL70_FMwebp_.jpg",
+          "images": [
+            "https://m.media-amazon.com/images/I/3138tiWeRAL._SY300_SX300_QL70_FMwebp_.jpg"
+          ],
+          "product_category": "headphones-earbuds",
+          "feature_bullets": null,
+          "product_information": {
+            "Battery Life": "20 Hours",
+            "Connectivity": "Bluetooth",
+            "Form Factor": "Earbuds",
+            "Water Resistance": "IP7"
+          },
+          "product_details": null,
+          "platform": "amazon",
+          "product_url": "https://www.amazon.in/dp/B0DSTCN81X",
+          "availability_status": "In Stock",
+          "in_stock": true,
+          "specifications": {
+            "Battery Life": "20 Hours",
+            "Connectivity": "Bluetooth",
+            "Form Factor": "Earbuds",
+            "Water Resistance": "IP7"
+          },
+          "rank": 2,
+          "price_source": "website_live_price_api",
+          "live_price_status": "ok"
+        },
+        {
+          "id": "69f34db41dafb58cccdbda2e",
+          "asin": "69f34db41dafb58cccdbda2e",
+          "title": "Oppo Enco Buds 3 Pro Plus ETEE1 TWS Earbuds with Active Noise Cancellation (IP55 Dust & Water Resistance, AI Clear Call, Midnight Black)",
+          "description": null,
+          "is_active": true,
+          "brand": "Noise",
+          "price_inr": 2999,
+          "original_price_inr": null,
+          "price_usd": "$36.13",
+          "average_rating": "5.0",
+          "main_image": "https://media.tatacroma.com/Croma%20Assets/Communication/Headphones%20And%20Earphones/Images/320250_0_St5E9ne3Z.png?updatedAt=1768311935748",
+          "images": [
+            "https://media.tatacroma.com/Croma%20Assets/Communication/Headphones%20And%20Earphones/Images/320250_0_St5E9ne3Z.png?updatedAt=1768311935748"
+          ],
+          "product_category": "headphones-earbuds",
+          "feature_bullets": null,
+          "product_information": {
+            "Connectivity": "Bluetooth",
+            "Form Factor": "Earbuds",
+            "Noise Cancellation": "ANC",
+            "Water Resistance": "IP55"
+          },
+          "product_details": null,
+          "platform": "croma",
+          "product_url": "https://crma.clnk.in/Cd8f",
+          "availability_status": "In Stock",
+          "in_stock": true,
+          "specifications": {
+            "Connectivity": "Bluetooth",
+            "Form Factor": "Earbuds",
+            "Noise Cancellation": "ANC",
+            "Water Resistance": "IP55"
+          },
+          "rank": 3,
+          "price_source": "website_catalog",
+          "live_price_status": null
+        },
+        {
+          "id": "6a2d125e2d50c1f9ca15a219",
+          "asin": "6a2d125e2d50c1f9ca15a219",
+          "title": "ACwO TwISTER 717 with 38dB Hybrid ANC, 40mm Drivers, Dual Device Pairing Bluetooth & Wired",
+          "description": null,
+          "is_active": true,
+          "brand": "ACwO",
+          "price_inr": 2087,
+          "original_price_inr": null,
+          "price_usd": "$36.14",
+          "average_rating": "",
+          "main_image": "https://rukminim2.flixcart.com/image/612/612/xif0q/headphone/j/n/6/twister-717-acwo-original-imahhgr7rjgypgs4.jpeg?q=70",
+          "images": [
+            "https://rukminim2.flixcart.com/image/612/612/xif0q/headphone/j/n/6/twister-717-acwo-original-imahhgr7rjgypgs4.jpeg?q=70"
+          ],
+          "product_category": "headphones-earbuds",
+          "feature_bullets": null,
+          "product_information": {
+            "Battery Life": "55 Hours",
+            "Connectivity": "Bluetooth",
+            "Driver Size": "40 mm",
+            "Form Factor": "Headphones"
+          },
+          "product_details": null,
+          "platform": "flipkart",
+          "product_url": "https://fkrt.clnk.in/Ch7o",
+          "availability_status": "In Stock",
+          "in_stock": true,
+          "specifications": {
+            "Battery Life": "55 Hours",
+            "Connectivity": "Bluetooth",
+            "Driver Size": "40 mm",
+            "Form Factor": "Headphones"
+          },
+          "rank": 4,
+          "price_source": "website_live_price_api",
+          "live_price_status": "ok"
+        },
+        {
+          "id": "6a2c243363eb5b6abbf91d2a",
+          "asin": "6a2c243363eb5b6abbf91d2a",
+          "title": "OPPO Enco Buds3 Pro+ with ANC Bluetooth",
+          "description": null,
+          "is_active": true,
+          "brand": "OPPO",
+          "price_inr": 2999,
+          "original_price_inr": null,
+          "price_usd": "$36.13",
+          "average_rating": "",
+          "main_image": "https://rukminim2.flixcart.com/image/612/612/xif0q/headphone/6/7/e/-original-imahhrndfrg6whzs.jpeg?q=70",
+          "images": [
+            "https://rukminim2.flixcart.com/image/612/612/xif0q/headphone/6/7/e/-original-imahhrndfrg6whzs.jpeg?q=70"
+          ],
+          "product_category": "headphones-earbuds",
+          "feature_bullets": null,
+          "product_information": {
+            "Battery Life": "50 Hours",
+            "Connectivity": "Bluetooth",
+            "Form Factor": "Earbuds",
+            "Noise Cancellation": "ANC"
+          },
+          "product_details": null,
+          "platform": "flipkart",
+          "product_url": "https://fkrt.clnk.in/ChtT",
+          "availability_status": "In Stock",
+          "in_stock": true,
+          "specifications": {
+            "Battery Life": "50 Hours",
+            "Connectivity": "Bluetooth",
+            "Form Factor": "Earbuds",
+            "Noise Cancellation": "ANC"
+          },
+          "rank": 5,
+          "price_source": "website_live_price_api",
+          "live_price_status": "ok"
+        }
+      ]
+    },
+    "errors": null
+  }
+}

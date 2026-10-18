@@ -1,0 +1,15 @@
+name: Static and contract QA
+on: [push, pull_request]
+permissions:
+  contents: read
+concurrency:
+  group: animated-static-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: python -m compileall -q trustfolio_video tests
+      - run: python -m unittest discover -s tests -v

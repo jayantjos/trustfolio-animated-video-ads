@@ -1,0 +1,43 @@
+name: Read-only live pilot product validation
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: animated-live-validation
+  cancel-in-progress: false
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - category: washing-machines
+            budget: 35000
+            mode: budget
+            brand: ''
+          - category: smart-phones
+            budget: 20000
+            mode: brand_budget
+            brand: Samsung
+          - category: headphones-earbuds
+            budget: 3000
+            mode: comparison
+            brand: ''
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate authoritative source only
+        env:
+          CATEGORY: ${{ matrix.category }}
+          BUDGET: ${{ matrix.budget }}
+          MODE: ${{ matrix.mode }}
+          BRAND: ${{ matrix.brand }}
+        run: python -m trustfolio_video.cli --category "$CATEGORY" --budget "$BUDGET" --mode "$MODE" --brand "$BRAND" --output output
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: validation-${{ matrix.category }}
+          path: output/
+          retention-days: 7

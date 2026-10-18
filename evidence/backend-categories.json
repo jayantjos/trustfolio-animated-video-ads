@@ -1,0 +1,105 @@
+{
+  "source": "https://api.trustfolio.in/api/categories",
+  "categories": [
+    {
+      "id": "69f22145fdee76d38f9c5ca8",
+      "slug": "smart-phones",
+      "title": "Smart Phones"
+    },
+    {
+      "id": "69f4c4bfd66ed7768080c57f",
+      "slug": "air-conditioners",
+      "title": "Air Conditioners"
+    },
+    {
+      "id": "69f4c6dbd66ed7768080c5a7",
+      "slug": "air-coolers",
+      "title": "Air Coolers"
+    },
+    {
+      "id": "69f4c7bfd66ed7768080c5db",
+      "slug": "ceiling-fans",
+      "title": "Ceiling Fan "
+    },
+    {
+      "id": "69f4fb9e609ee4419d13fb52",
+      "slug": "desktop-computers",
+      "title": "Desktop Computer "
+    },
+    {
+      "id": "69f4fca9609ee4419d13fbaa",
+      "slug": "drones",
+      "title": "Drones"
+    },
+    {
+      "id": "69f502ba609ee4419d13ff44",
+      "slug": "water-purifiers",
+      "title": "Water Purifiers"
+    },
+    {
+      "id": "69f5795048fae9a9269a07ec",
+      "slug": "geysers",
+      "title": "Geysers"
+    },
+    {
+      "id": "69f5797c48fae9a9269a0810",
+      "slug": "headphones-earbuds",
+      "title": "Headphones Earbuds"
+    },
+    {
+      "id": "69f5799c48fae9a9269a0835",
+      "slug": "induction-cooktops",
+      "title": "Induction Cooktops"
+    },
+    {
+      "id": "69f579c948fae9a9269a085b",
+      "slug": "laptops",
+      "title": "Laptops"
+    },
+    {
+      "id": "69f57a1248fae9a9269a0882",
+      "slug": "microwave-ovens",
+      "title": "Microwave Ovens"
+    },
+    {
+      "id": "69f57a3a48fae9a9269a08aa",
+      "slug": "mixer-grinders",
+      "title": "Mixer Grinders"
+    },
+    {
+      "id": "69f57a5e48fae9a9269a08d3",
+      "slug": "refrigerators",
+      "title": "Refrigerators"
+    },
+    {
+      "id": "69f57a8b48fae9a9269a08fd",
+      "slug": "smart-tvs",
+      "title": "Smart Tv"
+    },
+    {
+      "id": "69f57abb48fae9a9269a0928",
+      "slug": "smartwatches",
+      "title": "SmartWatches"
+    },
+    {
+      "id": "69f57adb48fae9a9269a0955",
+      "slug": "speakers",
+      "title": "Speakers"
+    },
+    {
+      "id": "69f57af848fae9a9269a0982",
+      "slug": "tablets",
+      "title": "Tablets"
+    },
+    {
+      "id": "69f57b1948fae9a9269a09b0",
+      "slug": "vacuum-cleaners",
+      "title": "Vacuum Cleaners"
+    },
+    {
+      "id": "69f57b3f48fae9a9269a09df",
+      "slug": "washing-machines",
+      "title": "Washing Machines"
+    }
+  ]
+}

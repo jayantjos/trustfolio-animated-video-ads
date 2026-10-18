@@ -1,0 +1,32 @@
+test_auth_failure_not_retried (test_pipeline.ContractTests.test_auth_failure_not_retried) ... ok
+test_brand_fallback (test_pipeline.ContractTests.test_brand_fallback) ... ok
+test_campaign_input_rules (test_pipeline.ContractTests.test_campaign_input_rules) ... ok
+test_duplicate_product (test_pipeline.ContractTests.test_duplicate_product) ... ok
+test_future_price_timestamp (test_pipeline.ContractTests.test_future_price_timestamp) ... ok
+test_image_credentials_rejected (test_pipeline.ContractTests.test_image_credentials_rejected) ... ok
+test_insufficient_products (test_pipeline.ContractTests.test_insufficient_products) ... ok
+test_invalid_numeric_values (test_pipeline.ContractTests.test_invalid_numeric_values) ... ok
+test_missing_price_evidence_blocks_even_with_refresh_complete (test_pipeline.ContractTests.test_missing_price_evidence_blocks_even_with_refresh_complete) ... ok
+test_missing_rank (test_pipeline.ContractTests.test_missing_rank) ... ok
+test_missing_timestamp (test_pipeline.ContractTests.test_missing_timestamp) ... ok
+test_old_price_timestamp (test_pipeline.ContractTests.test_old_price_timestamp) ... ok
+test_out_of_stock (test_pipeline.ContractTests.test_out_of_stock) ... ok
+test_over_budget_rejected_without_replacement (test_pipeline.ContractTests.test_over_budget_rejected_without_replacement) ... ok
+test_private_network_image_rejected (test_pipeline.ContractTests.test_private_network_image_rejected) ... ok
+test_reordered_ranking (test_pipeline.ContractTests.test_reordered_ranking) ... ok
+test_retry_is_bounded (test_pipeline.ContractTests.test_retry_is_bounded) ... ok
+test_snapshot_tamper (test_pipeline.ContractTests.test_snapshot_tamper) ... ok
+test_source_url_tamper (test_pipeline.ContractTests.test_source_url_tamper) ... ok
+test_stale_snapshot (test_pipeline.ContractTests.test_stale_snapshot) ... ok
+test_three_modes_preserve_authoritative_rank (test_pipeline.ContractTests.test_three_modes_preserve_authoritative_rank) ... ok
+test_wrong_category (test_pipeline.ContractTests.test_wrong_category) ... ok
+test_all_thirty_slots (test_pipeline.StoryTests.test_all_thirty_slots) ... ok
+test_disabled_category_cannot_render (test_pipeline.StoryTests.test_disabled_category_cannot_render) ... ok
+test_no_immediate_template_repetition (test_pipeline.StoryTests.test_no_immediate_template_repetition) ... ok
+test_publishing_is_hard_disabled (test_pipeline.StoryTests.test_publishing_is_hard_disabled) ... ok
+test_twenty_worlds_three_modes_three_durations (test_pipeline.StoryTests.test_twenty_worlds_three_modes_three_durations) ... ok
+
+----------------------------------------------------------------------
+Ran 27 tests in 0.030s
+
+OK
