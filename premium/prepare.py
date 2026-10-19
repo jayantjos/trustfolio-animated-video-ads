@@ -9,6 +9,7 @@ from urllib.request import Request, urlopen
 from io import BytesIO
 from PIL import Image, ImageOps
 from trustfolio_video.demo import approve_historical_demo
+from trustfolio_video.educational import build_educational_story
 
 ROOT=Path(__file__).resolve().parents[1]
 SCRIPTS=[
@@ -31,6 +32,11 @@ def main():
     spec=demo['campaign']
     if spec['category']!='washing-machines' or spec['mode']!='budget' or spec['budget']!=35000:
         raise ValueError('Premium pilot accepts only pinned source category/budget/mode')
+    # Education is always sourced from the same hashed genuine backend snapshot.
+    educational=build_educational_story(demo)
+    if educational["ranked_source_ids"]!=[p["id"] for p in demo["products"]]:
+        raise ValueError("Education/ranking source identity mismatch")
+    by_id={p["product_id"]:p for p in educational["expanded_product_explanations"]}
     root=Path(args.output)
     pictures=root/'products'
     pictures.mkdir(parents=True,exist_ok=True)
@@ -60,13 +66,25 @@ def main():
         brand=str(product.get('brand') or '').strip()
         shown=' '.join(name.split()[:6])
         if len(shown)>48:shown=shown[:45].rstrip()+'…'
+        explanation=by_id[product['id']]
+        facts=explanation['verified_specs']
+        # The card reads only literal specification data, never from title parsing.
+        featured=facts[(5-rank)%len(facts)] if facts else None
         output.append({
           'id':product['id'],'rank':rank,'name':shown,'fullTitle':name,
           'brand':brand,'price':int(product['price_inr']),
           'platform':product['platform'],'image':'products/'+str(rank)+'.png',
           'sha256':hashlib.sha256(raw).hexdigest(),
           'priceSource':product.get('price_source','unknown'),
-          'livePriceStatus':product.get('live_price_status')
+          'livePriceStatus':product.get('live_price_status'),
+          'educationFact':(
+              {'label':featured['field'],'value':featured['value'],
+               'sourceProductId':featured['source_product_id'],
+               'sourceKey':featured['field']}
+              if featured else None),
+          'verifiedFacts':facts,
+          'rankExplanation':explanation['why_ranked'],
+          'productPurpose':explanation['what_it_does']
         })
     data={
       'status':'HISTORICAL_DEMO_NOT_FOR_PUBLICATION',
@@ -78,6 +96,13 @@ def main():
       'sourceObservedAt':demo['source_observed_at'],
       'rankedProductIds':[x['id'] for x in output],
       'products':output,
+      'educationalStoryId':educational['campaign_id'],
+      'educationalStorySourceSha256':educational['source_sha256'],
+      'educationGuidance':{
+        'productRole':educational['education_role'],
+        'whyBestRule':'Recorded TrustFolio rank only; source scoring reasons unavailable',
+        'exampleUserNeeds':educational['expanded_product_explanations'][0]['possible_user_needs'],
+      },
       'lines':[{'text':text,'voice':voice,'start':start,'end':end}
                for text,voice,start,end in SCRIPTS],
       'durationInFrames':30*24,
@@ -87,6 +112,7 @@ def main():
     if [p['rank'] for p in output]!=[1,2,3,4,5]:
         raise ValueError('Invalid source rank mapping')
     (root/'story.json').write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+    (root/'educational-story.json').write_text(json.dumps(educational,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
     print('PREMIUM_PILOT_SOURCE_IDS='+','.join(data['rankedProductIds']))
     print('ORIGINAL_PRODUCT_IMAGES=5')
     print('SOURCE_IS_HISTORICAL_DEMO=true')
