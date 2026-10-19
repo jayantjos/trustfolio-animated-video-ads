@@ -1,0 +1,242 @@
+name: 20 Cinematic 3D Category Worlds - private demo videos
+on:
+  push:
+    branches: [feature/20-category-cinematic-3d-engine-20261019]
+    paths:
+      - 'three_d/category_movie.py'
+      - 'tests/test_cinematic_worlds.py'
+      - 'config/world_motion_20.json'
+      - '.github/workflows/20-cinematic-worlds-demo.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: trustfolio-twenty-worlds-cinematic-preview
+  cancel-in-progress: true
+jobs:
+  category-shard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
+    env:
+      PYTHONPATH: '.'
+      LIBGL_ALWAYS_SOFTWARE: '1'
+      OMP_NUM_THREADS: '2'
+      TRUSTFOLIO_MEDIA_STATUS: 'CONCEPT_NOT_FOR_PUBLICATION'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Blender CPU true-3D renderer with headless EGL and FFmpeg
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq blender ffmpeg libegl1 libgl1-mesa-dri libosmesa6 fonts-dejavu-core fonts-noto-core
+          blender -b --version | head -3
+          ffmpeg -hide_banner -encoders | grep libx264
+      - name: Install strict contract regression requirements and run all unit tests
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check 'Pillow==11.3.0' 'numpy==2.2.6'
+          python -m compileall -q three_d trustfolio_video tests
+          python -m unittest discover -s tests -v
+      - name: Render 5 category worlds per shard - moving Blender geometry frames
+        env:
+          SHARD: \${{ matrix.shard }}
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json,os,subprocess
+          from pathlib import Path
+          worlds=json.loads(Path('config/world_motion_20.json').read_text())['enabled_worlds']
+          shard=int(os.environ['SHARD'])
+          chosen=[(i,world) for i,world in enumerate(worlds,1) if (i-1)%4==shard]
+          assert len(chosen)==5
+          root=Path('three_d/all-world-output')
+          root.mkdir(exist_ok=True,parents=True)
+          for i,world in chosen:
+              slug=world['slug']
+              frames=root/('frames-'+str(i).zfill(2)+'-'+slug)
+              frames.mkdir(exist_ok=True)
+              command=['blender','-b','-t','2','--python','three_d/category_movie.py',
+                 '--','--category',slug,'--frames','12','--quality','74','--output',str(frames)]
+              subprocess.run(command,check=True,timeout=540)
+              if len(list(frames.glob('frame_*.png')))!=12:
+                  raise RuntimeError('Blender did not produce 12 unique 3D frames: '+slug)
+              # One uninterrupted second of GENUINE animated 3D geometry per world.
+              clip=root/('world-'+str(i).zfill(2)+'-'+slug+'.mp4')
+              title=world['slug'].replace('-',' ').upper()
+              name=root/('label-'+str(i).zfill(2)+'.txt')
+              name.write_text(title,encoding='utf8')
+              font='/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
+              filterstring=(
+                 'scale=1080:1920:flags=bicubic,fps=24,'
+                 'drawbox=x=30:y=36:w=1020:h=124:color=0x2B136A@0.93:t=fill,'
+                 'drawtext=fontfile='+font+':text=TrustFolio:fontcolor=white:fontsize=73:x=85:y=56,'
+                 'drawbox=x=35:y=1720:w=1010:h=178:color=0x201359@0.92:t=fill,'
+                 'drawtext=fontfile='+font+':textfile='+str(name)+
+                 ':fontcolor=0xFFDA3D:fontsize=50:x=(w-text_w)/2:y=1739,'
+                 'drawtext=fontfile='+font+
+                 ':text=ORIGINAL 3D WORLD CONCEPT - NOT FOR PUBLICATION:'
+                 'fontcolor=white:fontsize=26:x=(w-text_w)/2:y=1840'
+              )
+              subprocess.run(['ffmpeg','-nostdin','-hide_banner','-loglevel','error',
+                '-framerate','12','-start_number','1','-i',str(frames/'frame_%04d.png'),
+                '-vf',filterstring,'-c:v','libx264','-preset','veryfast','-crf','23',
+                '-pix_fmt','yuv420p','-an','-t','1','-movflags','+faststart',
+                '-y',str(clip)],check=True,timeout=145)
+              assert clip.stat().st_size>65000
+              # Do not retain 240 raw oversized PNGs in the Actions artifact.
+              for p in frames.glob('frame_*.png'):p.unlink()
+              frames.rmdir()
+              print('TRUE_3D_WORLD_CLIP_CREATED='+str(i).zfill(2)+' '+slug,flush=True)
+          PY
+      - name: Validate product claim isolation and each category MP4
+        env:
+          SHARD: \${{ matrix.shard }}
+        run: |
+          python - <<'PY'
+          import hashlib,json,os,subprocess
+          from pathlib import Path
+          root=Path('three_d/all-world-output')
+          clips=sorted(root.glob('world-*.mp4'))
+          assert len(clips)==5
+          slugs=[]
+          for path in clips:
+              slug=path.stem.split('-',2)[2]
+              slugs.append(slug)
+              j=json.loads(subprocess.check_output(['ffprobe','-v','error',
+                   '-show_streams','-show_format','-of','json',str(path)]))
+              v=next(s for s in j['streams'] if s['codec_type']=='video')
+              assert v['codec_name']=='h264' and v['width']==1080 and v['height']==1920
+              assert .96<=float(j['format']['duration'])<=1.10
+              print('VERIFIED_BLENDER_3D_CATEGORY='+slug)
+          results={'technical_status':'FIVE_TRUE_3D_CATEGORY_DEMOS_VERIFIED',
+            'shard':int(os.environ['SHARD']),'categories':slugs,
+            'clips':[{'filename':p.name,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()} for p in clips],
+            'products_and_rankings_included':False,
+            'historical_prices_claimed':False,'production_approved':False,
+            'publishing_enabled':False,'human_visual_approval':False}
+          (root/'shard-qa.json').write_text(json.dumps(results,indent=2)+'\n')
+          PY
+      - name: Upload unique short actual Blender 3D category demo clips
+        uses: actions/upload-artifact@v4
+        with:
+          name: trustfolio-3d-world-shard-\${{ matrix.shard }}
+          path: |
+            three_d/all-world-output/world-*.mp4
+            three_d/all-world-output/shard-qa.json
+          retention-days: 30
+          if-no-files-found: error
+
+  showcase:
+    needs: category-shard
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download all 20 true-3D concept clips
+        uses: actions/download-artifact@v4
+        with:
+          pattern: trustfolio-3d-world-shard-*
+          path: all-clips
+          merge-multiple: false
+      - name: Install media QA prerequisites
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ffmpeg
+      - name: Create original music, stitch 20 real moving scenes and test output
+        run: |
+          set -euo pipefail
+          mkdir -p out
+          python - <<'PY'
+          from pathlib import Path
+          from array import array
+          import hashlib,json,math,subprocess,wave
+          folders=list(Path('all-clips').glob('trustfolio-3d-world-shard-*'))
+          assert len(folders)==4
+          clips=sorted(Path('all-clips').rglob('world-*.mp4'))
+          assert len(clips)==20,'missing expected video categories'
+          slugs=[p.stem.split('-',2)[2] for p in clips]
+          expected=[x['slug'] for x in json.loads(Path('config/world_motion_20.json').read_text())['enabled_worlds']]
+          assert set(slugs)==set(expected) and len(set(slugs))==20
+          playlist=Path('out/concat.txt')
+          playlist.write_text(''.join("file '"+str(p.resolve()).replace("'","")+"'\\n" for p in clips))
+          silent=Path('out/silent.mp4')
+          subprocess.run(['ffmpeg','-nostdin','-hide_banner','-loglevel','error',
+             '-f','concat','-safe','0','-i',str(playlist),'-c:v','copy',
+             '-movflags','+faststart','-y',str(silent)],check=True,timeout=70)
+          # Totally original procedural 20s bouncy three-tone showreel jingle.
+          sr=22050
+          total=20*sr
+          samples=array('h',[0])*total
+          notes=(261.63,329.63,392.0,523.25,440.0,349.23)
+          for tick in range(80):
+              st=int(tick*.25*sr)
+              n=min(int(.18*sr),total-st)
+              if n<=0:continue
+              hz=notes[tick%len(notes)]
+              for i in range(n):
+                  t=i/sr
+                  env=min(1,t/.02)*math.exp(-t*12)
+                  value=0.13*math.sin(2*math.pi*hz*t)*env
+                  if tick%4==0:value+=.085*math.sin(2*math.pi*75*t)*math.exp(-t*22)
+                  idx=st+i
+                  samples[idx]=max(-32000,min(32000,samples[idx]+int(value*32767)))
+          audio=Path('out/original-licensed-free-algorithmic-theme.wav')
+          with wave.open(str(audio),'wb') as wav:
+              wav.setnchannels(1);wav.setsampwidth(2);wav.setframerate(sr)
+              wav.writeframes(samples.tobytes())
+          final=Path('out/TrustFolio_20_Category_True3D_Concept_Showreel_DEMO.mp4')
+          subprocess.run(['ffmpeg','-nostdin','-hide_banner','-loglevel','error',
+              '-i',str(silent),'-i',str(audio),'-map','0:v','-map','1:a',
+              '-c:v','copy','-c:a','aac','-b:a','128k','-t','20',
+              '-movflags','+faststart','-y',str(final)],check=True,timeout=90)
+          p=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams',
+                 '-show_format','-of','json',str(final)]))
+          v=next(s for s in p['streams'] if s['codec_type']=='video')
+          a=next(s for s in p['streams'] if s['codec_type']=='audio')
+          assert v['codec_name']=='h264' and v['width']==1080 and v['height']==1920
+          assert a['codec_name']=='aac' and 19.85<float(p['format']['duration'])<=20.3
+          assert final.stat().st_size>250000
+          for second in (0.5,4.5,9.5,14.5,19.5):
+              dest=Path('out')/('frame-'+str(second).replace('.','_')+'.png')
+              subprocess.run(['ffmpeg','-nostdin','-hide_banner','-loglevel','error',
+                 '-ss',str(second),'-i',str(final),'-frames:v','1','-y',str(dest)],
+                 check=True,timeout=45)
+          report={
+            'status':'20_CATEGORY_BLENDER_3D_SCENE_SHOWREEL_TECHNICAL_QA_PASSED',
+            'reference_target':'Premium cinematic cartoon; creative quality human approval still pending',
+            'worlds_rendered':20,'real_blender_mesh_animation':True,
+            'individual_3d_clips':20,'clip_seconds':1,'showreel_seconds':20,
+            'three_d_environment_concepts_only':True,
+            'actual_top5_product_data_present':False,
+            'verified_product_prices_present':False,
+            'real_retailer_product_character_identity_verified':False,
+            'voice_dialogue_present':False,
+            'audio':'Original procedural music/SFX, no spoken product claims',
+            'video_codec':'h264','audio_codec':'aac','frame_size':[1080,1920],
+            'quality_status':'TECHNICAL_DEMO_NOT_PREMIUM_ARTISTICALLY_APPROVED',
+            'production_approved':False,'publishing_enabled':False,
+            'social_accounts_touched':False,
+            'ordered_categories':slugs,
+            'sha256':hashlib.sha256(final.read_bytes()).hexdigest()
+          }
+          (Path('out')/'showreel-qa.json').write_text(json.dumps(report,indent=2)+'\n')
+          print('TWENTY_ANIMATED_3D_CATEGORY_CLIPS_VERIFIED=true')
+          print('TWENTY_SECOND_3D_CONCEPT_SHOWREEL_MP4_CREATED=true')
+          print('PRODUCTION_PUBLISHING_ENABLED=false')
+          PY
+      - name: Upload playable 20s combined 3D demo, 20 original clips and QA frames
+        uses: actions/upload-artifact@v4
+        with:
+          name: trustfolio-20-categories-genuine-blender-3d-concept-showreel
+          path: |
+            out/*.mp4
+            out/*qa.json
+            out/frame-*.png
+          retention-days: 30
