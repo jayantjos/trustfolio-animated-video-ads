@@ -46,7 +46,7 @@ jobs:
           python -m unittest discover -s tests -v
       - name: Render 5 category worlds per shard - moving Blender geometry frames
         env:
-          SHARD: \${{ matrix.shard }}
+          SHARD: ${{ matrix.shard }}
         run: |
           set -euo pipefail
           python - <<'PY'
@@ -97,7 +97,7 @@ jobs:
           PY
       - name: Validate product claim isolation and each category MP4
         env:
-          SHARD: \${{ matrix.shard }}
+          SHARD: ${{ matrix.shard }}
         run: |
           python - <<'PY'
           import hashlib,json,os,subprocess
@@ -126,7 +126,7 @@ jobs:
       - name: Upload unique short actual Blender 3D category demo clips
         uses: actions/upload-artifact@v4
         with:
-          name: trustfolio-3d-world-shard-\${{ matrix.shard }}
+          name: trustfolio-3d-world-shard-${{ matrix.shard }}
           path: |
             three_d/all-world-output/world-*.mp4
             three_d/all-world-output/shard-qa.json
@@ -165,7 +165,7 @@ jobs:
           expected=[x['slug'] for x in json.loads(Path('config/world_motion_20.json').read_text())['enabled_worlds']]
           assert set(slugs)==set(expected) and len(set(slugs))==20
           playlist=Path('out/concat.txt')
-          playlist.write_text(''.join("file '"+str(p.resolve()).replace("'","")+"'\\n" for p in clips))
+          playlist.write_text(''.join("file '"+str(p.resolve()).replace("'","")+"'\n" for p in clips))
           silent=Path('out/silent.mp4')
           subprocess.run(['ffmpeg','-nostdin','-hide_banner','-loglevel','error',
              '-f','concat','-safe','0','-i',str(playlist),'-c:v','copy',
