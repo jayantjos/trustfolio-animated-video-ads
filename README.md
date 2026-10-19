@@ -1,60 +1,74 @@
-# TrustFolio animated video ads
+# TrustFolio Animated Cartoon Video Ads
 
-Status: **foundation implemented; production animation system incomplete**.
-This private repository is isolated from `jayantjos/trustfolio-daily-ads`.
-Publishing is hard-disabled. No schedules, deployment hooks, website writes,
-MongoDB access, ranking changes, or existing social workflow changes exist here.
+**Status: 3 playable historical-data animated MP4 demos; production publishing remains blocked/OFF.**
+
+Private development repository, isolated from TrustFolio's existing scheduled image
+advertisements, website, Android app, MongoDB and scraper.
 
 ## Implemented
 
-- Read-only authoritative `/api/products/top` client with response size limit,
-  no redirects, bounded transient retries and source hashing.
-- Exact five-product/rank/identity/category/budget/brand/availability checks.
-- Fail-closed price freshness checks; never substitutes, reranks or performs a
-  redundant `/live-prices` request when the backend already refreshed prices.
-- Thirty-slot creative registry: 20 canonical backend categories, 10 disabled
-  placeholders without invented backend slugs.
-- Hinglish storyboard planning, three campaign modes, three durations, alternate
-  template rotation, source-bound comparisons and removable character layers.
-- Static, registry/storyboard and manual live-validation Actions workflows.
-- Historical pilot evidence containing source IDs, observed prices and blockers.
+- Read-only official TrustFolio Top-5 API client with strict rank, category,
+  budget, brand, active/in-stock and individual price freshness checks.
+- Separate historical-demo validation: original signed response hashes, genuine
+  product IDs, genuine historical ranked prices, HTTPS retailer images, no
+  reranking, no live-price claims; permanently watermarked and unpublishable.
+- Creative registry: 20 backend-supported category story/world templates and
+  10 intentionally disabled slots; 3 advertising modes, 15/20/30s storyboards.
+- Twenty distinct Hindi/Hinglish dialogue drafts and creative world concepts.
+- CPU-only layered character animation for three pilot worlds with actual
+  retailer photos, moving arms/legs/eyes/mouth and reacting partner characters.
+- Offline eSpeak character voices (experimental robotic Hinglish only), original
+  procedural background music and pop SFX; safe scene timing and subtitle captions.
+- Genuine 1080×1920 24fps H.264/AAC MP4 export via FFmpeg, with QA JSON,
+  immutable source storyboard JSON and independently extracted frame samples.
+- 36 passing source tests, including the original 180 storyboard combinations,
+  with GitHub Actions video artifacts for three demo pilots.
+- Video publishing OFF; no credentials or new social scheduling jobs.
 
-## Run
+## Reproduce one historical QA-only pilot
 
-Python 3.11+; standard library only for this foundation.
+Requirements: Python 3.11+, Pillow 11.3, NumPy 2.2, FFmpeg/FFprobe, eSpeak.
 
-```sh
+```bash
+python -m pip install 'Pillow==11.3.0' 'numpy==2.2.6'
 python -m unittest discover -s tests -v
-python -m trustfolio_video.cli --category washing-machines --budget 35000 --mode budget --output output/washing
-python -m trustfolio_video.cli --category smart-phones --budget 20000 --mode brand_budget --brand Samsung --output output/samsung
-python -m trustfolio_video.cli --category headphones-earbuds --budget 3000 --mode comparison --output output/earbuds
+python -m trustfolio_video.cartoon \
+  --snapshot evidence/washing-machines-snapshot.json \
+  --output output/washing-machines-demo.mp4 \
+  --duration 15
 ```
 
-Exit 2 means BLOCKED, with JSON reasons and the original response retained.
-Exit 0 means data approval only, never video approval. `evidence/` contains
-historical snapshots; do not use them as fresh rendering or publishing inputs.
+For a complete automated three-video smoke test, run the
+`Genuine cartoon video pilots (DEMO ONLY)` workflow in GitHub Actions.
 
-## Current blocking evidence
+The output video, storyboard, original five product IDs and image evidence,
+recorded prices, preview image, and media QA report are uploaded as a workflow
+artifact. Videos are NOT automatically published.
 
-On 2026-10-18 all three requested pilot queries returned five products and
-`livePriceRefreshCompleted=true`. All 15 rows lacked `live_checked_at` and
-`live_priced_at`. Six rows had catalog fallback with null or `no_price` status.
-The aggregate flag alone does not prove that each displayed price is fresh.
-No MP4s were produced using these unverified candidate sets.
+## Three pilot creative worlds
 
-The price timestamp fields are a **required future contract**, not fields
-claimed to exist in the observed API. The strict policy is 15 minutes maximum
-age, with 60 seconds clock-skew tolerance. Missing evidence blocks rendering.
-Backend changes require separate authorization because this task forbids them.
+1. Washing Machines — ₹35,000 — Bubble Laundry Kingdom — budget/funny.
+2. Samsung Smartphones — ₹20,000 — Neon Notification Nagar — brand+budget.
+3. Headphones/Earbuds — ₹3,000 — Beat Street — comparison.
 
-## Not implemented / not approved
+Prices are historical and do not imply current retailer stock or offer.
 
-CPU animation composition, downloadable pilot MP4s, licensed brand asset
-extraction, TTS, Hindi/English language packs, audio mixing, subtitle rendering,
-visual frame inspection, model/license evaluation, video QA and publishing API
-adapters are not completed. Style labels are planning metadata, not distinct
-renderers. World hooks are original but full character dialogue still needs
-creative development. No production-ready claim is made.
+## Not production-ready
 
-See `docs/STATUS.md`, `docs/EXISTING_SYSTEM_REVIEW.md` and
-`docs/DEPLOYMENT_AND_ROLLBACK.md` for exact limitations and continuation steps.
+- All 15 original pilot products lack trustworthy per-item price check times.
+  Several were catalog-price fallbacks. Strict live-price validation correctly
+  prevents public ad approval.
+- eSpeak demonstration voices are not yet approved natural Hindi/Hinglish.
+- Official logo and retailer product image advertising rights unverified.
+- Character movement and expressions are basic rigs, not advanced cinematic
+  cartoon animation or phoneme-accurate lip sync.
+- Only 3 of 20 verified categories have actual distinct video environments.
+  17 categories are storyboard-level only, and 10 unknown slots disabled.
+- Instagram Reels/Facebook Reels/YouTube Shorts publishing remain OFF pending
+  explicit authorization and provider account rights.
+
+See `docs/STATUS.md` and `docs/CARTOON_PILOT_STATUS.md` for current
+implementation evidence, licensing limitations and remaining milestones.
+
+Do not merge the draft PR into a publishing or production deployment flow just
+because these watermarked demo MP4s passed technical tests.
