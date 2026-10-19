@@ -303,7 +303,7 @@ def scenefx(slug,matset):
         for side in (-1,1):
             for i in range(4):
                 cylinder("masala spice jar",(side*5.9,-6+i*5,1),.42,2,matset["gold"])
-                s("spicy tomato dancing",(side*5.2,-6+i*5,2.5),.45,"accent")
+                s("spicy tomato dancing",side*5.2,-6+i*5,2.5,.45,"accent")
     elif slug=="induction-cooktops":
         for side in (-1,1):
             for i in range(4):
