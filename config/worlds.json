@@ -1,0 +1,899 @@
+{
+  "version": 1,
+  "target_slots": 30,
+  "verified_categories": 20,
+  "verified_source": "https://api.trustfolio.in/api/categories",
+  "verified_at": "2026-10-18T14:47:09.833179+00:00",
+  "categories": [
+    {
+      "slot": 1,
+      "slug": "smart-phones",
+      "title": "Smart Phones",
+      "backend_category_id": "69f22145fdee76d38f9c5ca8",
+      "enabled": true,
+      "status": "BACKEND_CATEGORY_VERIFIED",
+      "render_eligibility": "REQUIRES_LIVE_CAMPAIGN_VALIDATION",
+      "world": "Neon Notification Nagar",
+      "palette": [
+        "electric blue",
+        "violet"
+      ],
+      "music_mood": "bouncy synth",
+      "sfx": [
+        "notification",
+        "pop",
+        "whoosh"
+      ],
+      "personality": "gadget friends",
+      "hooks": [
+        "Phone silent hai, entry full volume!",
+        "Group photo mein sabko jagah milegi!"
+      ],
+      "dialogue": [
+        "Selfie Nagar mein paanch yaar ready!",
+        "Arre charger, photo khinch na!",
+        "Silent mode ko kisne jagaya?",
+        "Notification ne comedy kar di!",
+        "Top rank ki smile aa gayi!"
+      ],
+      "reveal": "notification elevator",
+      "cta": "Apne budget ke Top 5 dekho — TrustFolio.in",
+      "templates": [
+        "selfie parade",
+        "notification mixup",
+        "charging cafe"
+      ],
+      "character_presentation": "Five real product photos; separate removable eyes, arms and speech bubbles",
+      "animation_style": "CPU 2.5D layered photo rig; wave, bounce, turn and partner reaction; no product morphing"
+    },
+    {
+      "slot": 2,
+      "slug": "air-conditioners",
+      "title": "Air Conditioners",
+      "backend_category_id": "69f4c4bfd66ed7768080c57f",
+      "enabled": true,
+      "status": "BACKEND_CATEGORY_VERIFIED",
+      "render_eligibility": "REQUIRES_LIVE_CAMPAIGN_VALIDATION",
+      "world": "Summer Cooling Heroes",
+      "palette": [
+        "ice cyan",
+        "mango"
+      ],
+      "music_mood": "light summer funk",
+      "sfx": [
+        "wind",
+        "pop",
+        "chime"
+      ],
+      "personality": "summer banter",
+      "hooks": [
+        "Garmi ne phir attendance laga di!",
+        "Remote kisne sofa ke neeche chhupaya?"
+      ],
+      "dialogue": [
+        "Garmi ne phir darwaza khatkhataaya!",
+        "Remote kidhar chhupa diya yaar?",
+        "Hawa ki party mein sab invite hain!",
+        "Do number ka cool pose dekho!",
+        "List ka top pick aa gaya!"
+      ],
+      "reveal": "ice curtain",
+      "cta": "Apne budget ke Top 5 dekho — TrustFolio.in",
+      "templates": [
+        "remote rescue",
+        "sun visitor",
+        "summer theatre"
+      ],
+      "character_presentation": "Five real product photos; separate removable eyes, arms and speech bubbles",
+      "animation_style": "CPU 2.5D layered photo rig; wave, bounce, turn and partner reaction; no product morphing"
+    },
+    {
+      "slot": 3,
+      "slug": "air-coolers",
+      "title": "Air Coolers",
+      "backend_category_id": "69f4c6dbd66ed7768080c5a7",
+      "enabled": true,
+      "status": "BACKEND_CATEGORY_VERIFIED",
+      "render_eligibility": "REQUIRES_LIVE_CAMPAIGN_VALIDATION",
+      "world": "Desert Water Carnival",
+      "palette": [
+        "sand",
+        "turquoise"
+      ],
+      "music_mood": "playful percussion",
+      "sfx": [
+        "water",
+        "wind",
+        "pop"
+      ],
+      "personality": "carnival hosts",
+      "hooks": [
+        "Garmi ki chhutti ka form kahan hai?",
+        "Mela shuru, matka bhi ready!"
+      ],
+      "dialogue": [
+        "Registaan mein paani ka mela laga!",
+        "Matka bola: arre meri baari!",
+        "Hawa se baatein karte dost!",
+        "Paani ke chheente, comedy bhi!",
+        "Top rank ka jashn shuru!"
+      ],
+      "reveal": "waterwheel",
+      "cta": "Apne budget ke Top 5 dekho — TrustFolio.in",
+      "templates": [
+        "matka parade",
+        "desert picnic",
+        "waterwheel party"
+      ],
+      "character_presentation": "Five real product photos; separate removable eyes, arms and speech bubbles",
+      "animation_style": "CPU 2.5D layered photo rig; wave, bounce, turn and partner reaction; no product morphing"
+    },
+    {
+      "slot": 4,
+      "slug": "ceiling-fans",
+      "title": "Ceiling Fan",
+      "backend_category_id": "69f4c7bfd66ed7768080c5db",
+      "enabled": true,
+      "status": "BACKEND_CATEGORY_VERIFIED",
+      "render_eligibility": "REQUIRES_LIVE_CAMPAIGN_VALIDATION",
+      "world": "Wind Olympics",
+      "palette": [
+        "sky blue",
+        "lime"
+      ],
+      "music_mood": "sporty drums",
+      "sfx": [
+        "wind",
+        "whistle",
+        "pop"
+      ],
+      "personality": "cheerful sports announcers",
+      "hooks": [
+        "Hawa ka stadium khul gaya!",
+        "Medal pose hai, speed test nahi!"
+      ],
+      "dialogue": [
+        "Hawa Olympics mein entry hui!",
+        "Pankha bhai, medal kahan rakha?",
+        "Ribbon race mein phans gaye yaar!",
+        "Do ka pose dekho, hawa mein!",
+        "Ranking ka top medal idhar!"
+      ],
+      "reveal": "ribbon vortex",
+      "cta": "Apne budget ke Top 5 dekho — TrustFolio.in",
+      "templates": [
+        "ribbon relay",
+        "paper plane party",
+        "stadium entrance"
+      ],
+      "character_presentation": "Five real product photos; separate removable eyes, arms and speech bubbles",
+      "animation_style": "CPU 2.5D layered photo rig; wave, bounce, turn and partner reaction; no product morphing"
+    },
+    {
+      "slot": 5,
+      "slug": "desktop-computers",
+      "title": "Desktop Computer",
+      "backend_category_id": "69f4fb9e609ee4419d13fb52",
+      "enabled": true,
+      "status": "BACKEND_CATEGORY_VERIFIED",
+      "render_eligibility": "REQUIRES_LIVE_CAMPAIGN_VALIDATION",
+      "world": "Pixel Office Township",
+      "palette": [
+        "navy",
+        "mint"
+      ],
+      "music_mood": "pixel groove",
+      "sfx": [
+        "keyboard",
+        "tech",
+        "pop"
+      ],
+      "personality": "office comedy",
+      "hooks": [
+        "Meeting se pehle chai meeting!",
+        "Mouse bhai, cursor idhar lao!"
+      ],
+      "dialogue": [
+        "Pixel office mein meeting lagi!",
+        "Mouse babu, chai le aao!",
+        "Keyboard bola: click click bhai!",
+        "Screen pe sabki entry hui!",
+        "Top desk ka star aa gaya!"
+      ],
+      "reveal": "pixel skyline",
+      "cta": "Apne budget ke Top 5 dekho — TrustFolio.in",
+      "templates": [
+        "desk commute",
+        "chai meeting",
+        "pixel festival"
+      ],
+      "character_presentation": "Five real product photos; separate removable eyes, arms and speech bubbles",
+      "animation_style": "CPU 2.5D layered photo rig; wave, bounce, turn and partner reaction; no product morphing"
+    },
+    {
+      "slot": 6,
+      "slug": "drones",
+      "title": "Drones",
+      "backend_category_id": "69f4fca9609ee4419d13fbaa",
+      "enabled": true,
+      "status": "BACKEND_CATEGORY_VERIFIED",
+      "render_eligibility": "REQUIRES_LIVE_CAMPAIGN_VALIDATION",
+      "world": "Cloud Post Office",
+      "palette": [
+        "cloud white",
+        "orange"
+      ],
+      "music_mood": "airy adventure",
+      "sfx": [
+        "wind",
+        "whoosh",
+        "chime"
+      ],
+      "personality": "sky messengers",
+      "hooks": [
+        "Badalon ka parcel aa gaya!",
+        "Address likho: teesra badal, left!"
+      ],
+      "dialogue": [
+        "Aasmaan ka post office khula!",
+        "Parcel udao, par joke sambhalo!",
+        "Cloud se hello bol aaye!",
+        "Do ke peechhe hawa bhaagi!",
+        "Top rank ko landing mil gayi!"
+      ],
+      "reveal": "cloud mailbox",
+      "cta": "Apne budget ke Top 5 dekho — TrustFolio.in",
+      "templates": [
+        "cloud delivery",
+        "sky postcard",
+        "wind map"
+      ],
+      "character_presentation": "Five real product photos; separate removable eyes, arms and speech bubbles",
+      "animation_style": "CPU 2.5D layered photo rig; wave, bounce, turn and partner reaction; no product morphing"
+    },
+    {
+      "slot": 7,
+      "slug": "water-purifiers",
+      "title": "Water Purifiers",
+      "backend_category_id": "69f502ba609ee4419d13ff44",
+      "enabled": true,
+      "status": "BACKEND_CATEGORY_VERIFIED",
+      "render_eligibility": "REQUIRES_LIVE_CAMPAIGN_VALIDATION",
+      "world": "Crystal Water Village",
+      "palette": [
+        "aqua",
+        "emerald"
+      ],
+      "music_mood": "gentle marimba",
+      "sfx": [
+        "water",
+        "bubble",
+        "chime"
+      ],
+      "personality": "friendly village guides",
+      "hooks": [
+        "Paani ki duniya mein welcome!",
+        "Glass ji, line mein aaiye!"
+      ],
+      "dialogue": [
+        "Paani ke shehar mein mela hai!",
+        "Boond bhai, dance shuru karo!",
+        "Bottle ne selfie maang li!",
+        "Do dost aaye, paani bhi!",
+        "Top rank ka welcome karo!"
+      ],
+      "reveal": "droplet arch",
+      "cta": "Apne budget ke Top 5 dekho — TrustFolio.in",
+      "templates": [
+        "glass gathering",
+        "droplet road",
+        "water garden"
+      ],
+      "character_presentation": "Five real product photos; separate removable eyes, arms and speech bubbles",
+      "animation_style": "CPU 2.5D layered photo rig; wave, bounce, turn and partner reaction; no product morphing"
+    },
+    {
+      "slot": 8,
+      "slug": "geysers",
+      "title": "Geysers",
+      "backend_category_id": "69f5795048fae9a9269a07ec",
+      "enabled": true,
+      "status": "BACKEND_CATEGORY_VERIFIED",
+      "render_eligibility": "REQUIRES_LIVE_CAMPAIGN_VALIDATION",
+      "world": "Warm Winter Lodge",
+      "palette": [
+        "amber",
+        "winter blue"
+      ],
+      "music_mood": "cozy acoustic rhythm",
+      "sfx": [
+        "water",
+        "pop",
+        "chime"
+      ],
+      "personality": "winter storytellers",
+      "hooks": [
+        "Sardi ne sweater double kar liya!",
+        "Towel ji bhi vacation pe hain!"
+      ],
+      "dialogue": [
+        "Sardi ki lodge mein milo dosto!",
+        "Muffler kidhar gaya, yaar?",
+        "Nahaane ki line lag gayi!",
+        "Do ka warm welcome ho gaya!",
+        "Top rank ki entry aa gayi!"
+      ],
+      "reveal": "steam window",
+      "cta": "Apne budget ke Top 5 dekho — TrustFolio.in",
+      "templates": [
+        "towel mystery",
+        "winter lodge",
+        "steam postcard"
+      ],
+      "character_presentation": "Five real product photos; separate removable eyes, arms and speech bubbles",
+      "animation_style": "CPU 2.5D layered photo rig; wave, bounce, turn and partner reaction; no product morphing"
+    },
+    {
+      "slot": 9,
+      "slug": "headphones-earbuds",
+      "title": "Headphones Earbuds",
+      "backend_category_id": "69f5797c48fae9a9269a0810",
+      "enabled": true,
+      "status": "BACKEND_CATEGORY_VERIFIED",
+      "render_eligibility": "REQUIRES_LIVE_CAMPAIGN_VALIDATION",
+      "world": "Beat Street",
+      "palette": [
+        "magenta",
+        "indigo"
+      ],
+      "music_mood": "original dance groove",
+      "sfx": [
+        "music",
+        "pop",
+        "whoosh"
+      ],
+      "personality": "dancing friends",
+      "hooks": [
+        "Beat Street pe five friends ready!",
+        "Dance mera, ranking TrustFolio ki!"
+      ],
+      "dialogue": [
+        "Beat Street mein DJ ne bulaya!",
+        "Paanch, tune beat pakdi kya?",
+        "Chaar, zara taali baja yaar!",
+        "Teen, dance floor tera hai!",
+        "Rank one ki music entry!"
+      ],
+      "reveal": "equalizer steps",
+      "cta": "Apne budget ke Top 5 dekho — TrustFolio.in",
+      "templates": [
+        "dance circle",
+        "beat bus",
+        "mic mixup"
+      ],
+      "character_presentation": "Five real product photos; separate removable eyes, arms and speech bubbles",
+      "animation_style": "CPU 2.5D layered photo rig; wave, bounce, turn and partner reaction; no product morphing"
+    },
+    {
+      "slot": 10,
+      "slug": "induction-cooktops",
+      "title": "Induction Cooktops",
+      "backend_category_id": "69f5799c48fae9a9269a0835",
+      "enabled": true,
+      "status": "BACKEND_CATEGORY_VERIFIED",
+      "render_eligibility": "REQUIRES_LIVE_CAMPAIGN_VALIDATION",
+      "world": "Chai Space Kitchen",
+      "palette": [
+        "copper",
+        "cosmic violet"
+      ],
+      "music_mood": "kitchen bounce",
+      "sfx": [
+        "pop",
+        "chime",
+        "tech"
+      ],
+      "personality": "space cooks",
+      "hooks": [
+        "Chai ki meeting space mein!",
+        "Cup captain, biscuit kidhar hai?"
+      ],
+      "dialogue": [
+        "Chai kitchen mein paanch dost!",
+        "Kettle boli: biscuit kidhar hai?",
+        "Chef hat ne dance kar daala!",
+        "Do bhai, chai ready hai kya?",
+        "List ka top pick, taaliyan!"
+      ],
+      "reveal": "saucer landing",
+      "cta": "Apne budget ke Top 5 dekho — TrustFolio.in",
+      "templates": [
+        "chai launch",
+        "biscuit orbit",
+        "kitchen countdown"
+      ],
+      "character_presentation": "Five real product photos; separate removable eyes, arms and speech bubbles",
+      "animation_style": "CPU 2.5D layered photo rig; wave, bounce, turn and partner reaction; no product morphing"
+    },
+    {
+      "slot": 11,
+      "slug": "laptops",
+      "title": "Laptops",
+      "backend_category_id": "69f579c948fae9a9269a085b",
+      "enabled": true,
+      "status": "BACKEND_CATEGORY_VERIFIED",
+      "render_eligibility": "REQUIRES_LIVE_CAMPAIGN_VALIDATION",
+      "world": "Digital Classroom Challenge",
+      "palette": [
+        "teal",
+        "yellow"
+      ],
+      "music_mood": "upbeat study beat",
+      "sfx": [
+        "keyboard",
+        "tech",
+        "pop"
+      ],
+      "personality": "classroom friends",
+      "hooks": [
+        "Homework ne login kar liya!",
+        "Presentation ready, excuse loading!"
+      ],
+      "dialogue": [
+        "Digital class mein bell baj gayi!",
+        "Homework ka password bhool gaye!",
+        "Cursor ne race laga di yaar!",
+        "Do ka project ready ho gaya!",
+        "Rank one ka presentation aa gaya!"
+      ],
+      "reveal": "notebook portals",
+      "cta": "Apne budget ke Top 5 dekho — TrustFolio.in",
+      "templates": [
+        "homework portal",
+        "project day",
+        "keyboard comedy"
+      ],
+      "character_presentation": "Five real product photos; separate removable eyes, arms and speech bubbles",
+      "animation_style": "CPU 2.5D layered photo rig; wave, bounce, turn and partner reaction; no product morphing"
+    },
+    {
+      "slot": 12,
+      "slug": "microwave-ovens",
+      "title": "Microwave Ovens",
+      "backend_category_id": "69f57a1248fae9a9269a0882",
+      "enabled": true,
+      "status": "BACKEND_CATEGORY_VERIFIED",
+      "render_eligibility": "REQUIRES_LIVE_CAMPAIGN_VALIDATION",
+      "world": "Midnight Snack Theatre",
+      "palette": [
+        "plum",
+        "warm gold"
+      ],
+      "music_mood": "light jazz bounce",
+      "sfx": [
+        "chime",
+        "pop",
+        "whoosh"
+      ],
+      "personality": "snack stage actors",
+      "hooks": [
+        "Midnight snack ka audition!",
+        "Popcorn ji front row mein!"
+      ],
+      "dialogue": [
+        "Midnight snack theatre khul gaya!",
+        "Popcorn ne hero banne ko bola!",
+        "Plate ka chakkar, funny chakkar!",
+        "Do dost snack pe toot pade!",
+        "Top pick ne entry maar di!"
+      ],
+      "reveal": "curtain reveal",
+      "cta": "Apne budget ke Top 5 dekho — TrustFolio.in",
+      "templates": [
+        "snack audition",
+        "midnight theatre",
+        "curtain call"
+      ],
+      "character_presentation": "Five real product photos; separate removable eyes, arms and speech bubbles",
+      "animation_style": "CPU 2.5D layered photo rig; wave, bounce, turn and partner reaction; no product morphing"
+    },
+    {
+      "slot": 13,
+      "slug": "mixer-grinders",
+      "title": "Mixer Grinders",
+      "backend_category_id": "69f57a3a48fae9a9269a08aa",
+      "enabled": true,
+      "status": "BACKEND_CATEGORY_VERIFIED",
+      "render_eligibility": "REQUIRES_LIVE_CAMPAIGN_VALIDATION",
+      "world": "Masala Music Studio",
+      "palette": [
+        "chilli red",
+        "turmeric"
+      ],
+      "music_mood": "original percussion",
+      "sfx": [
+        "music",
+        "pop",
+        "whoosh"
+      ],
+      "personality": "kitchen bandmates",
+      "hooks": [
+        "Masala band ki entry ho gayi!",
+        "Jeera ji, mic check please!"
+      ],
+      "dialogue": [
+        "Masala music studio mein aao!",
+        "Mirchi boli, main lead singer!",
+        "Chutney ka remix shuru hai!",
+        "Do bhai beat pakad lo!",
+        "Top rank ko mic mila!"
+      ],
+      "reveal": "spice record",
+      "cta": "Apne budget ke Top 5 dekho — TrustFolio.in",
+      "templates": [
+        "spice rehearsal",
+        "recipe radio",
+        "masala concert"
+      ],
+      "character_presentation": "Five real product photos; separate removable eyes, arms and speech bubbles",
+      "animation_style": "CPU 2.5D layered photo rig; wave, bounce, turn and partner reaction; no product morphing"
+    },
+    {
+      "slot": 14,
+      "slug": "refrigerators",
+      "title": "Refrigerators",
+      "backend_category_id": "69f57a5e48fae9a9269a08d3",
+      "enabled": true,
+      "status": "BACKEND_CATEGORY_VERIFIED",
+      "render_eligibility": "REQUIRES_LIVE_CAMPAIGN_VALIDATION",
+      "world": "Cool Ice Kingdom",
+      "palette": [
+        "frost blue",
+        "lavender"
+      ],
+      "music_mood": "sparkling waltz",
+      "sfx": [
+        "chime",
+        "bubble",
+        "pop"
+      ],
+      "personality": "ice palace friends",
+      "hooks": [
+        "Fridge ke andar bhi colony hai!",
+        "Ice tray ji colony secretary hain!"
+      ],
+      "dialogue": [
+        "Ice kingdom ka darbar laga!",
+        "Gajar ne shawl pehen li!",
+        "Ice cube bola, haaye thand!",
+        "Do ka cool welcome hua!",
+        "Top rank ka taj chamka!"
+      ],
+      "reveal": "ice bridge",
+      "cta": "Apne budget ke Top 5 dekho — TrustFolio.in",
+      "templates": [
+        "ice parade",
+        "tiffin reunion",
+        "palace picnic"
+      ],
+      "character_presentation": "Five real product photos; separate removable eyes, arms and speech bubbles",
+      "animation_style": "CPU 2.5D layered photo rig; wave, bounce, turn and partner reaction; no product morphing"
+    },
+    {
+      "slot": 15,
+      "slug": "smart-tvs",
+      "title": "Smart Tv",
+      "backend_category_id": "69f57a8b48fae9a9269a08fd",
+      "enabled": true,
+      "status": "BACKEND_CATEGORY_VERIFIED",
+      "render_eligibility": "REQUIRES_LIVE_CAMPAIGN_VALIDATION",
+      "world": "Mini Cartoon Cinema",
+      "palette": [
+        "red",
+        "midnight blue"
+      ],
+      "music_mood": "cinema fanfare",
+      "sfx": [
+        "pop",
+        "chime",
+        "whoosh"
+      ],
+      "personality": "cinema hosts",
+      "hooks": [
+        "Remote ki seat kisne book ki?",
+        "Interval mein bhi ranking mat bhoolna!"
+      ],
+      "dialogue": [
+        "Mini cinema mein paanch dost!",
+        "Remote ne ticket maang li!",
+        "Popcorn bola: meri seat kahan?",
+        "Do hero aaye screen pe!",
+        "Top pick ka credit roll!"
+      ],
+      "reveal": "screen curtain",
+      "cta": "Apne budget ke Top 5 dekho — TrustFolio.in",
+      "templates": [
+        "remote premiere",
+        "popcorn balcony",
+        "cinema awards"
+      ],
+      "character_presentation": "Five real product photos; separate removable eyes, arms and speech bubbles",
+      "animation_style": "CPU 2.5D layered photo rig; wave, bounce, turn and partner reaction; no product morphing"
+    },
+    {
+      "slot": 16,
+      "slug": "smartwatches",
+      "title": "SmartWatches",
+      "backend_category_id": "69f57abb48fae9a9269a0928",
+      "enabled": true,
+      "status": "BACKEND_CATEGORY_VERIFIED",
+      "render_eligibility": "REQUIRES_LIVE_CAMPAIGN_VALIDATION",
+      "world": "Fitness Race Arena",
+      "palette": [
+        "lime",
+        "navy"
+      ],
+      "music_mood": "energetic clean beat",
+      "sfx": [
+        "heartbeat",
+        "whistle",
+        "pop"
+      ],
+      "personality": "fitness cheerleaders",
+      "hooks": [
+        "Steps se pehle smile count karo!",
+        "Warm-up mein selfie allowed hai!"
+      ],
+      "dialogue": [
+        "Fitness stadium mein race hai!",
+        "Ghadi bhai, time batana yaar!",
+        "Steps ginte ginte dance hua!",
+        "Do ko selfie chahiye!",
+        "Top rank ka podium ready!"
+      ],
+      "reveal": "finish arch",
+      "cta": "Apne budget ke Top 5 dekho — TrustFolio.in",
+      "templates": [
+        "warmup parade",
+        "shoelace comedy",
+        "fitness festival"
+      ],
+      "character_presentation": "Five real product photos; separate removable eyes, arms and speech bubbles",
+      "animation_style": "CPU 2.5D layered photo rig; wave, bounce, turn and partner reaction; no product morphing"
+    },
+    {
+      "slot": 17,
+      "slug": "speakers",
+      "title": "Speakers",
+      "backend_category_id": "69f57adb48fae9a9269a0955",
+      "enabled": true,
+      "status": "BACKEND_CATEGORY_VERIFIED",
+      "render_eligibility": "REQUIRES_LIVE_CAMPAIGN_VALIDATION",
+      "world": "Music Battle Arena",
+      "palette": [
+        "purple",
+        "gold"
+      ],
+      "music_mood": "original bass groove",
+      "sfx": [
+        "music",
+        "pop",
+        "chime"
+      ],
+      "personality": "friendly stage performers",
+      "hooks": [
+        "Volume se pehle vibe check!",
+        "Taali sabke liye, rank data ka!"
+      ],
+      "dialogue": [
+        "Music battle ka stage saj gaya!",
+        "Bass bhai, volume mat dara!",
+        "Mic ne joke suna diya!",
+        "Do ka concert shuru hua!",
+        "Top rank pe spotlight!"
+      ],
+      "reveal": "speaker spotlight",
+      "cta": "Apne budget ke Top 5 dekho — TrustFolio.in",
+      "templates": [
+        "stage banter",
+        "backstage pass",
+        "rhythm parade"
+      ],
+      "character_presentation": "Five real product photos; separate removable eyes, arms and speech bubbles",
+      "animation_style": "CPU 2.5D layered photo rig; wave, bounce, turn and partner reaction; no product morphing"
+    },
+    {
+      "slot": 18,
+      "slug": "tablets",
+      "title": "Tablets",
+      "backend_category_id": "69f57af848fae9a9269a0982",
+      "enabled": true,
+      "status": "BACKEND_CATEGORY_VERIFIED",
+      "render_eligibility": "REQUIRES_LIVE_CAMPAIGN_VALIDATION",
+      "world": "Sketchbook Island",
+      "palette": [
+        "pastel coral",
+        "turquoise"
+      ],
+      "music_mood": "playful bells",
+      "sfx": [
+        "tech",
+        "pop",
+        "chime"
+      ],
+      "personality": "creative island explorers",
+      "hooks": [
+        "Notebook ne island khol liya!",
+        "Doodle ji map ulta pakde hain!"
+      ],
+      "dialogue": [
+        "Sketchbook island mein rang chhidke!",
+        "Pencil ne selfie bana daali!",
+        "Canvas par paanch dost aaye!",
+        "Do ke rang bade mast hain!",
+        "Top rank ka doodle ready!"
+      ],
+      "reveal": "page fold",
+      "cta": "Apne budget ke Top 5 dekho — TrustFolio.in",
+      "templates": [
+        "doodle ferry",
+        "sketch treasure",
+        "page picnic"
+      ],
+      "character_presentation": "Five real product photos; separate removable eyes, arms and speech bubbles",
+      "animation_style": "CPU 2.5D layered photo rig; wave, bounce, turn and partner reaction; no product morphing"
+    },
+    {
+      "slot": 19,
+      "slug": "vacuum-cleaners",
+      "title": "Vacuum Cleaners",
+      "backend_category_id": "69f57b1948fae9a9269a09b0",
+      "enabled": true,
+      "status": "BACKEND_CATEGORY_VERIFIED",
+      "render_eligibility": "REQUIRES_LIVE_CAMPAIGN_VALIDATION",
+      "world": "Dust Detective Town",
+      "palette": [
+        "charcoal",
+        "orange"
+      ],
+      "music_mood": "comic detective groove",
+      "sfx": [
+        "wind",
+        "whoosh",
+        "pop"
+      ],
+      "personality": "friendly detectives",
+      "hooks": [
+        "Dhool ka address mil gaya!",
+        "Clue sofa ke neeche tha!"
+      ],
+      "dialogue": [
+        "Dust detective ne case khola!",
+        "Jhaadu bhai, evidence kidhar?",
+        "Dhool chhup gayi sofa ke peechhe!",
+        "Do detectives hans pade!",
+        "Top rank ko badge mila!"
+      ],
+      "reveal": "magnifying spotlight",
+      "cta": "Apne budget ke Top 5 dekho — TrustFolio.in",
+      "templates": [
+        "dust mystery",
+        "sofa patrol",
+        "crumb chase"
+      ],
+      "character_presentation": "Five real product photos; separate removable eyes, arms and speech bubbles",
+      "animation_style": "CPU 2.5D layered photo rig; wave, bounce, turn and partner reaction; no product morphing"
+    },
+    {
+      "slot": 20,
+      "slug": "washing-machines",
+      "title": "Washing Machines",
+      "backend_category_id": "69f57b3f48fae9a9269a09df",
+      "enabled": true,
+      "status": "BACKEND_CATEGORY_VERIFIED",
+      "render_eligibility": "REQUIRES_LIVE_CAMPAIGN_VALIDATION",
+      "world": "Funny Bubble Laundry Kingdom",
+      "palette": [
+        "royal blue",
+        "bubble pink"
+      ],
+      "music_mood": "bubbly percussion",
+      "sfx": [
+        "bubble",
+        "water",
+        "pop"
+      ],
+      "personality": "five laundry friends",
+      "hooks": [
+        "Ek sock phir gayab!",
+        "Sock bhai, attendance lagao!"
+      ],
+      "dialogue": [
+        "Laundry kingdom mein bubble party!",
+        "Sabun ne dance shuru kiya!",
+        "Ghoomti duniya, paanch yaar!",
+        "Do ka funny pose dekho!",
+        "Top rank ka jashn shuru!"
+      ],
+      "reveal": "bubble crown",
+      "cta": "Apne budget ke Top 5 dekho — TrustFolio.in",
+      "templates": [
+        "missing sock",
+        "bubble parade",
+        "laundry picnic"
+      ],
+      "character_presentation": "Five real product photos; separate removable eyes, arms and speech bubbles",
+      "animation_style": "CPU 2.5D layered photo rig; wave, bounce, turn and partner reaction; no product morphing"
+    },
+    {
+      "slot": 21,
+      "slug": null,
+      "enabled": false,
+      "status": "AWAITING_BACKEND_SUPPORT",
+      "disabled_reason": "No additional category returned by authoritative /api/categories; do not assign a fictional slug"
+    },
+    {
+      "slot": 22,
+      "slug": null,
+      "enabled": false,
+      "status": "AWAITING_BACKEND_SUPPORT",
+      "disabled_reason": "No additional category returned by authoritative /api/categories; do not assign a fictional slug"
+    },
+    {
+      "slot": 23,
+      "slug": null,
+      "enabled": false,
+      "status": "AWAITING_BACKEND_SUPPORT",
+      "disabled_reason": "No additional category returned by authoritative /api/categories; do not assign a fictional slug"
+    },
+    {
+      "slot": 24,
+      "slug": null,
+      "enabled": false,
+      "status": "AWAITING_BACKEND_SUPPORT",
+      "disabled_reason": "No additional category returned by authoritative /api/categories; do not assign a fictional slug"
+    },
+    {
+      "slot": 25,
+      "slug": null,
+      "enabled": false,
+      "status": "AWAITING_BACKEND_SUPPORT",
+      "disabled_reason": "No additional category returned by authoritative /api/categories; do not assign a fictional slug"
+    },
+    {
+      "slot": 26,
+      "slug": null,
+      "enabled": false,
+      "status": "AWAITING_BACKEND_SUPPORT",
+      "disabled_reason": "No additional category returned by authoritative /api/categories; do not assign a fictional slug"
+    },
+    {
+      "slot": 27,
+      "slug": null,
+      "enabled": false,
+      "status": "AWAITING_BACKEND_SUPPORT",
+      "disabled_reason": "No additional category returned by authoritative /api/categories; do not assign a fictional slug"
+    },
+    {
+      "slot": 28,
+      "slug": null,
+      "enabled": false,
+      "status": "AWAITING_BACKEND_SUPPORT",
+      "disabled_reason": "No additional category returned by authoritative /api/categories; do not assign a fictional slug"
+    },
+    {
+      "slot": 29,
+      "slug": null,
+      "enabled": false,
+      "status": "AWAITING_BACKEND_SUPPORT",
+      "disabled_reason": "No additional category returned by authoritative /api/categories; do not assign a fictional slug"
+    },
+    {
+      "slot": 30,
+      "slug": null,
+      "enabled": false,
+      "status": "AWAITING_BACKEND_SUPPORT",
+      "disabled_reason": "No additional category returned by authoritative /api/categories; do not assign a fictional slug"
+    }
+  ]
+}

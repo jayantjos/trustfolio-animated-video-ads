@@ -1,0 +1,186 @@
+{
+  "publishing_enabled": false,
+  "note": "Validation evaluated at recorded fetch time. Catalog prices are observed, not verified live prices. Snapshots are historical evidence, never production inputs.",
+  "pilots": [
+    {
+      "campaign": {
+        "category": "washing-machines",
+        "budget": 35000,
+        "mode": "budget",
+        "brand": ""
+      },
+      "observed_at": "2026-10-18T14:43:32.895920+00:00",
+      "validation_time": "2026-10-18T14:43:32.895920+00:00",
+      "status": "BLOCKED",
+      "reason": "rank_1:live_price_unverified; rank_1:price_timestamp_missing; rank_2:live_price_unverified; rank_2:price_timestamp_missing; rank_3:price_timestamp_missing; rank_4:price_timestamp_missing; rank_5:price_timestamp_missing",
+      "mp4_generated": false,
+      "products": [
+        {
+          "rank": 1,
+          "id": "69f34f481dafb58cccdbddf8",
+          "title": "SAMSUNG 7 kg 5 Star Inverter Fully Automatic Front Load Washing Machine (WW70R22EK0X/TL, Eco Bubble Technology, Inox Grey)",
+          "price_inr": 32994,
+          "price_source": "website_catalog",
+          "live_price_status": null,
+          "live_checked_at": null
+        },
+        {
+          "rank": 2,
+          "id": "69f89bf49a622ea2d7ce0e5b",
+          "title": "IFB 7 Kg 5 Star, DeepClean® Technology, AI Powered, WiFi, Fully Automatic Front Load Washing Machine (SERENA GXN 7012 CMS, PowerSteam®, 9 Swirl, Steam Refresh, Inbuilt Heater, Eco Inverter, Grey)",
+          "price_inr": 31990,
+          "price_source": "website_catalog",
+          "live_price_status": "no_price",
+          "live_checked_at": null
+        },
+        {
+          "rank": 3,
+          "id": "69fb4f98637ff7988f83047b",
+          "title": "LG 7 Kg, 5 Star, DD Technology, Steam Wash, 6 Motion DD, Fully-Automatic Front Load Washing Machine (FHB1207Z2M, Allergy Care, In-Built Heater, Touch Panel, Middle Black)",
+          "price_inr": 29990,
+          "price_source": "website_live_price_api",
+          "live_price_status": "ok",
+          "live_checked_at": null
+        },
+        {
+          "rank": 4,
+          "id": "69f419329a622ea2d7ccb736",
+          "title": "Godrej 9 kg with AI Tech Fully Automatic Front Load Washing Machine with In-built Heater White, Grey",
+          "price_inr": 29990,
+          "price_source": "website_live_price_api",
+          "live_price_status": "ok",
+          "live_checked_at": null
+        },
+        {
+          "rank": 5,
+          "id": "6a9e8263b4dc2990b1624944",
+          "title": "LG 7 kg Fully Automatic Front Load Black (FHB1207Z2MA)",
+          "price_inr": 35000,
+          "price_source": "website_live_price_api",
+          "live_price_status": "ok",
+          "live_checked_at": null
+        }
+      ]
+    },
+    {
+      "campaign": {
+        "category": "smart-phones",
+        "budget": 20000,
+        "mode": "brand_budget",
+        "brand": "Samsung"
+      },
+      "observed_at": "2026-10-18T14:43:35.850592+00:00",
+      "validation_time": "2026-10-18T14:43:35.850592+00:00",
+      "status": "BLOCKED",
+      "reason": "rank_1:live_price_unverified; rank_1:price_timestamp_missing; rank_2:price_timestamp_missing; rank_3:price_timestamp_missing; rank_4:live_price_unverified; rank_4:price_timestamp_missing; rank_5:live_price_unverified; rank_5:price_timestamp_missing",
+      "mp4_generated": false,
+      "products": [
+        {
+          "rank": 1,
+          "id": "69feec16fe6fd8dc386abcad",
+          "title": "SAMSUNG Galaxy A25 5G (8GB RAM, 128GB, Yellow)",
+          "price_inr": 18494,
+          "price_source": "website_catalog",
+          "live_price_status": null,
+          "live_checked_at": null
+        },
+        {
+          "rank": 2,
+          "id": "6a113c12d90c808fff3be04c",
+          "title": "Samsung Galaxy A35 5G Awesome Navy 128 Gb",
+          "price_inr": 18999,
+          "price_source": "website_live_price_api",
+          "live_price_status": "ok",
+          "live_checked_at": null
+        },
+        {
+          "rank": 3,
+          "id": "6a143d819d6df8c5f23cc227",
+          "title": "Samsung Galaxy A35 5G Awesome Iceblue 128 Gb",
+          "price_inr": 18999,
+          "price_source": "website_live_price_api",
+          "live_price_status": "ok",
+          "live_checked_at": null
+        },
+        {
+          "rank": 4,
+          "id": "6a39f8e018cd7b0fe7113544",
+          "title": "SAMSUNG Galaxy A50s (4GB RAM, 128GB, Prism Crush Violet)",
+          "price_inr": 18570,
+          "price_source": "website_catalog",
+          "live_price_status": null,
+          "live_checked_at": null
+        },
+        {
+          "rank": 5,
+          "id": "6a0758e6fe6fd8dc386ba90c",
+          "title": "Samsung Galaxy A07 5G Smartphone (Light Violet, 4GB RAM, 128GB Storage) | 120Hz Refresh Rate | Massive 6000mAh Battery | 50MP True Dual Camera | 6 Gen OS Upgrades | Knox Vault",
+          "price_inr": 18999,
+          "price_source": "website_catalog",
+          "live_price_status": "no_price",
+          "live_checked_at": null
+        }
+      ]
+    },
+    {
+      "campaign": {
+        "category": "headphones-earbuds",
+        "budget": 3000,
+        "mode": "comparison",
+        "brand": ""
+      },
+      "observed_at": "2026-10-18T14:43:32.901077+00:00",
+      "validation_time": "2026-10-18T14:43:32.901077+00:00",
+      "status": "BLOCKED",
+      "reason": "rank_1:price_timestamp_missing; rank_2:price_timestamp_missing; rank_3:live_price_unverified; rank_3:price_timestamp_missing; rank_4:price_timestamp_missing; rank_5:price_timestamp_missing",
+      "mp4_generated": false,
+      "products": [
+        {
+          "rank": 1,
+          "id": "6a35047a24120ddc2f6d2bff",
+          "title": "DOMA VM Premium True Wireless Earbuds with Active Noise Cancellation, IPX5 Waterproof, Metal Charging Case",
+          "price_inr": 2999,
+          "price_source": "website_live_price_api",
+          "live_price_status": "ok",
+          "live_checked_at": null
+        },
+        {
+          "rank": 2,
+          "id": "6a3503f724120ddc2f6d262c",
+          "title": "Wireless Earbuds, 2025 Bluetooth Headphones 5.3 HiFi Stereo Headphone with 20 Hours of Playback Life in-Ear Earbuds, IP7 Waterproof Headphones Sport Headphones for Android iOS (Black)",
+          "price_inr": 2817,
+          "price_source": "website_live_price_api",
+          "live_price_status": "ok",
+          "live_checked_at": null
+        },
+        {
+          "rank": 3,
+          "id": "69f34db41dafb58cccdbda2e",
+          "title": "Oppo Enco Buds 3 Pro Plus ETEE1 TWS Earbuds with Active Noise Cancellation (IP55 Dust & Water Resistance, AI Clear Call, Midnight Black)",
+          "price_inr": 2999,
+          "price_source": "website_catalog",
+          "live_price_status": null,
+          "live_checked_at": null
+        },
+        {
+          "rank": 4,
+          "id": "6a2d125e2d50c1f9ca15a219",
+          "title": "ACwO TwISTER 717 with 38dB Hybrid ANC, 40mm Drivers, Dual Device Pairing Bluetooth & Wired",
+          "price_inr": 2087,
+          "price_source": "website_live_price_api",
+          "live_price_status": "ok",
+          "live_checked_at": null
+        },
+        {
+          "rank": 5,
+          "id": "6a2c243363eb5b6abbf91d2a",
+          "title": "OPPO Enco Buds3 Pro+ with ANC Bluetooth",
+          "price_inr": 2999,
+          "price_source": "website_live_price_api",
+          "live_price_status": "ok",
+          "live_checked_at": null
+        }
+      ]
+    }
+  ]
+}

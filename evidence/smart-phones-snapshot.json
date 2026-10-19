@@ -1,0 +1,240 @@
+{
+  "request": {
+    "category": "smart-phones",
+    "budget": 20000,
+    "mode": "brand_budget",
+    "brand": "Samsung"
+  },
+  "source_url": "https://api.trustfolio.in/api/products/top?category=smart-phones&budget=20000&limit=5&brand=Samsung",
+  "observed_at": "2026-10-18T14:43:35.850592+00:00",
+  "response_sha256": "910a12c2252cc9a8f6a0b15adbb8b36b6779a1419c22281b0b3f917a015b0abc",
+  "response": {
+    "success": true,
+    "message": "Top products retrieved successfully",
+    "data": {
+      "category": "smart-phones",
+      "budget": 20000,
+      "count": 5,
+      "totalMatches": 31,
+      "matchType": "within_budget_and_brand",
+      "requestedBrand": "Samsung",
+      "brandFilterApplied": true,
+      "fallbackApplied": false,
+      "partialBrandFill": false,
+      "brandMatchCount": 5,
+      "similarFillCount": 0,
+      "fallbackMessage": null,
+      "priceWindow": {
+        "min": 18000,
+        "max": 20000
+      },
+      "catalogPriceRange": {
+        "min": 5700,
+        "max": 449900,
+        "count": 0,
+        "source": "category_metadata_fast"
+      },
+      "livePriceRefreshCompleted": true,
+      "livePriceCandidatesChecked": 10,
+      "message": "Showing top 5 Samsung products (budget: ₹20,000).",
+      "selection_note": "",
+      "products": [
+        {
+          "id": "69feec16fe6fd8dc386abcad",
+          "asin": "69feec16fe6fd8dc386abcad",
+          "title": "SAMSUNG Galaxy A25 5G (8GB RAM, 128GB, Yellow)",
+          "description": null,
+          "is_active": true,
+          "brand": "Samsung",
+          "price_inr": 18494,
+          "original_price_inr": null,
+          "price_usd": "$222.82",
+          "average_rating": "5",
+          "main_image": "https://media.tatacroma.com/Croma%20Assets/Communication/Mobiles/Images/303399_i19q2n.png",
+          "images": [
+            "https://media.tatacroma.com/Croma%20Assets/Communication/Mobiles/Images/303399_i19q2n.png"
+          ],
+          "product_category": "smart-phones",
+          "feature_bullets": null,
+          "product_information": {
+            "RAM": "8 GB",
+            "Storage": "128 GB",
+            "Connectivity": "5G",
+            "Battery": "5000 mAh"
+          },
+          "product_details": null,
+          "platform": "croma",
+          "product_url": "https://crma.clnk.in/Cets",
+          "availability_status": "In Stock",
+          "in_stock": true,
+          "specifications": {
+            "RAM": "8 GB",
+            "Storage": "128 GB",
+            "Connectivity": "5G",
+            "Battery": "5000 mAh"
+          },
+          "rank": 1,
+          "isRequestedBrandMatch": true,
+          "price_source": "website_catalog",
+          "live_price_status": null
+        },
+        {
+          "id": "6a113c12d90c808fff3be04c",
+          "asin": "6a113c12d90c808fff3be04c",
+          "title": "Samsung Galaxy A35 5G Awesome Navy 128 Gb",
+          "description": null,
+          "is_active": true,
+          "brand": "Samsung",
+          "price_inr": 18999,
+          "original_price_inr": null,
+          "price_usd": "$228.90",
+          "average_rating": "",
+          "main_image": "https://rukminim2.flixcart.com/image/312/312/xif0q/mobile/g/p/d/-original-imahgy262xxdhacq.jpeg?q=70",
+          "images": [
+            "https://rukminim2.flixcart.com/image/312/312/xif0q/mobile/g/p/d/-original-imahgy262xxdhacq.jpeg?q=70"
+          ],
+          "product_category": "smart-phones",
+          "feature_bullets": null,
+          "product_information": {
+            "RAM": "8 GB",
+            "Storage": "128 GB",
+            "Connectivity": "5G",
+            "Battery": "5000 mAh"
+          },
+          "product_details": null,
+          "platform": "flipkart",
+          "product_url": "https://fkrt.clnk.in/CgM9",
+          "availability_status": "In Stock",
+          "in_stock": true,
+          "specifications": {
+            "RAM": "8 GB",
+            "Storage": "128 GB",
+            "Connectivity": "5G",
+            "Battery": "5000 mAh"
+          },
+          "rank": 2,
+          "isRequestedBrandMatch": true,
+          "price_source": "website_live_price_api",
+          "live_price_status": "ok"
+        },
+        {
+          "id": "6a143d819d6df8c5f23cc227",
+          "asin": "6a143d819d6df8c5f23cc227",
+          "title": "Samsung Galaxy A35 5G Awesome Iceblue 128 Gb",
+          "description": null,
+          "is_active": true,
+          "brand": "Samsung",
+          "price_inr": 18999,
+          "original_price_inr": null,
+          "price_usd": "$228.90",
+          "main_image": "https://rukminim2.flixcart.com/image/312/312/xif0q/mobile/i/v/y/-original-imahgy25rwrgpyuv.jpeg?q=70",
+          "images": [
+            "https://rukminim2.flixcart.com/image/312/312/xif0q/mobile/i/v/y/-original-imahgy25rwrgpyuv.jpeg?q=70"
+          ],
+          "product_category": "smart-phones",
+          "feature_bullets": null,
+          "product_information": {
+            "RAM": "8 GB",
+            "Storage": "128 GB",
+            "Connectivity": "5G",
+            "Battery": "5000 mAh"
+          },
+          "product_details": null,
+          "platform": "flipkart",
+          "product_url": "https://fkrt.clnk.in/CgVL",
+          "availability_status": "In Stock",
+          "in_stock": true,
+          "specifications": {
+            "RAM": "8 GB",
+            "Storage": "128 GB",
+            "Connectivity": "5G",
+            "Battery": "5000 mAh"
+          },
+          "rank": 3,
+          "isRequestedBrandMatch": true,
+          "price_source": "website_live_price_api",
+          "live_price_status": "ok"
+        },
+        {
+          "id": "6a39f8e018cd7b0fe7113544",
+          "asin": "6a39f8e018cd7b0fe7113544",
+          "title": "SAMSUNG Galaxy A50s (4GB RAM, 128GB, Prism Crush Violet)",
+          "description": null,
+          "is_active": true,
+          "brand": "Samsung",
+          "price_inr": 18570,
+          "original_price_inr": null,
+          "price_usd": "$223.73",
+          "average_rating": "4.1",
+          "main_image": "https://media.tatacroma.com/Croma%20Assets/Communication/Mobiles/Images/223499_0_qzxr3q.png",
+          "images": [
+            "https://media.tatacroma.com/Croma%20Assets/Communication/Mobiles/Images/223499_0_qzxr3q.png"
+          ],
+          "product_category": "smart-phones",
+          "feature_bullets": null,
+          "product_information": {
+            "Storage": "128 GB",
+            "RAM": "4 GB",
+            "Battery": "4000 mAh",
+            "Connectivity": "4G LTE"
+          },
+          "product_details": null,
+          "platform": "croma",
+          "product_url": "https://crma.clnk.in/CfbY",
+          "availability_status": "In Stock",
+          "in_stock": true,
+          "specifications": {
+            "Storage": "128 GB",
+            "RAM": "4 GB",
+            "Battery": "4000 mAh",
+            "Connectivity": "4G LTE"
+          },
+          "rank": 4,
+          "isRequestedBrandMatch": true,
+          "price_source": "website_catalog",
+          "live_price_status": null
+        },
+        {
+          "id": "6a0758e6fe6fd8dc386ba90c",
+          "asin": "B0GHWGQMJ1",
+          "title": "Samsung Galaxy A07 5G Smartphone (Light Violet, 4GB RAM, 128GB Storage) | 120Hz Refresh Rate | Massive 6000mAh Battery | 50MP True Dual Camera | 6 Gen OS Upgrades | Knox Vault",
+          "description": null,
+          "is_active": true,
+          "brand": "Samsung",
+          "price_inr": 18999,
+          "original_price_inr": null,
+          "price_usd": "$228.90",
+          "average_rating": "4",
+          "main_image": "https://m.media-amazon.com/images/I/71nl2jfmdDL.jpg",
+          "images": [
+            "https://m.media-amazon.com/images/I/71nl2jfmdDL.jpg"
+          ],
+          "product_category": "smart-phones",
+          "feature_bullets": null,
+          "product_information": {
+            "RAM": "4 GB",
+            "Storage": "128 GB",
+            "Connectivity": "5G",
+            "Battery": "6000 mAh"
+          },
+          "product_details": null,
+          "platform": "amazon",
+          "product_url": "https://www.amazon.in/dp/B0GHWGQMJ1",
+          "availability_status": "In Stock",
+          "in_stock": true,
+          "specifications": {
+            "RAM": "4 GB",
+            "Storage": "128 GB",
+            "Connectivity": "5G",
+            "Battery": "6000 mAh"
+          },
+          "rank": 5,
+          "isRequestedBrandMatch": true,
+          "price_source": "website_catalog",
+          "live_price_status": "no_price"
+        }
+      ]
+    },
+    "errors": null
+  }
+}
