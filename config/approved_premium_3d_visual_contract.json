@@ -1,0 +1,153 @@
+{
+  "version": 1,
+  "id": "trustfolio-user-approved-cinematic-3d-v1",
+  "state": "APPROVED_VISUAL_REFERENCE_NOT_YET_ACHIEVED_BY_RENDERER",
+  "reference_assets": [
+    {
+      "title": "Approved 20-category cartoon theme board",
+      "filename": "trustfolio_20_category_deals_showcase.png",
+      "sha256": "969aabc283ad95ea0a11c8bf321dab14bdd787c1c3a57d78a900916ce9e56a2b",
+      "width": 1122,
+      "height": 1402
+    },
+    {
+      "title": "Approved 30-second washing-machine cartoon storyboard",
+      "filename": "trustfolio_s_top_5_washing_machines.png",
+      "sha256": "c5ce062090f34ab414a125d91c3ad39ff81f37a8ad4e629726e5ced0f3458ba1",
+      "width": 1024,
+      "height": 1536
+    }
+  ],
+  "copyright_note": "User-approved images are creative references. No inference of asset licenses, real SKU claims, or reusable individual character models. Native production assets require an approved license and provenance.",
+  "fixed_brand_contract": {
+    "logo_position": "top prominent",
+    "footer_position": "bottom branded CTA",
+    "headline": "royal purple / navy + bright gold",
+    "shape_language": "rounded glossy 3D cartoon with physically natural soft shadows",
+    "palette": {
+      "deep_purple": "#3D0D91",
+      "royal_purple": "#6C20C7",
+      "navy": "#061D78",
+      "electric_blue": "#1552E2",
+      "gold": "#FFD924",
+      "white": "#FFFFFF",
+      "rose": "#F75CB2"
+    },
+    "allowed_copy": [
+      "TrustFolio",
+      "Compare Top 5",
+      "www.trustfolio.in"
+    ],
+    "prohibited_claims_without_evidence": [
+      "Verified Products",
+      "Live Prices",
+      "Real User Reviews",
+      "Best for Your Budget",
+      "first-ranked because of unverified feature",
+      "unverified retailer performance or durability"
+    ],
+    "typography": "Bold professional mobile-first display; accurate Devanagari and Roman; legible subtitles over textured scenes"
+  },
+  "story_contract": {
+    "fps": 24,
+    "delivery": [
+      1080,
+      1920
+    ],
+    "durations_seconds": [
+      15,
+      20,
+      30
+    ],
+    "scene_roles": [
+      "human relatable problem hook",
+      "five living product friends in environment",
+      "five product-character interactions with evidence-bound features",
+      "source-ranked #5 to #1 reveal",
+      "all-five group & soft TrustFolio CTA"
+    ],
+    "acting": [
+      "realistic walking in scene with grounded foot contact",
+      "independently moving arms and expressive hands",
+      "blinks and head/torso gestures",
+      "speaking mouth visibly timed to generated audio",
+      "reaction shots between two or more friends",
+      "scene-specific actions: use environment props rather than wave at camera throughout"
+    ],
+    "audio": [
+      "clear listen-reviewed Hindi/Hinglish narration",
+      "distinct voices if commercial license allows",
+      "category-specific ambiences",
+      "original or licensed music mixed below dialogue",
+      "caption boundaries synchronized to speech"
+    ],
+    "cinematography": [
+      "category-specific stylized environment with foreground and background depth",
+      "soft cinematic warm key light and cool rim fill",
+      "polished real-world materials, subtle reflections and AO",
+      "hand-animated facial expressions and comedy beats",
+      "deliberate dolly/closeup/midshot/wide reveal shots"
+    ],
+    "format_rules": [
+      "Do not upscale crude 378x672 low-poly output and mark it premium",
+      "no frozen poster pan/zoom as substitute for character acting",
+      "no default 5 recolored boxes representing real products",
+      "no irrelevant category benefits",
+      "no arbitrary 'rank 1 best because...' unless scoring evidence exists"
+    ]
+  },
+  "category_order": [
+    "washing-machines",
+    "refrigerators",
+    "smart-phones",
+    "headphones-earbuds",
+    "smartwatches",
+    "laptops",
+    "smart-tvs",
+    "speakers",
+    "air-conditioners",
+    "air-coolers",
+    "water-purifiers",
+    "geysers",
+    "microwave-ovens",
+    "mixer-grinders",
+    "induction-cooktops",
+    "tablets",
+    "vacuum-cleaners",
+    "ceiling-fans",
+    "desktop-computers",
+    "drones"
+  ],
+  "scene_acceptance": {
+    "machine_tests": [
+      "correct 1080x1920 H264 + AAC duration",
+      "source SHA/ranked IDs match exactly",
+      "evidence-linked product specs",
+      "budget and brand compliance",
+      "5 visible product identities",
+      "official branded header/footer if licensed",
+      "no clipping/overlap",
+      "subtitles safe zone",
+      "demo watermark on all frames until approved"
+    ],
+    "manual_mandatory": [
+      "human creative director visually compares reference panels",
+      "independent category-specific scene content",
+      "characters integrated naturally with contact shadows",
+      "enough background detail/production design to match supplied cinematic reference",
+      "clear natural Hindi comprehension listening test",
+      "final rank labels, prices and product images verified"
+    ],
+    "showreel_is_not_a_completed_ad": true,
+    "block_publishing_if_unapproved": true,
+    "current_approval_state": {
+      "commercial_product_rights_verified": false,
+      "official_logo_verified": false,
+      "natural_hindi_voice_approved": false,
+      "visual_reference_match_approved": false,
+      "all_product_prices_fresh_verified": false,
+      "social_publish_permitted": false
+    },
+    "expected_status_when_any_missing": "PRIVATE_DEMO_NOT_FOR_PUBLICATION"
+  }
+}
