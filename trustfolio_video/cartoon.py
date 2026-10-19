@@ -22,7 +22,7 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 from .demo import APPROVED_IMAGE_HOSTS, approve_historical_demo
-from .storyboard import validate_registry
+from .storyboard import build, validate_registry
 
 W, H = 540, 960
 FPS_DRAW = 12
@@ -335,6 +335,15 @@ def generate_pilot(snapshot_path, registry_path, output, *, duration=15):
     spec=approved["campaign"]
     world=next((x for x in registry["categories"] if x.get("slug")==spec["category"] and x["enabled"]),None)
     if world is None:raise ValueError("Unregistered pilot category")
+    storyboard=build(approved,world,duration=duration,language="hinglish",style="funny")
+    if storyboard["ranked_source_ids"]!=[p["id"] for p in approved["products"]]:
+        raise ValueError("Storyboard must preserve real website rank identity")
+    # The storyboard remains the sole scene/timing contract for the renderer.
+    storyboard["demo_only"]=True
+    storyboard["watermark"]="DEMO - NOT FOR PUBLICATION"
+    storyboard["render_status"]="historical_demo_not_for_publication"
+    output=Path(output);output.parent.mkdir(parents=True,exist_ok=True)
+    output.with_suffix(".storyboard.json").write_text(json.dumps(storyboard,ensure_ascii=False,indent=2)+"\n",encoding="utf8")
     voice=shutil.which("espeak-ng") or shutil.which("espeak")
     ffmpeg=shutil.which("ffmpeg");ffprobe=shutil.which("ffprobe")
     if not all([voice,ffmpeg,ffprobe]):
@@ -348,12 +357,9 @@ def generate_pilot(snapshot_path, registry_path, output, *, duration=15):
             img,record=_image_for(p,tmp)
             photos[p["id"]]=img
             provenance.append(record)
-        # Intro 2 seconds, CTA 3; rank 5 to rank 1 fill remaining 5 slots.
-        intro=2.0
-        cta=3.0 if duration==15 else 4.0
-        per=(duration-intro-cta)/5
-        boundaries=[0.0,intro]+[intro+i*per for i in range(1,6)]+[float(duration)]
-        assert len(boundaries)==8 and abs(boundaries[-2]-(duration-cta))<1e-5
+        # Use existing reviewed storyboard timing, no parallel timeline generator.
+        boundaries=[float(s["start"]) for s in storyboard["scenes"]]+[float(duration)]
+        assert len(boundaries)==8 and boundaries[0]==0.0 and boundaries[-1]==duration
         script=DIALOGUE.get(spec["category"],[world["hooks"][0]]+
                             world["dialogue"]+[world["cta"]])
         soundtrack,audio=_voice_track(script,boundaries,tmp,voice)
@@ -402,6 +408,7 @@ def generate_pilot(snapshot_path, registry_path, output, *, duration=15):
         "publishing_enabled":False,"watermark":"DEMO - NOT FOR PUBLICATION",
         "source_observed_at":approved["source_observed_at"],
         "source_sha256":approved["source_sha256"],
+        "storyboard_id":storyboard["campaign_id"],
         "campaign":spec,"world":world["world"],
         "ranked_product_ids":[p["id"] for p in approved["products"]],
         "recorded_prices":[p["price_inr"] for p in approved["products"]],
