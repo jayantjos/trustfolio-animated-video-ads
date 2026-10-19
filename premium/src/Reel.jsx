@@ -202,6 +202,10 @@ const IntroScene=({t})=>{
     </div>
     <div style={{position:"absolute",top:139,left:100,right:100,textAlign:"center",
        fontSize:25,color:"#625A91",fontWeight:750}}>A CARTOON SHOWDOWN • REAL PRODUCT RANKS</div>
+    <div style={{position:"absolute",top:183,left:105,right:105,textAlign:"center",
+       fontSize:23,color:"#5135AA",fontWeight:850,
+       background:"rgba(255,255,255,.87)",borderRadius:17,
+       padding:"10px 16px"}}>PRODUCT ROLE • Clothes wash and spin for daily laundry</div>
     {products.map((p,i)=><Buddy key={p.id} product={p} x={i<3?40+i*320:200+(i-3)*340}
        y={i<3?235:650} t={t} scale={i<3?.64:.52}
        angle={i%2?5:-5} delay={i*.9} />)}
@@ -228,11 +232,22 @@ const BattleScene=({t,rank})=>{
       scale={hero?1.04:1.05} hero angle={hero?1:-2}/>
     {!hero?<Buddy product={rival} x={648} y={332} t={t}
        scale={.65} angle={9} delay={2} opacity={.94}/>:null}
-    <div style={{position:"absolute",top:hero?893:899,left:85,right:85,
-      background:"rgba(255,255,255,.89)",border:"2px solid rgba(107,91,196,.16)",
-      borderRadius:30,padding:"15px 28px",boxShadow:shadow,
-      textAlign:"center",fontWeight:850,fontSize:32,color:COLORS.deep}}>
+    <div style={{position:"absolute",top:hero?883:889,left:85,right:85,
+      background:"rgba(255,255,255,.93)",border:"2px solid rgba(107,91,196,.16)",
+      borderRadius:28,padding:"11px 24px",boxShadow:shadow,
+      textAlign:"center",fontWeight:850,fontSize:29,color:COLORS.deep}}>
       {p.name}
+    </div>
+    <div style={{position:"absolute",top:hero?962:965,left:115,right:115,
+      minHeight:59,boxSizing:"border-box",
+      background:"linear-gradient(90deg,#4E32A2,#7F49DF)",
+      border:"3px solid white",borderRadius:22,padding:"12px 17px",
+      boxShadow:"0 7px 15px rgba(41,22,111,.17)",
+      display:"flex",alignItems:"center",justifyContent:"center",
+      color:"white",fontSize:24,fontWeight:900,textAlign:"center"}}>
+      {p.educationFact?
+        ("SOURCE SPEC • "+p.educationFact.label+": "+p.educationFact.value):
+        "SPEC DETAILS NOT VERIFIED • CHECK BEFORE BUYING"}
     </div>
   </div>;
 };
