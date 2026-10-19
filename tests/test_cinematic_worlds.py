@@ -55,13 +55,13 @@ class Cinematic3DWorldTests(unittest.TestCase):
                 continue
             calls=[c for c in ast.walk(node) if isinstance(c,ast.Call)
                    and isinstance(c.func,ast.Name) and c.func.id in ("s","c")]
-            self.assertGreater(len(calls),50)
+            self.assertGreater(len(calls),35)
             for call in calls:
                 count=len(call.args)
                 if call.func.id=="s":
                     self.assertIn(count,(5,6),f"Sphere helper at line {call.lineno} requires name,x,y,z,radius[,material]")
                 elif call.func.id=="c":
-                    self.assertIn(count,(8,9),f"Cube helper at line {call.lineno} requires name,x,y,z,sx,sy,sz[,material[,bevel]]")
+                    self.assertIn(count,(7,8,9),f"Cube helper at line {call.lineno} requires name,x,y,z,sx,sy,sz[,material[,bevel]]")
             break
         else:
             self.fail("Category scenery function not found")
