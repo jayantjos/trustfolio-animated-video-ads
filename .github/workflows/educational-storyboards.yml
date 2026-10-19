@@ -1,0 +1,80 @@
+name: TrustFolio 30-category educational storyboard QA (no publishing)
+on:
+  push:
+    branches: [feature/30-category-educational-story-engine-20261019]
+    paths:
+      - 'config/category_education_30.json'
+      - 'trustfolio_video/educational.py'
+      - 'trustfolio_video/educational_cli.py'
+      - 'tests/test_educational.py'
+      - '.github/workflows/educational-storyboards.yml'
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency:
+  group: trustfolio-educational-stories-only
+  cancel-in-progress: true
+jobs:
+  educational-real-data-demo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify 30-category creative registry and all old/new source-contract tests
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check 'Pillow==11.3.0' 'numpy==2.2.6'
+          python -m compileall -q trustfolio_video tests
+          python -m unittest discover -s tests -v
+      - name: Export genuine historical product educational stories for three distinct modes
+        run: |
+          set -euo pipefail
+          mkdir -p educational-output
+          python -m trustfolio_video.educational_cli --mode demo --snapshot evidence/washing-machines-snapshot.json --output educational-output/washing-machines-budget.json
+          python -m trustfolio_video.educational_cli --mode demo --snapshot evidence/smart-phones-snapshot.json --output educational-output/samsung-phones-brand-budget.json
+          python -m trustfolio_video.educational_cli --mode demo --snapshot evidence/headphones-earbuds-snapshot.json --output educational-output/earbuds-comparison.json
+      - name: Audit 15 original ranked product facts, per-source attribution and publication OFF
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          names=['washing-machines-budget','samsung-phones-brand-budget','earbuds-comparison']
+          categories=['washing-machines','smart-phones','headphones-earbuds']
+          modes=['budget','brand_budget','comparison']
+          files=[]
+          for name,slug,mode in zip(names,categories,modes):
+              path=Path('educational-output')/(name+'.json')
+              story=json.loads(path.read_text())
+              assert story['campaign']['category']==slug and story['campaign']['mode']==mode
+              assert story['demo_only'] is True and story['publishing_enabled'] is False
+              assert story['eligibility']=='HISTORICAL_QA_ONLY'
+              assert story['watermark']=='DEMO - NOT FOR PUBLICATION'
+              assert len(story['ranked_source_ids'])==5 and len(set(story['ranked_source_ids']))==5
+              assert len(story['expanded_product_explanations'])==5
+              assert [s['rank'] for s in story['scenes'] if 'rank' in s]==[5,4,3,2,1]
+              for product in story['expanded_product_explanations']:
+                  assert product['product_id'] in story['ranked_source_ids']
+                  assert 'scoring factors not supplied' in product['why_ranked']
+                  assert product['user_fit_is_not_proven']
+                  for fact in product['verified_specs']:
+                      assert fact['source_product_id']==product['product_id']
+                      assert fact['source_type']=='product.specifications'
+                  files.append({'name':name,'mode':mode,'world':story['category_world'],
+                                'source_sha256':story['source_sha256'],
+                                'source_ids':story['ranked_source_ids'],
+                                'fact_count':sum(len(x['verified_specs']) for x in story['expanded_product_explanations']),
+                                'production_approved':False})
+          Path('educational-output/audit.json').write_text(json.dumps(files,indent=2))
+          print('REAL_EDUCATIONAL_DEMOS_QA_PASSED=3')
+          print('TOTAL_SOURCE_RANKED_PRODUCTS=15')
+          print('PUBLISHING_ENABLED=false')
+          PY
+      - name: Upload full source-verified storyboards and educational explanations for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: trustfolio-30-category-education-three-mode-evidence
+          path: educational-output/
+          retention-days: 30
+          if-no-files-found: error
