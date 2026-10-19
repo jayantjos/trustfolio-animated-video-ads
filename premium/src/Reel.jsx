@@ -122,16 +122,27 @@ const Buddy=({product,scale=1,x=0,y=0,t=0,hero=false,angle=0,delay=0,opacity=1})
     transformOrigin:"center center",opacity,
     filter:hero?"drop-shadow(0 30px 20px rgba(41,54,121,.24))":"drop-shadow(0 12px 10px rgba(41,54,121,.18))"
   }}>
-    <div style={{position:"absolute",left:55,top:height*.48,width:140,height:25,borderRadius:20,
-      background:"#7948D3",transformOrigin:"right center",
-      transform:"rotate("+(-21+wave)+"deg)",zIndex:0}}/>
-    <div style={{position:"absolute",right:55,top:height*.48,width:140,height:25,borderRadius:20,
-      background:"#7948D3",transformOrigin:"left center",
-      transform:"rotate("+(21-wave)+"deg)",zIndex:0}}/>
+    {/* Comic arms extend outside the product card; rotate independently to wave. */}
+    <div style={{position:"absolute",left:-53,top:height*.48,width:183,height:28,borderRadius:24,
+      background:"linear-gradient(90deg,#5130AB,#AC7DFF)",border:"3px solid #FDF8FF",
+      transformOrigin:"right center",transform:"rotate("+(-17+wave)+"deg)",zIndex:1}}>
+      <div style={{position:"absolute",left:-17,top:-14,width:59,height:49,
+        borderRadius:"50% 38% 52% 48%",background:"#FFE9AE",
+        border:"4px solid white",boxShadow:"0 5px 9px rgba(57,42,141,.16)"}}/>
+    </div>
+    <div style={{position:"absolute",right:-53,top:height*.48,width:183,height:28,borderRadius:24,
+      background:"linear-gradient(90deg,#AC7DFF,#5130AB)",border:"3px solid #FDF8FF",
+      transformOrigin:"left center",transform:"rotate("+(17-wave)+"deg)",zIndex:1}}>
+      <div style={{position:"absolute",right:-17,top:-14,width:59,height:49,
+        borderRadius:"38% 50% 48% 52%",background:"#FFE9AE",
+        border:"4px solid white",boxShadow:"0 5px 9px rgba(57,42,141,.16)"}}/>
+    </div>
     {[0,1].map((i)=><div key={i} style={{
-      position:"absolute",left:i?width*.59:width*.32,bottom:25,
-      width:29,height:72,borderRadius:20,background:"#6544C4",
-      transformOrigin:"center top",transform:"rotate("+((i?1:-1)*Math.sin(t*4+delay)*15)+"deg)"}}/>)}
+      position:"absolute",left:i?width*.59:width*.32,bottom:-5,
+      width:35,height:92,borderRadius:"20px 20px 28px 28px",
+      border:"3px solid rgba(255,255,255,.8)",background:"#6544C4",
+      transformOrigin:"center top",transform:"rotate("+((i?1:-1)*Math.sin(t*4+delay)*18)+"deg)",
+      zIndex:1}}/>)}
     <div style={{
       position:"absolute",inset:"0 52px 55px",
       background:"linear-gradient(155deg,#FFFFFF 0%,#F9F6FF 68%,#E5E6FF 100%)",
