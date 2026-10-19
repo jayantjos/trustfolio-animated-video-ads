@@ -231,7 +231,7 @@ def render_frame(approved, photos, scene_idx, seconds, total, world):
         for i,p in enumerate(reversed(products)):
             x=78+i*97
             _character(frame,d,p,photos.get(p["id"]),x,480,.48,phase+i*.55)
-        center(d,"Meet the five real ranked picks!",647,pale,19)
+        center(d,script[0],647,pale,19)
     elif 1<=scene_idx<=5:
         rank=6-scene_idx
         p=products[rank-1]
@@ -241,7 +241,8 @@ def render_frame(approved, photos, scene_idx, seconds, total, world):
                674,(255,231,100),18)
         # Partner reacts from other character position; data order remains unchanged.
         partner=products[max(0,rank-2)] if rank>1 else products[1]
-        _character(frame,d,partner,photos.get(partner["id"]),438,688,.32,phase+.8)
+        # Side friend remains in the illustration zone, never over price/CTA/subtitle.
+        _character(frame,d,partner,photos.get(partner["id"]),441,542,.28,phase+.8)
         d.rounded_rectangle((48,716,490,771),radius=18,fill=(250,248,255))
         center(d,script[scene_idx],733,(40,29,102),18,430)
     else:
