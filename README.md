@@ -1,74 +1,76 @@
-# TrustFolio Animated Cartoon Video Ads
+# TrustFolio Animated Story Video Ads
 
-**Status: 3 playable historical-data animated MP4 demos; production publishing remains blocked/OFF.**
+Private development workspace for animated Indian-audience Reels / Shorts,
+separate from the working TrustFolio website, Android app, MongoDB, and
+Instagram/Facebook static-image advertising scheduler.
 
-Private development repository, isolated from TrustFolio's existing scheduled image
-advertisements, website, Android app, MongoDB and scraper.
+**State: technically working demo pipelines, NOT production-approved videos.
+Social publishing is hard-disabled.**
 
-## Implemented
+## What actually works
 
-- Read-only official TrustFolio Top-5 API client with strict rank, category,
-  budget, brand, active/in-stock and individual price freshness checks.
-- Separate historical-demo validation: original signed response hashes, genuine
-  product IDs, genuine historical ranked prices, HTTPS retailer images, no
-  reranking, no live-price claims; permanently watermarked and unpublishable.
-- Creative registry: 20 backend-supported category story/world templates and
-  10 intentionally disabled slots; 3 advertising modes, 15/20/30s storyboards.
-- Twenty distinct Hindi/Hinglish dialogue drafts and creative world concepts.
-- CPU-only layered character animation for three pilot worlds with actual
-  retailer photos, moving arms/legs/eyes/mouth and reacting partner characters.
-- Offline eSpeak character voices (experimental robotic Hinglish only), original
-  procedural background music and pop SFX; safe scene timing and subtitle captions.
-- Genuine 1080×1920 24fps H.264/AAC MP4 export via FFmpeg, with QA JSON,
-  immutable source storyboard JSON and independently extracted frame samples.
-- 36 passing source tests, including the original 180 storyboard combinations,
-  with GitHub Actions video artifacts for three demo pilots.
-- Video publishing OFF; no credentials or new social scheduling jobs.
+| Area | Verifiable implementation |
+| --- | --- |
+| Original backend Top-5 IDs/ranking/price rules | `trustfolio_video/contract.py` and `demo.py` strict vs historical modes |
+| Thirty category idea slots | `config/category_education_30.json`: 20 backend-supported exact slugs, 10 intentionally disabled |
+| Twenty distinctive creative worlds and story hooks | `config/worlds.json`, category-specific environment, comedy, character actions and SFX |
+| Source-verified category specs, purpose and cautious "why ranked" | `trustfolio_video/educational.py` |
+| Budget, Brand+Budget, Comparison | 20 supported categories × 3 modes with automated scenarios |
+| Independent Remotion world atlas | `premium/src/WorldAtlas.jsx`: 20 illustrated environment proofs and 3 sample moving H.264 previews |
+| Product-story full-HD pilot | `premium/src/Reel.jsx`, `premium/prepare.py`, `premium/tts_kokoro.py`; washing-machine 30s private demo |
+| Three historical educational storyboard outputs | `trustfolio_video/educational_cli.py` and GitHub Actions artifact, 15 authentic source-product IDs |
+| Read-only safety review | `trustfolio_video/readiness.py`: records real blockers, no silent approvals |
+| Quality regression tests | Python CI; existing 180 timing/storyboard cases plus 60 new category/mode educational cases, data safety and source matching |
+| Older simple cartoon pilots | `trustfolio_video/cartoon.py`: 3 CPU-only prototype demos (not approved ad style) |
 
-## Reproduce one historical QA-only pilot
+## Preview / test workflows
 
-Requirements: Python 3.11+, Pillow 11.3, NumPy 2.2, FFmpeg/FFprobe, eSpeak.
+- `.github/workflows/educational-storyboards.yml`: 3 real archived Top-5
+  storyboards, source claims and release blocker JSONs.
+- `.github/workflows/world-atlas-qa.yml`: 20 separate world-background
+  previews + 3 short animated parallax environments. These do NOT contain
+  actual ranked products and are NOT finished advertisements.
+- `.github/workflows/premium-bubble-kingdom-qa.yml`: 30-second real
+  photographed washing-machine demo, experimental neural Hindi Kokoro audio,
+  H264/AAC and 8 frame samples. The Hindi human-quality review is pending.
+- `.github/workflows/static-qa.yml` and `category-storyboards.yml`:
+  source validation and creative registry QA.
 
-```bash
+Reproduce the source-bound nonpublishable story and release report:
+
+```sh
 python -m pip install 'Pillow==11.3.0' 'numpy==2.2.6'
 python -m unittest discover -s tests -v
-python -m trustfolio_video.cartoon \
+python -m trustfolio_video.educational_cli --mode demo \
   --snapshot evidence/washing-machines-snapshot.json \
-  --output output/washing-machines-demo.mp4 \
-  --duration 15
+  --output output/educational-story.json
+python -m trustfolio_video.readiness \
+  --snapshot evidence/washing-machines-snapshot.json \
+  --story output/educational-story.json --output output/readiness.json
 ```
 
-For a complete automated three-video smoke test, run the
-`Genuine cartoon video pilots (DEMO ONLY)` workflow in GitHub Actions.
+The release report is expected to remain BLOCKED for old price snapshots.
 
-The output video, storyboard, original five product IDs and image evidence,
-recorded prices, preview image, and media QA report are uploaded as a workflow
-artifact. Videos are NOT automatically published.
+## Why this is NOT a finished automatic production system
 
-## Three pilot creative worlds
+- Historical data has **missing individual retailer price-check timestamps**;
+  stored catalog prices cannot be advertised as live.
+- The retailer product-photo advertising licenses and approved official
+  TrustFolio logo artwork have not been supplied/verified.
+- The original cinematic 3D cartoon-world quality and lifelike five-character
+  acting requested by the owner is **NOT** achieved by the current small
+  vector background previews or Remotion photo rigs.
+- Kokoro Hindi needs a native-speaker listening review; Sarvam would require
+  separate paid API approval and secure credential configuration.
+- 17 categories still need actual premium product-story Reel production and
+  sound/visual review, despite 20 completed scenery previews.
+- Ten proposed categories have no verified backend support and stay disabled.
+- Instagram/Facebook Reels and YouTube Shorts publishing integrations are
+  unapproved, without provider OAuth/account verification or an idempotent
+  publishing ledger, and remain OFF.
 
-1. Washing Machines — ₹35,000 — Bubble Laundry Kingdom — budget/funny.
-2. Samsung Smartphones — ₹20,000 — Neon Notification Nagar — brand+budget.
-3. Headphones/Earbuds — ₹3,000 — Beat Street — comparison.
+See `docs/COMPLETE_SETUP_STATUS_AND_RELEASE_GATES.md` for a detailed checklist,
+test evidence, safe reproduction and exact blockers.
 
-Prices are historical and do not imply current retailer stock or offer.
-
-## Not production-ready
-
-- All 15 original pilot products lack trustworthy per-item price check times.
-  Several were catalog-price fallbacks. Strict live-price validation correctly
-  prevents public ad approval.
-- eSpeak demonstration voices are not yet approved natural Hindi/Hinglish.
-- Official logo and retailer product image advertising rights unverified.
-- Character movement and expressions are basic rigs, not advanced cinematic
-  cartoon animation or phoneme-accurate lip sync.
-- Only 3 of 20 verified categories have actual distinct video environments.
-  17 categories are storyboard-level only, and 10 unknown slots disabled.
-- Instagram Reels/Facebook Reels/YouTube Shorts publishing remain OFF pending
-  explicit authorization and provider account rights.
-
-See `docs/STATUS.md` and `docs/CARTOON_PILOT_STATUS.md` for current
-implementation evidence, licensing limitations and remaining milestones.
-
-Do not merge the draft PR into a publishing or production deployment flow just
-because these watermarked demo MP4s passed technical tests.
+**Never interpret a green GitHub Actions demo-render result as permission
+to post a reel or change scheduled image advertisements.**
