@@ -1,0 +1,83 @@
+name: Genuine cartoon video pilots (DEMO ONLY)
+on:
+  push:
+    branches: [feat/animated-engine-foundation]
+    paths:
+      - 'trustfolio_video/**'
+      - 'tests/**'
+      - '.github/workflows/cartoon-pilots.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: trustfolio-cartoon-demo-pilots
+  cancel-in-progress: false
+jobs:
+  render-pilots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install pinned Python rendering packages and offline licensed tools
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check 'Pillow==11.3.0' 'numpy==2.2.6'
+          if ! command -v espeak >/dev/null || ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq espeak ffmpeg fonts-dejavu-core
+          fi
+          command -v espeak
+          command -v ffmpeg
+          command -v ffprobe
+          ffmpeg -hide_banner -encoders | grep 'libx264'
+      - name: Complete regression tests including 180 category/mode/duration combinations
+        run: |
+          set -euo pipefail
+          python -m compileall -q trustfolio_video tests
+          python -m unittest discover -s tests -v
+      - name: Render three distinct historical-only animated character stories with AAC speech
+        run: |
+          set -euo pipefail
+          mkdir -p output
+          python -m trustfolio_video.cartoon --snapshot evidence/washing-machines-snapshot.json --output output/washing-machines-demo.mp4 --duration 15
+          python -m trustfolio_video.cartoon --snapshot evidence/smart-phones-snapshot.json --output output/samsung-smartphones-demo.mp4 --duration 15
+          python -m trustfolio_video.cartoon --snapshot evidence/headphones-earbuds-snapshot.json --output output/earbuds-comparison-demo.mp4 --duration 15
+      - name: Extract independent frame evidence; enforce no-publication watermark metadata and audio/video streams
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import json,subprocess
+          for video in sorted(Path('output').glob('*.mp4')):
+              qa=json.loads(video.with_suffix('.qa.json').read_text())
+              assert qa['publishing_enabled'] is False
+              assert qa['status']=='HISTORICAL_DEMO_RENDERED_NOT_APPROVED_FOR_PUBLICATION'
+              assert qa['watermark']=='DEMO - NOT FOR PUBLICATION'
+              assert qa['resolution']==[1080,1920] and qa['codec']=='h264'
+              assert qa['audio_codec']=='aac'
+              assert len(qa['ranked_product_ids'])==5
+              assert len(set(qa['ranked_product_ids']))==5
+              assert qa['audio']['speech_duration_seconds']>2
+              assert qa['audio']['peak_dbfs']<=0
+              for second in (1,6,12):
+                  target=Path('output')/(video.stem+'-frame-'+str(second)+'.png')
+                  subprocess.run(['ffmpeg','-hide_banner','-loglevel','error',
+                                  '-ss',str(second),'-i',str(video),
+                                  '-frames:v','1','-y',str(target)],check=True,timeout=35)
+                  assert target.stat().st_size>10000
+              print('VIDEO_TECHNICAL_QA_PASSED='+video.name)
+              print('ORIGINAL_PRODUCT_PHOTOS_DOWNLOADED='+str(qa['photos_downloaded'])+'/5')
+              print('VIDEO_DEMO_ONLY_PUBLICATION_DISABLED=true')
+          assert len(list(Path('output').glob('*.mp4')))==3
+          PY
+      - name: Save all three real MP4s, preview frames, per-product source evidence and QA reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trustfolio-cartoon-video-demo-pilots
+          path: output/
+          retention-days: 30
+          if-no-files-found: warn
