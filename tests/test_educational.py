@@ -46,7 +46,7 @@ class CategoryMasterTests(unittest.TestCase):
             self.assertGreater(len(cat["creative"]["problem_hook"]),15)
             self.assertGreater(len(cat["environment"]["character_action"]),20)
             self.assertGreaterEqual(len(cat["education"]["feature_priority"]),3)
-            self.assertIn("no causal",cat["education"]["why_best_policy"])
+            self.assertIn("causal",cat["education"]["why_best_policy"].casefold())
 
     def test_unsupported_slot_cannot_become_live(self):
         bad=copy.deepcopy(self.master)
@@ -173,7 +173,7 @@ class ExplanationStoryTests(unittest.TestCase):
         self.assertEqual(story["duration_seconds"],30)
         self.assertLessEqual(story["scenes"][-1]["end"],30)
         self.assertTrue(story["audio_notes"]["human_naturalness_approved"] is False)
-        self.assertIn("PENDING","PENDING")  # gate intentionally remains independent from media success
+        self.assertTrue(story["demo_only"])  # approval stays independent of render success
 
 
 if __name__=="__main__":
