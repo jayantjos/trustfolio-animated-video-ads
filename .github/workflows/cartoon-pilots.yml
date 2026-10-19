@@ -62,6 +62,11 @@ jobs:
               assert len(set(qa['ranked_product_ids']))==5
               assert qa['audio']['speech_duration_seconds']>2
               assert qa['audio']['peak_dbfs']<=0
+              storyboard=json.loads(video.with_suffix('.storyboard.json').read_text())
+              assert storyboard['ranked_source_ids']==qa['ranked_product_ids']
+              assert storyboard['source_sha256']==qa['source_sha256']
+              assert storyboard['publishing_enabled'] is False
+              assert storyboard['watermark']=='DEMO - NOT FOR PUBLICATION'
               for second in (1,6,12):
                   target=Path('output')/(video.stem+'-frame-'+str(second)+'.png')
                   subprocess.run(['ffmpeg','-hide_banner','-loglevel','error',
