@@ -727,7 +727,8 @@
           }
         ],
         "user_personas": [
-          "home drinking water matched to local water testing"
+          "household water source tested before choosing filtration method",
+          "families comparing storage and filter-maintenance needs"
         ],
         "explanation_requirements": [
           "product role",
@@ -1472,7 +1473,8 @@
           }
         ],
         "user_personas": [
-          "single users or families depending verified capacity"
+          "single users considering storage size",
+          "families choosing capacity based on actual household needs"
         ],
         "explanation_requirements": [
           "product role",
