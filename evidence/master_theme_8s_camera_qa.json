@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "reference_style_status": "USER_LOCKED_VISUAL_REFERENCE_ONLY",
+  "category": "washing-machines",
+  "requested_reference": "Same premium user-approved purple/gold TrustFolio 3D-cartoon style: organic tropical laundry village, 5 product friends, natural Hindi acting, stable branded CTA. Do not substitute low-poly 3D blocks.",
+  "art_assets": [
+    {
+      "filename": "trustfolio_s_top_5_washing_machines.png",
+      "sha256": "c5ce062090f34ab414a125d91c3ad39ff81f37a8ad4e629726e5ced0f3458ba1",
+      "width": 1024,
+      "height": 1536,
+      "role": "user-approved branded visual reference; NOT verified SKU data"
+    },
+    {
+      "filename": "trustfolio_s_tropical_washing_machine_parade.png",
+      "sha256": "bcc90bf85a9c2f4fee8b57b0c02b78e5b80f4c8a184b5d528ccb21a1ca934e0c",
+      "width": 941,
+      "height": 1672,
+      "role": "matching illustrated parade scene, not real-product model meshes"
+    }
+  ],
+  "motion_evidence": {
+    "filename": "TrustFolio_MasterTheme_Cinematic_CameraTest_8s_DEMO.mp4",
+    "sha256": "602e5c11f6897773353a02218f83bc42663d2b2c963146ed94f774cd04e4d762",
+    "resolution": [
+      1080,
+      1920
+    ],
+    "fps": 24,
+    "duration_seconds": 8,
+    "video_codec": "h264",
+    "audio_codec": "aac",
+    "review_contact": "conversation attachment /mnt/data only; not yet durable GitHub Actions artifact",
+    "technique": "5 cutout character layers, 3 distinct cinematic camera framings, category scenery, animated bubble effects and existing Kokoro Hindi audio; not skeletal CGI"
+  },
+  "creative_approval": false,
+  "human_listened_hindi_naturalness_approved": false,
+  "genuine_skeletal_3d_rigged_chars": false,
+  "verified_sku_rank_and_price": false,
+  "commercial_advertising_asset_rights_verified": false,
+  "official_logo_file_verified": false,
+  "publishing_enabled": false,
+  "production_approved": false,
+  "blockers": [
+    "High-fidelity independently rigged and accurate product model characters",
+    "Production-grade natural Hinglish character conversations and phoneme lipsync",
+    "Twenty reusable premium 3D cinematographic sets",
+    "Durable source-art storage and exact repro workflow in CI",
+    "API-ranked original five product identities and strict price evidence",
+    "Official verified logo and commercial photography/voice licenses"
+  ],
+  "next_acceptance_gate": "Before a full 30s ad is called ready, 8s polished native 3D scene must be compared with exact provided storyboard, both visually and Hindi audio listening-reviewed; low-poly Blender or 2.5D proof alone cannot pass."
+}
