@@ -85,7 +85,7 @@ def assign(obj,material):
 def bevel(obj,width=.07,segments=3):
     mod=obj.modifiers.new("Soft factory-molded corners","BEVEL")
     mod.width=width;mod.segments=segments
-    mod2=obj.modifiers.new("Weighted normals","WEIGHTED_NORMAL")
+    # Avoid obsolete weighted-normal/autosmooth requirements on Blender 4.0+
     return obj
 
 def cube(name,loc,scale,material,bevel_width=0,parent=None):
@@ -270,7 +270,14 @@ def setup_render(args,materials):
         scene.view_settings.view_transform="AgX"
     except Exception:
         scene.view_settings.view_transform="Filmic"
-    scene.view_settings.look="Medium High Contrast"
+    # Blender 4 AgX look identifiers include "AgX -"; old Filmic uses old labels.
+    available=["AgX - Medium High Contrast","Medium High Contrast","AgX - Base Contrast","Medium High Contrast"]
+    for look in available:
+        try:
+            scene.view_settings.look=look
+            break
+        except (TypeError,ValueError):
+            continue
     scene.view_settings.exposure=.25
     scene.view_settings.gamma=1
     world=bpy.data.worlds.new("Warm tropical daylight world")
