@@ -91,8 +91,16 @@ jobs:
                 '-y',str(clip)],check=True,timeout=145)
               assert clip.stat().st_size>65000
               # Do not retain 240 raw oversized PNGs in the Actions artifact.
-              for p in frames.glob('frame_*.png'):p.unlink()
-              frames.rmdir()
+              # Keep original category/source/publication metadata, remove all
+              # PNGs + the per-scene provenance file without leaking stale frames.
+              import shutil
+              provenance=frames/'scene-provenance.json'
+              assert provenance.is_file()
+              proof=json.loads(provenance.read_text())
+              assert proof['slug']==slug and proof['production_approved'] is False
+              (root/('world-'+str(i).zfill(2)+'-'+slug+'-provenance.json')).write_text(
+                  json.dumps(proof,indent=2)+'\n')
+              shutil.rmtree(frames)
               print('TRUE_3D_WORLD_CLIP_CREATED='+str(i).zfill(2)+' '+slug,flush=True)
           PY
       - name: Validate product claim isolation and each category MP4
@@ -129,6 +137,7 @@ jobs:
           name: trustfolio-3d-world-shard-${{ matrix.shard }}
           path: |
             three_d/all-world-output/world-*.mp4
+            three_d/all-world-output/world-*-provenance.json
             three_d/all-world-output/shard-qa.json
           retention-days: 30
           if-no-files-found: error
