@@ -16,6 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 55
     env:
+      LIBGL_ALWAYS_SOFTWARE: '1'
       PYTHONPATH: '.'
       OMP_NUM_THREADS: '2'
       PYTORCH_NUM_THREADS: '2'
@@ -29,7 +30,7 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update -qq
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq blender ffmpeg espeak-ng libsndfile1 fonts-dejavu-core fonts-noto-core
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq blender ffmpeg espeak-ng libsndfile1 fonts-dejavu-core fonts-noto-core libegl1 libgl1-mesa-dri libosmesa6 libglvnd0
           blender -b --version | head -3
           ffmpeg -hide_banner -encoders | grep 'libx264'
       - name: Install reproducible source/photo and offline Hindi voice requirements
