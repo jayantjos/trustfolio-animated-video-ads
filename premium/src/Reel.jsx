@@ -185,14 +185,14 @@ const Stars=({t})=><div style={{position:"absolute",inset:0,zIndex:2,pointerEven
 const IntroScene=({t})=>{
   const products=[5,4,3,2,1].map(rankProduct);
   return <div style={{position:"absolute",top:405,left:0,right:0,height:980,zIndex:10}}>
-    <div style={{position:"absolute",top:0,left:80,right:80,textAlign:"center",
+    <div style={{position:"absolute",top:68,left:80,right:80,textAlign:"center",
       fontSize:48,fontWeight:950,color:COLORS.deep}}>
        कपड़ों का पहाड़? <span style={{color:"#7A45F3"}}>पाँच दोस्त</span> तैयार!
     </div>
-    <div style={{position:"absolute",top:76,left:100,right:100,textAlign:"center",
+    <div style={{position:"absolute",top:139,left:100,right:100,textAlign:"center",
        fontSize:25,color:"#625A91",fontWeight:750}}>A CARTOON SHOWDOWN • REAL PRODUCT RANKS</div>
-    {products.map((p,i)=><Buddy key={p.id} product={p} x={35+(i%3)*320}
-       y={230+Math.floor(i/3)*315} t={t} scale={i<3?.73:.71}
+    {products.map((p,i)=><Buddy key={p.id} product={p} x={i<3?40+i*320:200+(i-3)*340}
+       y={i<3?235:650} t={t} scale={i<3?.64:.52}
        angle={i%2?5:-5} delay={i*.9} />)}
   </div>;
 };
@@ -217,7 +217,7 @@ const BattleScene=({t,rank})=>{
       scale={hero?1.04:1.05} hero angle={hero?1:-2}/>
     {!hero?<Buddy product={rival} x={648} y={332} t={t}
        scale={.65} angle={9} delay={2} opacity={.94}/>:null}
-    <div style={{position:"absolute",top:hero?820:832,left:85,right:85,
+    <div style={{position:"absolute",top:hero?893:899,left:85,right:85,
       background:"rgba(255,255,255,.89)",border:"2px solid rgba(107,91,196,.16)",
       borderRadius:30,padding:"15px 28px",boxShadow:shadow,
       textAlign:"center",fontWeight:850,fontSize:32,color:COLORS.deep}}>
@@ -238,8 +238,8 @@ const OutroScene=({t})=><div style={{
     borderRadius:50,background:"rgba(255,255,255,.55)",border:"3px solid #fff"}}/>
   {[1,2,3,4,5].map((n,i)=>{
     const p=rankProduct(n);
-    return <Buddy key={p.id} product={p} x={30+i*205} y={285+(i%2)*36}
-      t={t} delay={i} angle={-6+i*3} scale={.51}/>;
+    return <Buddy key={p.id} product={p} x={-12+i*182} y={285+(i%2)*36}
+      t={t} delay={i} angle={-6+i*3} scale={.48}/>;
   })}
   <div style={{position:"absolute",top:790,left:100,right:100,textAlign:"center",
     fontSize:37,fontWeight:950,color:COLORS.purple}}>
