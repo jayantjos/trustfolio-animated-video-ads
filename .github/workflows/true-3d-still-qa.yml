@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 16
     env:
+      LIBGL_ALWAYS_SOFTWARE: '1'
       PYTHONPATH: '.'
     steps:
       - uses: actions/checkout@v4
@@ -18,7 +19,7 @@ jobs:
       - name: Install real Blender CPU renderer
         run: |
           sudo apt-get update -qq
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq blender fonts-dejavu-core
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq blender fonts-dejavu-core libegl1 libgl1-mesa-dri libosmesa6 libglvnd0
           python -m pip install --disable-pip-version-check 'Pillow==11.3.0'
       - name: Get exactly five original source-bound product photos
         run: |
