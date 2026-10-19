@@ -205,7 +205,7 @@ const BattleScene=({t,rank})=>{
     {hero?<Stars t={t}/>:null}
     <div style={{position:"absolute",top:4,left:120,right:120,textAlign:"center",
       fontWeight:950,fontSize:hero?57:39,color:hero?COLORS.plum:COLORS.deep}}>
-      {hero?"🏆  TODAY'S #1 PICK":"FRIENDLY RANK REVEAL"}
+      {hero?"🏆  SNAPSHOT #1 PICK":"FRIENDLY RANK REVEAL"}
     </div>
     <div style={{
       position:"absolute",top:75,left:hero?105:80,width:hero?870:680,
@@ -233,7 +233,7 @@ const OutroScene=({t})=><div style={{
     पाँच दोस्त, आपकी पसंद!
   </div>
   <div style={{textAlign:"center",marginTop:16,fontSize:31,color:COLORS.purple,
-    fontWeight:850}}>REAL TOP 5 • ORIGINAL TRUSTFOLIO RANKING</div>
+    fontWeight:850}}>RECORDED TOP 5 • ORIGINAL RANK ORDER</div>
   <div style={{position:"absolute",left:35,top:145,width:1010,height:660,
     borderRadius:50,background:"rgba(255,255,255,.55)",border:"3px solid #fff"}}/>
   {[1,2,3,4,5].map((n,i)=>{
