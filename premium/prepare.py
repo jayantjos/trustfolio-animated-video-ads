@@ -22,6 +22,45 @@ SCRIPTS=[
     ("असली पाँच प्रोडक्ट्स। तुलना करो ट्रस्टफ़ोलियो पर!", "hf_alpha", 24.2, 29.7),
 ]
 
+# Only a source-matched specification may enter the spoken narrative.
+# Transliteration maps preserve original numeric/category meaning.
+HINDI_BRAND={'samsung':'सैमसंग','lg':'एलजी','godrej':'गोदरेज',
+             'ifb':'आईएफबी','haier':'हायर','bosch':'बॉश'}
+FEATURE_VOICE={
+    ('Capacity','7 kg'):'सात किलो क्षमता',
+    ('Capacity','9 kg'):'नौ किलो क्षमता',
+    ('Energy Rating','5 Star'):'पाँच स्टार एनर्जी रेटिंग',
+    ('Load Type','Front Load'):'फ्रंट लोड',
+    ('Automation Type','Fully Automatic'):'पूरी तरह ऑटोमैटिक',
+    ('Washing Machine Type','Fully Automatic'):'पूरी तरह ऑटोमैटिक',
+    ('Wash Features','In-built Heater'):'इनबिल्ट हीटर',
+    ('Spin Speed','1200 RPM'):'बारह सौ आर पी एम स्पिन स्पीड',
+}
+
+def build_fact_based_hindi_lines(products):
+    ordered=[next(x for x in products if x['rank']==rank) for rank in (5,4,3,2,1)]
+    lines=['कपड़े धोने का काम! पाँच मशीन दोस्त तैयार हैं!']
+    proof=[None]
+    for p in ordered:
+        fact=p['educationFact']
+        brand=HINDI_BRAND.get(p['brand'].casefold(),p['brand'])
+        if fact:
+            feature=FEATURE_VOICE.get((fact['sourceKey'],fact['value']))
+            if not feature:
+                # Do not force uncertain phonetics or infer product claims.
+                feature='एक फीचर है, जिसकी पूरी जानकारी स्क्रीन पर है'
+            if p['rank']==1:
+                words=brand+' की '+feature+'! लिस्ट का नंबर वन!'
+            else:
+                words=brand+' की '+feature+'! वाह!'
+        else:
+            words=brand+' की पूरी जानकारी और फीचर चेक करो!'
+        lines.append(words)
+        proof.append(p['id'] if fact else None)
+    lines.append('सही ज़रूरत और कीमत देखो, ट्रस्टफ़ोलियो पर!')
+    proof.append(None)
+    return lines,proof
+
 def main():
     parser=argparse.ArgumentParser()
     parser.add_argument('--snapshot',default='evidence/washing-machines-snapshot.json')
@@ -86,6 +125,9 @@ def main():
           'rankExplanation':explanation['why_ranked'],
           'productPurpose':explanation['what_it_does']
         })
+    spoken,spoken_proof=build_fact_based_hindi_lines(output)
+    if len(spoken)!=len(SCRIPTS):
+        raise ValueError('Seven voice scenes required')
     data={
       'status':'HISTORICAL_DEMO_NOT_FOR_PUBLICATION',
       'publishing_enabled':False,
@@ -103,8 +145,9 @@ def main():
         'whyBestRule':'Recorded TrustFolio rank only; source scoring reasons unavailable',
         'exampleUserNeeds':educational['expanded_product_explanations'][0]['possible_user_needs'],
       },
-      'lines':[{'text':text,'voice':voice,'start':start,'end':end}
-               for text,voice,start,end in SCRIPTS],
+      'lines':[{'text':spoken[i],'voice':voice,'start':start,'end':end,
+                'claimedProductId':spoken_proof[i]}
+               for i,(_,voice,start,end) in enumerate(SCRIPTS)],
       'durationInFrames':30*24,
       'fps':24,
       'watermark':'CONCEPT DEMO • HISTORICAL PRICES • NOT FOR PUBLICATION',
