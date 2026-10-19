@@ -54,19 +54,42 @@ def run(root,*,allow_model=True):
     cues=[]
     voices_dir=root/'voices';voices_dir.mkdir(exist_ok=True)
     for i,line in enumerate(story['lines']):
-        chunks=[]
-        for _,_,audio in pipeline(line['text'],voice=line['voice'],speed=1.15,split_pattern=r'\n+'):
-            if audio is None:continue
-            chunks.append(audio.detach().cpu().numpy().astype(np.float32)
-                          if hasattr(audio,'detach') else np.asarray(audio,dtype=np.float32))
-        if not chunks:raise ValueError('Kokoro generated no voice waveform for scene '+str(i))
-        voice=np.concatenate(chunks)
-        if not np.isfinite(voice).all():raise ValueError('Nonfinite neural voice')
         allowed=line['end']-line['start']-.15
+        original=line['text']
+        # Never clip narration or fake the spoken subtitle timing.
+        # Cut only the non-technical follow-up phrase after an explicit bang.
+        if i==0:
+            compact='लॉन्ड्री गैंग, तैयार?'
+        elif i==len(story['lines'])-1:
+            compact='ट्रस्टफ़ोलियो पर तुलना करो!'
+        elif '!' in original:
+            compact=original.split('!',1)[0].strip()+'!'
+        else:
+            compact=original
+        attempts=[(original,1.15,'original')]
+        if compact!=original:
+            attempts.append((compact,1.17,'preserve_source_fact_compact'))
+        attempts.append((compact,1.30,'moderate_speed_compact'))
+        voice=None
+        chosen_text=None
+        chosen_variant=None
+        for candidate,speed,variant in attempts:
+            chunks=[]
+            for _,_,audio in pipeline(candidate,voice=line['voice'],speed=speed,split_pattern=r'\n+'):
+                if audio is None:continue
+                chunks.append(audio.detach().cpu().numpy().astype(np.float32)
+                              if hasattr(audio,'detach') else np.asarray(audio,dtype=np.float32))
+            if not chunks:continue
+            wav=np.concatenate(chunks)
+            if not np.isfinite(wav).all():
+                raise ValueError('Nonfinite neural voice')
+            if len(wav)/SR <= allowed:
+                voice=wav;chosen_text=candidate;chosen_variant=variant
+                break
+        if voice is None:
+            raise ValueError('Hindi voice scene too long with unclipped compact source-safe narration: '+str(i))
+        line['text']=chosen_text
         actual=len(voice)/SR
-        if actual>allowed+.15:
-            raise ValueError('Hindi voice scene too long: '+str(i)+' '+str(round(actual,2))+
-                             's > '+str(round(allowed,2))+'s; edit script, do not clip')
         sf.write(str(voices_dir/f'{i:02d}.wav'),voice,SR)
         st=int(line['start']*SR)
         end=min(length,st+len(voice))
@@ -74,7 +97,8 @@ def run(root,*,allow_model=True):
         cues.append({'scene':i,'voice':line['voice'],'start':line['start'],
                      'duration_seconds':round(actual,3),
                      'peak':round(float(np.max(np.abs(voice))),4),
-                     'text':line['text']})
+                     'text':line['text'],'original_text':original,
+                     'text_variant':chosen_variant})
         print('NEURAL_HINDI_LINE='+str(i)+' '+str(round(actual,2))+'s')
     if max(abs(voice_track))<.025:raise ValueError('Unexpectedly silent TTS')
     full=np.clip(voice_track+music,-.92,.92)

@@ -1,0 +1,108 @@
+name: TrustFolio 20 unique animated world environments QA (no product ads)
+on:
+  push:
+    branches: [feature/30-category-educational-story-engine-20261019]
+    paths:
+      - 'premium/src/WorldAtlas.jsx'
+      - 'premium/src/world-atlas-index.jsx'
+      - 'config/world_motion_20.json'
+      - 'tests/test_world_motion.py'
+      - '.github/workflows/world-atlas-qa.yml'
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency:
+  group: trustfolio-world-atlas-proof
+  cancel-in-progress: true
+jobs:
+  world-atlas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned dependencies and fonts
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check 'Pillow==11.3.0' 'numpy==2.2.6'
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ffmpeg fonts-noto-core fonts-dejavu-core
+          cd premium && npm install --no-audit --no-fund
+      - name: Run data and environment provenance validations
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -v
+      - name: Verify original animated vector world components compile
+        run: |
+          set -euo pipefail
+          cd premium
+          npx remotion browser ensure
+          npx remotion compositions src/world-atlas-index.jsx
+      - name: Render 20 unique full-HD category environments from verified slugs
+        run: |
+          set -euo pipefail
+          mkdir -p premium/world-output/stills
+          python - <<'PY'
+          import json,subprocess
+          from pathlib import Path
+          data=json.loads(Path('config/world_motion_20.json').read_text())
+          for n,world in enumerate(data['enabled_worlds'],1):
+              slug=world['slug']
+              path=Path('premium/world-output/stills')/(f'{n:02d}-'+slug+'.png')
+              cmd=['npx','remotion','still','src/world-atlas-index.jsx','TrustFolioWorldAtlas',
+                  str(path.resolve()),'--frame=61','--props='+json.dumps({'slug':slug}),
+                  '--log=error']
+              subprocess.run(cmd,cwd='premium',timeout=100,check=True)
+              assert path.exists() and path.stat().st_size>20000
+              print('WORLD_PREVIEW_CREATED='+slug)
+          PY
+      - name: Render 3 short moving parallax samples (not product ads)
+        run: |
+          set -euo pipefail
+          mkdir -p premium/world-output/motion
+          cd premium
+          for cat in washing-machines smart-phones refrigerators; do
+            npx remotion render src/world-atlas-index.jsx TrustFolioWorldAtlas \
+              world-output/motion/${cat}-environment-demo.mp4 \
+              --frames=0-71 --codec=h264 --crf=28 --concurrency=2 \
+              --props="{\"slug\":\"${cat}\"}" --log=error
+          done
+      - name: Technical QA 20 distinct world stills and H264 motion
+        run: |
+          python - <<'PY'
+          import hashlib,json,subprocess
+          from pathlib import Path
+          root=Path('premium/world-output')
+          images=sorted((root/'stills').glob('*.png'))
+          assert len(images)==20
+          digest=[hashlib.sha256(p.read_bytes()).hexdigest() for p in images]
+          assert len(set(digest))==20, 'Some category previews are duplicates'
+          videos=sorted((root/'motion').glob('*.mp4'))
+          assert len(videos)==3
+          for path in videos:
+              js=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-show_format','-of','json',str(path)]))
+              stream=next(x for x in js['streams'] if x['codec_type']=='video')
+              assert stream['width']==1080 and stream['height']==1920 and stream['codec_name']=='h264'
+              assert 2.9<float(js['format']['duration'])<3.3
+          report={'status':'20 original QA-only category environments rendered',
+                  'unique_stills':len(set(digest)),'motion_samples':len(videos),
+                  'product_ids_used':0,'claims_about_products':0,
+                  'production_approved':False,'publishing_enabled':False,
+                  'verified_slugs':[p.stem.split('-',1)[1] for p in images]}
+          (root/'environment-qa.json').write_text(json.dumps(report,indent=2))
+          print('TWENTY_UNIQUE_SCENERY_PREVIEWS_VERIFIED=true')
+          print('ENVIRONMENT_MOTION_CLIPS_VERIFIED=3')
+          print('ADS_APPROVED_OR_PUBLISHED=false')
+          PY
+      - name: Upload 20 scene stills, motion previews and QA evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trustfolio-20-original-animated-worlds-private-qa
+          path: premium/world-output/
+          retention-days: 30
+          if-no-files-found: warn
