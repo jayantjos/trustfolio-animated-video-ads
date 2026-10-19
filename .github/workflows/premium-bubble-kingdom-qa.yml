@@ -8,7 +8,7 @@ permissions:
   contents: read
 concurrency:
   group: premium-bubble-kingdom-private-qa
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   premium-pilot:
     runs-on: ubuntu-latest
