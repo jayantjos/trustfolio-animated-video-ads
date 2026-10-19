@@ -163,7 +163,7 @@ def _mode_hook(spec,category):
         return "सबकी खासियत अलग है! कौन किस काम का? चलो तुलना करें।"
     # Category-specific problem first, never a flat rank enumeration.
     specific={
-      "washing-machines":"अरे! कपड़ों का पहाड़ है। लॉन्ड्री गैंग तैयार है?",
+      "washing-machines":"अरे! कपड़ों का पहाड़! धोने वाले दोस्त तैयार?",
       "smart-phones":"फोन की दुनिया में किसका कौन सा काम? चलो पता करें!",
       "refrigerators":"सब्ज़ी और दूध की चिंता? फ्रिज गैंग आ गई!",
       "headphones-earbuds":"म्यूज़िक की पार्टी में कौन लाया कौन सा फीचर?",
@@ -175,16 +175,16 @@ def _title_line(product, fact, idx, mode):
     brand=_brand_hi(product.get("brand") or product["platform"])
     # Five different reacting characters, not repetitive 'panchwa bola' lines.
     reactions=(
-       "अरे, ये देखो!", "वाह, ये काम की बात है!", "रुको, मेरा नंबर भी है!",
-       "देखो, ये जानकारी याद रखना!", "और अब लिस्ट का टॉप दोस्त!"
+       "अरे, वाह!", "वाह, काम की बात!", "मेरा भी देखो!",
+       "ध्यान से देखो!", "टॉप पिक की एंट्री!"
     )
     if fact:
         feature=_feature_speech(fact)
         if mode=="comparison":
-            return f"{brand}: {feature}। फीचर मिलाकर देखो!"
+            return f"{brand}: {feature}। मिलाकर देखो!"
         if mode=="brand_budget":
-            return f"{brand} टीम में {feature}। {reactions[idx]}"
-        return f"{brand} में {feature}। {reactions[idx]}"
+            return f"{brand}: {feature}। {reactions[idx]}"
+        return f"{brand}: {feature}। {reactions[idx]}"
     # NO inferred 'better' if proof absent.
     return f"{brand} की जानकारी देखो; बाकी फीचर अभी सत्यापित नहीं हैं।"
 
@@ -253,6 +253,9 @@ def build_educational_story(approved, master=None, *, duration=30, language="hin
             "verified_specs":facts,
             "why_a_user_might_consider":"Actual specs: "+factual+
                 ". Need to compare with your intended usage and current offer.",
+            "explanation_hinglish":"Yeh product "+category["education"]["product_role"]+
+                ". Source mein verified details: "+factual+
+                ". Apni need aur price khud compare karein; is rank ka scoring breakdown backend ne supply nahi kiya.",
             "possible_user_needs":category["education"]["user_personas"],
             "user_fit_is_not_proven":True,
             "why_ranked":f"TrustFolio source API recorded rank #{rank}; scoring factors not supplied. No causal winner claim.",
