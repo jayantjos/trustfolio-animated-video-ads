@@ -1,0 +1,2231 @@
+{
+  "version": 1,
+  "name": "TrustFolio educational animation 30-category master",
+  "sources": {
+    "backend_category_registry": "evidence/backend-categories.json",
+    "legacy_creative_worlds": "config/worlds.json",
+    "note": "Marketing education rules are editorial templates, NOT a verified product or ranking score source."
+  },
+  "policies": {
+    "authority": "Never change TrustFolio API product identity, order or price.",
+    "price": "Require per-product freshness and permitted rights for publication; historical demo watermark always on.",
+    "specification": "Speak only a source-matched product feature; never infer watts, star rating, family size, performance, warranty or battery life.",
+    "ranking": "Rank position is an API fact, but underlying reason is unknown without trustworthy factor data.",
+    "language": "Hinglish drafted; Hindi/English translations require voice QA before production."
+  },
+  "slots": [
+    {
+      "slot": 1,
+      "backend_slug": "smart-phones",
+      "backend_category_id": "69f22145fdee76d38f9c5ca8",
+      "enabled": true,
+      "backend_status": "VERIFIED_CATEGORY_ONLY_NOT_LIVE_PRICE_APPROVAL",
+      "name": "Smart Phones",
+      "theme": "Neon Tech City",
+      "environment": {
+        "location": "smartphone charters charging at a neon bus stop",
+        "character_action": "phone characters move through neon market, alert windows and camera booth",
+        "render_target": "immersive cinematic 3D/2.5D story environment; not flat podium cards",
+        "original_product_identity": "retain separate genuine model photo or faithful approved packshot"
+      },
+      "creative": {
+        "problem_hook": "Raat ko phone ki battery khatam—ab gadget gang kaun bachayega?",
+        "problem_context": "Student ki video-call aur homework ka scene",
+        "story_motifs": [
+          "selfie parade",
+          "notification mixup",
+          "charging cafe"
+        ],
+        "voice_tone": "gadget friends",
+        "music_mood": "bouncy synth",
+        "sfx": [
+          "network pop",
+          " keyboard click",
+          " neon whoosh"
+        ],
+        "humor": "friendly Indian situational comedy",
+        "interaction_requirement": "two characters physically act/react and address each other; not 'fifth said' enumeration"
+      },
+      "education": {
+        "product_role": "smartphone, calling, apps aur daily photography",
+        "feature_priority": [
+          {
+            "key": "battery capacity",
+            "accepted_source_keys": [
+              "Battery",
+              "Battery Capacity"
+            ],
+            "explanation_goal": "battery capacity"
+          },
+          {
+            "key": "display",
+            "accepted_source_keys": [
+              "Display",
+              "Screen Size"
+            ],
+            "explanation_goal": "display"
+          },
+          {
+            "key": "camera",
+            "accepted_source_keys": [
+              "Camera",
+              "Rear Camera"
+            ],
+            "explanation_goal": "camera"
+          },
+          {
+            "key": "ram",
+            "accepted_source_keys": [
+              "RAM"
+            ],
+            "explanation_goal": "ram"
+          },
+          {
+            "key": "storage",
+            "accepted_source_keys": [
+              "Storage",
+              "Internal Storage"
+            ],
+            "explanation_goal": "storage"
+          },
+          {
+            "key": "processor",
+            "accepted_source_keys": [
+              "Processor",
+              "Chipset"
+            ],
+            "explanation_goal": "processor"
+          }
+        ],
+        "user_personas": [
+          "student daily study",
+          "photo enthusiast",
+          "commuter communication"
+        ],
+        "explanation_requirements": [
+          "product role",
+          "verified differentiating specification or explicit evidence-unavailable notice",
+          "conditional user suitability, never guarantee",
+          "backend rank as given; do not infer proprietary ranking weights"
+        ],
+        "why_best_policy": "Only say TrustFolio ranks this product at #N based on authoritative backend; do not invent a causal score or claim universally best. State observed facts; if score factors unavailable, explicitly avoid causal reason."
+      },
+      "modes": {
+        "budget": {
+          "title": "Budget story",
+          "angle": "five friends solve the same relatable need; reveal pre-ranked top five"
+        },
+        "brand_budget": {
+          "title": "Brand squad",
+          "angle": "five genuine same-brand products only; skip otherwise"
+        },
+        "comparison": {
+          "title": "Friendly comparison",
+          "angle": "side-by-side only verified feature values; never declare an unsupported test winner"
+        }
+      },
+      "cta": "Compare current Top 5 and check latest price on trustfolio.in",
+      "publication": "BLOCK_UNTIL_PRICE_AND_ASSET_RIGHTS_VERIFIED"
+    },
+    {
+      "slot": 2,
+      "backend_slug": "air-conditioners",
+      "backend_category_id": "69f4c4bfd66ed7768080c57f",
+      "enabled": true,
+      "backend_status": "VERIFIED_CATEGORY_ONLY_NOT_LIVE_PRICE_APPROVAL",
+      "name": "Air Conditioners",
+      "theme": "Summer Cooling Heroes",
+      "environment": {
+        "location": "summer city rooftop turning into cool retreat",
+        "character_action": "characters race from sunny courtyard to blue cooled indoors",
+        "render_target": "immersive cinematic 3D/2.5D story environment; not flat podium cards",
+        "original_product_identity": "retain separate genuine model photo or faithful approved packshot"
+      },
+      "creative": {
+        "problem_hook": "Garmi ne school ki assembly bula li—AC team aa gayi!",
+        "problem_context": "Dhoop mein garam kamra",
+        "story_motifs": [
+          "remote rescue",
+          "sun visitor",
+          "summer theatre"
+        ],
+        "voice_tone": "summer banter",
+        "music_mood": "light summer funk",
+        "sfx": [
+          "breeze",
+          " remote beep",
+          " sunny hiss"
+        ],
+        "humor": "friendly Indian situational comedy",
+        "interaction_requirement": "two characters physically act/react and address each other; not 'fifth said' enumeration"
+      },
+      "education": {
+        "product_role": "air conditioner room air ko thanda karta hai",
+        "feature_priority": [
+          {
+            "key": "tonnage",
+            "accepted_source_keys": [
+              "Capacity",
+              "Cooling Capacity",
+              "Ton"
+            ],
+            "explanation_goal": "tonnage"
+          },
+          {
+            "key": "rating",
+            "accepted_source_keys": [
+              "Energy Rating",
+              "Star Rating"
+            ],
+            "explanation_goal": "rating"
+          },
+          {
+            "key": "inverter",
+            "accepted_source_keys": [
+              "Inverter Technology",
+              "Inverter"
+            ],
+            "explanation_goal": "inverter"
+          },
+          {
+            "key": "mode",
+            "accepted_source_keys": [
+              "Cooling Modes",
+              "Modes"
+            ],
+            "explanation_goal": "mode"
+          },
+          {
+            "key": "power",
+            "accepted_source_keys": [
+              "Power Consumption"
+            ],
+            "explanation_goal": "power"
+          }
+        ],
+        "user_personas": [
+          "bedroom",
+          "medium room after verified tonnage",
+          "regular summer use"
+        ],
+        "explanation_requirements": [
+          "product role",
+          "verified differentiating specification or explicit evidence-unavailable notice",
+          "conditional user suitability, never guarantee",
+          "backend rank as given; do not infer proprietary ranking weights"
+        ],
+        "why_best_policy": "Only say TrustFolio ranks this product at #N based on authoritative backend; do not invent a causal score or claim universally best. State observed facts; if score factors unavailable, explicitly avoid causal reason."
+      },
+      "modes": {
+        "budget": {
+          "title": "Budget story",
+          "angle": "five friends solve the same relatable need; reveal pre-ranked top five"
+        },
+        "brand_budget": {
+          "title": "Brand squad",
+          "angle": "five genuine same-brand products only; skip otherwise"
+        },
+        "comparison": {
+          "title": "Friendly comparison",
+          "angle": "side-by-side only verified feature values; never declare an unsupported test winner"
+        }
+      },
+      "cta": "Compare current Top 5 and check latest price on trustfolio.in",
+      "publication": "BLOCK_UNTIL_PRICE_AND_ASSET_RIGHTS_VERIFIED"
+    },
+    {
+      "slot": 3,
+      "backend_slug": "air-coolers",
+      "backend_category_id": "69f4c6dbd66ed7768080c5a7",
+      "enabled": true,
+      "backend_status": "VERIFIED_CATEGORY_ONLY_NOT_LIVE_PRICE_APPROVAL",
+      "name": "Air Coolers",
+      "theme": "Desert Water Carnival",
+      "environment": {
+        "location": "desert caravan stop with breeze tunnel",
+        "character_action": "coolers pull water-cart balloons across a desert fair",
+        "render_target": "immersive cinematic 3D/2.5D story environment; not flat podium cards",
+        "original_product_identity": "retain separate genuine model photo or faithful approved packshot"
+      },
+      "creative": {
+        "problem_hook": "Registan ke mela mein paani ka matka bhi dance karega!",
+        "problem_context": "Khuli khidki wala dry summer room",
+        "story_motifs": [
+          "matka parade",
+          "desert picnic",
+          "waterwheel party"
+        ],
+        "voice_tone": "carnival hosts",
+        "music_mood": "playful percussion",
+        "sfx": [
+          "water splash",
+          " wind chime",
+          " sand whoosh"
+        ],
+        "humor": "friendly Indian situational comedy",
+        "interaction_requirement": "two characters physically act/react and address each other; not 'fifth said' enumeration"
+      },
+      "education": {
+        "product_role": "air cooler paani aur airflow ke saath hawa thandi karta hai",
+        "feature_priority": [
+          {
+            "key": "tank",
+            "accepted_source_keys": [
+              "Water Tank Capacity",
+              "Tank Capacity"
+            ],
+            "explanation_goal": "tank"
+          },
+          {
+            "key": "airflow",
+            "accepted_source_keys": [
+              "Air Delivery",
+              "Air Flow",
+              "Air Throw"
+            ],
+            "explanation_goal": "airflow"
+          },
+          {
+            "key": "power",
+            "accepted_source_keys": [
+              "Power Consumption"
+            ],
+            "explanation_goal": "power"
+          },
+          {
+            "key": "speed",
+            "accepted_source_keys": [
+              "Speed Settings"
+            ],
+            "explanation_goal": "speed"
+          },
+          {
+            "key": "wheels",
+            "accepted_source_keys": [
+              "Castor Wheels"
+            ],
+            "explanation_goal": "wheels"
+          }
+        ],
+        "user_personas": [
+          "ventilated space",
+          "dry weather",
+          "mobile home cooling"
+        ],
+        "explanation_requirements": [
+          "product role",
+          "verified differentiating specification or explicit evidence-unavailable notice",
+          "conditional user suitability, never guarantee",
+          "backend rank as given; do not infer proprietary ranking weights"
+        ],
+        "why_best_policy": "Only say TrustFolio ranks this product at #N based on authoritative backend; do not invent a causal score or claim universally best. State observed facts; if score factors unavailable, explicitly avoid causal reason."
+      },
+      "modes": {
+        "budget": {
+          "title": "Budget story",
+          "angle": "five friends solve the same relatable need; reveal pre-ranked top five"
+        },
+        "brand_budget": {
+          "title": "Brand squad",
+          "angle": "five genuine same-brand products only; skip otherwise"
+        },
+        "comparison": {
+          "title": "Friendly comparison",
+          "angle": "side-by-side only verified feature values; never declare an unsupported test winner"
+        }
+      },
+      "cta": "Compare current Top 5 and check latest price on trustfolio.in",
+      "publication": "BLOCK_UNTIL_PRICE_AND_ASSET_RIGHTS_VERIFIED"
+    },
+    {
+      "slot": 4,
+      "backend_slug": "ceiling-fans",
+      "backend_category_id": "69f4c7bfd66ed7768080c5db",
+      "enabled": true,
+      "backend_status": "VERIFIED_CATEGORY_ONLY_NOT_LIVE_PRICE_APPROVAL",
+      "name": "Ceiling Fan",
+      "theme": "Wind Olympics",
+      "environment": {
+        "location": "wind stadium with streamers",
+        "character_action": "fans send silk ribbons around track",
+        "render_target": "immersive cinematic 3D/2.5D story environment; not flat podium cards",
+        "original_product_identity": "retain separate genuine model photo or faithful approved packshot"
+      },
+      "creative": {
+        "problem_hook": "Hawa Olympics mein udta scarf kisne pakda?",
+        "problem_context": "Band kamra aur garmi",
+        "story_motifs": [
+          "ribbon relay",
+          "paper plane party",
+          "stadium entrance"
+        ],
+        "voice_tone": "cheerful sports announcers",
+        "music_mood": "sporty drums",
+        "sfx": [
+          "air swoosh",
+          " stadium whistle",
+          " fan spin"
+        ],
+        "humor": "friendly Indian situational comedy",
+        "interaction_requirement": "two characters physically act/react and address each other; not 'fifth said' enumeration"
+      },
+      "education": {
+        "product_role": "ceiling fan room mein hawa circulate karta hai",
+        "feature_priority": [
+          {
+            "key": "sweep",
+            "accepted_source_keys": [
+              "Sweep Size",
+              "Sweep"
+            ],
+            "explanation_goal": "sweep"
+          },
+          {
+            "key": "airflow",
+            "accepted_source_keys": [
+              "Air Delivery",
+              "Air Flow"
+            ],
+            "explanation_goal": "airflow"
+          },
+          {
+            "key": "power",
+            "accepted_source_keys": [
+              "Power Consumption",
+              "Wattage"
+            ],
+            "explanation_goal": "power"
+          },
+          {
+            "key": "motor",
+            "accepted_source_keys": [
+              "Motor Type",
+              "BLDC"
+            ],
+            "explanation_goal": "motor"
+          },
+          {
+            "key": "rpm",
+            "accepted_source_keys": [
+              "Speed",
+              "RPM"
+            ],
+            "explanation_goal": "rpm"
+          }
+        ],
+        "user_personas": [
+          "daily room airflow",
+          "low-energy priority if power figure verified"
+        ],
+        "explanation_requirements": [
+          "product role",
+          "verified differentiating specification or explicit evidence-unavailable notice",
+          "conditional user suitability, never guarantee",
+          "backend rank as given; do not infer proprietary ranking weights"
+        ],
+        "why_best_policy": "Only say TrustFolio ranks this product at #N based on authoritative backend; do not invent a causal score or claim universally best. State observed facts; if score factors unavailable, explicitly avoid causal reason."
+      },
+      "modes": {
+        "budget": {
+          "title": "Budget story",
+          "angle": "five friends solve the same relatable need; reveal pre-ranked top five"
+        },
+        "brand_budget": {
+          "title": "Brand squad",
+          "angle": "five genuine same-brand products only; skip otherwise"
+        },
+        "comparison": {
+          "title": "Friendly comparison",
+          "angle": "side-by-side only verified feature values; never declare an unsupported test winner"
+        }
+      },
+      "cta": "Compare current Top 5 and check latest price on trustfolio.in",
+      "publication": "BLOCK_UNTIL_PRICE_AND_ASSET_RIGHTS_VERIFIED"
+    },
+    {
+      "slot": 5,
+      "backend_slug": "desktop-computers",
+      "backend_category_id": "69f4fb9e609ee4419d13fb52",
+      "enabled": true,
+      "backend_status": "VERIFIED_CATEGORY_ONLY_NOT_LIVE_PRICE_APPROVAL",
+      "name": "Desktop Computer",
+      "theme": "Pixel Office Township",
+      "environment": {
+        "location": "pixel-office towers and chairs",
+        "character_action": "PC pals pass documents through pixel windows",
+        "render_target": "immersive cinematic 3D/2.5D story environment; not flat podium cards",
+        "original_product_identity": "retain separate genuine model photo or faithful approved packshot"
+      },
+      "creative": {
+        "problem_hook": "Mouse babu ne office ki chai kis screen pe chhupa di?",
+        "problem_context": "Work desk par multitasking",
+        "story_motifs": [
+          "desk commute",
+          "chai meeting",
+          "pixel festival"
+        ],
+        "voice_tone": "office comedy",
+        "music_mood": "pixel groove",
+        "sfx": [
+          "mouse click",
+          " typing",
+          " error bong"
+        ],
+        "humor": "friendly Indian situational comedy",
+        "interaction_requirement": "two characters physically act/react and address each other; not 'fifth said' enumeration"
+      },
+      "education": {
+        "product_role": "desktop computer desk par apps aur productivity ke liye use hota hai",
+        "feature_priority": [
+          {
+            "key": "cpu",
+            "accepted_source_keys": [
+              "Processor",
+              "CPU"
+            ],
+            "explanation_goal": "cpu"
+          },
+          {
+            "key": "ram",
+            "accepted_source_keys": [
+              "RAM",
+              "Memory"
+            ],
+            "explanation_goal": "ram"
+          },
+          {
+            "key": "storage",
+            "accepted_source_keys": [
+              "Storage",
+              "SSD"
+            ],
+            "explanation_goal": "storage"
+          },
+          {
+            "key": "graphics",
+            "accepted_source_keys": [
+              "Graphics",
+              "GPU"
+            ],
+            "explanation_goal": "graphics"
+          },
+          {
+            "key": "os",
+            "accepted_source_keys": [
+              "Operating System"
+            ],
+            "explanation_goal": "os"
+          }
+        ],
+        "user_personas": [
+          "office desk",
+          "fixed study space",
+          "desk gaming after specs"
+        ],
+        "explanation_requirements": [
+          "product role",
+          "verified differentiating specification or explicit evidence-unavailable notice",
+          "conditional user suitability, never guarantee",
+          "backend rank as given; do not infer proprietary ranking weights"
+        ],
+        "why_best_policy": "Only say TrustFolio ranks this product at #N based on authoritative backend; do not invent a causal score or claim universally best. State observed facts; if score factors unavailable, explicitly avoid causal reason."
+      },
+      "modes": {
+        "budget": {
+          "title": "Budget story",
+          "angle": "five friends solve the same relatable need; reveal pre-ranked top five"
+        },
+        "brand_budget": {
+          "title": "Brand squad",
+          "angle": "five genuine same-brand products only; skip otherwise"
+        },
+        "comparison": {
+          "title": "Friendly comparison",
+          "angle": "side-by-side only verified feature values; never declare an unsupported test winner"
+        }
+      },
+      "cta": "Compare current Top 5 and check latest price on trustfolio.in",
+      "publication": "BLOCK_UNTIL_PRICE_AND_ASSET_RIGHTS_VERIFIED"
+    },
+    {
+      "slot": 6,
+      "backend_slug": "drones",
+      "backend_category_id": "69f4fca9609ee4419d13fbaa",
+      "enabled": true,
+      "backend_status": "VERIFIED_CATEGORY_ONLY_NOT_LIVE_PRICE_APPROVAL",
+      "name": "Drones",
+      "theme": "Cloud Post Office",
+      "environment": {
+        "location": "floating cloud post office",
+        "character_action": "five drones deliver comic postcards between clouds",
+        "render_target": "immersive cinematic 3D/2.5D story environment; not flat podium cards",
+        "original_product_identity": "retain separate genuine model photo or faithful approved packshot"
+      },
+      "creative": {
+        "problem_hook": "Postman drone ko hawa ne love letter pakda diya!",
+        "problem_context": "Door se aerial scene dekhna",
+        "story_motifs": [
+          "cloud delivery",
+          "sky postcard",
+          "wind map"
+        ],
+        "voice_tone": "sky messengers",
+        "music_mood": "airy adventure",
+        "sfx": [
+          "wind rush",
+          " propeller",
+          " tiny bell"
+        ],
+        "humor": "friendly Indian situational comedy",
+        "interaction_requirement": "two characters physically act/react and address each other; not 'fifth said' enumeration"
+      },
+      "education": {
+        "product_role": "drone aerial photography ya controlled flying ke liye use hota hai",
+        "feature_priority": [
+          {
+            "key": "camera",
+            "accepted_source_keys": [
+              "Camera",
+              "Video Resolution"
+            ],
+            "explanation_goal": "camera"
+          },
+          {
+            "key": "flight",
+            "accepted_source_keys": [
+              "Flight Time",
+              "Battery Life"
+            ],
+            "explanation_goal": "flight"
+          },
+          {
+            "key": "range",
+            "accepted_source_keys": [
+              "Control Range",
+              "Transmission Range"
+            ],
+            "explanation_goal": "range"
+          },
+          {
+            "key": "gps",
+            "accepted_source_keys": [
+              "GPS"
+            ],
+            "explanation_goal": "gps"
+          },
+          {
+            "key": "weight",
+            "accepted_source_keys": [
+              "Weight"
+            ],
+            "explanation_goal": "weight"
+          }
+        ],
+        "user_personas": [
+          "hobby videography",
+          "travel aerial shots where legal"
+        ],
+        "explanation_requirements": [
+          "product role",
+          "verified differentiating specification or explicit evidence-unavailable notice",
+          "conditional user suitability, never guarantee",
+          "backend rank as given; do not infer proprietary ranking weights"
+        ],
+        "why_best_policy": "Only say TrustFolio ranks this product at #N based on authoritative backend; do not invent a causal score or claim universally best. State observed facts; if score factors unavailable, explicitly avoid causal reason."
+      },
+      "modes": {
+        "budget": {
+          "title": "Budget story",
+          "angle": "five friends solve the same relatable need; reveal pre-ranked top five"
+        },
+        "brand_budget": {
+          "title": "Brand squad",
+          "angle": "five genuine same-brand products only; skip otherwise"
+        },
+        "comparison": {
+          "title": "Friendly comparison",
+          "angle": "side-by-side only verified feature values; never declare an unsupported test winner"
+        }
+      },
+      "cta": "Compare current Top 5 and check latest price on trustfolio.in",
+      "publication": "BLOCK_UNTIL_PRICE_AND_ASSET_RIGHTS_VERIFIED"
+    },
+    {
+      "slot": 7,
+      "backend_slug": "water-purifiers",
+      "backend_category_id": "69f502ba609ee4419d13ff44",
+      "enabled": true,
+      "backend_status": "VERIFIED_CATEGORY_ONLY_NOT_LIVE_PRICE_APPROVAL",
+      "name": "Water Purifiers",
+      "theme": "Crystal Water Village",
+      "environment": {
+        "location": "crystal stream village and drop city",
+        "character_action": "purifier guards guide glowing water drops through filters",
+        "render_target": "immersive cinematic 3D/2.5D story environment; not flat podium cards",
+        "original_product_identity": "retain separate genuine model photo or faithful approved packshot"
+      },
+      "creative": {
+        "problem_hook": "Boond bhai ki bottle mein sab jagah kyun line hai?",
+        "problem_context": "Ghar ka drinking water",
+        "story_motifs": [
+          "glass gathering",
+          "droplet road",
+          "water garden"
+        ],
+        "voice_tone": "friendly village guides",
+        "music_mood": "gentle marimba",
+        "sfx": [
+          "water plip",
+          " glass clink",
+          " sparkling tone"
+        ],
+        "humor": "friendly Indian situational comedy",
+        "interaction_requirement": "two characters physically act/react and address each other; not 'fifth said' enumeration"
+      },
+      "education": {
+        "product_role": "water purifier input-water type ke hisaab se filtering karta hai",
+        "feature_priority": [
+          {
+            "key": "purification",
+            "accepted_source_keys": [
+              "Purification Technology",
+              "Purification Type",
+              "RO",
+              "UV"
+            ],
+            "explanation_goal": "purification"
+          },
+          {
+            "key": "storage",
+            "accepted_source_keys": [
+              "Storage Capacity",
+              "Tank Capacity"
+            ],
+            "explanation_goal": "storage"
+          },
+          {
+            "key": "filter",
+            "accepted_source_keys": [
+              "Filter Life",
+              "Filter Type"
+            ],
+            "explanation_goal": "filter"
+          },
+          {
+            "key": "tds",
+            "accepted_source_keys": [
+              "TDS Range"
+            ],
+            "explanation_goal": "tds"
+          },
+          {
+            "key": "service",
+            "accepted_source_keys": [
+              "Warranty"
+            ],
+            "explanation_goal": "service"
+          }
+        ],
+        "user_personas": [
+          "home drinking water matched to local water testing"
+        ],
+        "explanation_requirements": [
+          "product role",
+          "verified differentiating specification or explicit evidence-unavailable notice",
+          "conditional user suitability, never guarantee",
+          "backend rank as given; do not infer proprietary ranking weights"
+        ],
+        "why_best_policy": "Only say TrustFolio ranks this product at #N based on authoritative backend; do not invent a causal score or claim universally best. State observed facts; if score factors unavailable, explicitly avoid causal reason."
+      },
+      "modes": {
+        "budget": {
+          "title": "Budget story",
+          "angle": "five friends solve the same relatable need; reveal pre-ranked top five"
+        },
+        "brand_budget": {
+          "title": "Brand squad",
+          "angle": "five genuine same-brand products only; skip otherwise"
+        },
+        "comparison": {
+          "title": "Friendly comparison",
+          "angle": "side-by-side only verified feature values; never declare an unsupported test winner"
+        }
+      },
+      "cta": "Compare current Top 5 and check latest price on trustfolio.in",
+      "publication": "BLOCK_UNTIL_PRICE_AND_ASSET_RIGHTS_VERIFIED"
+    },
+    {
+      "slot": 8,
+      "backend_slug": "geysers",
+      "backend_category_id": "69f5795048fae9a9269a07ec",
+      "enabled": true,
+      "backend_status": "VERIFIED_CATEGORY_ONLY_NOT_LIVE_PRICE_APPROVAL",
+      "name": "Geysers",
+      "theme": "Warm Winter Lodge",
+      "environment": {
+        "location": "snowy hill lodge with heated bath houses",
+        "character_action": "geysers warm up frosty bath-house chimneys",
+        "render_target": "immersive cinematic 3D/2.5D story environment; not flat podium cards",
+        "original_product_identity": "retain separate genuine model photo or faithful approved packshot"
+      },
+      "creative": {
+        "problem_hook": "Thand ke din mein towel bhai ka heater se jhagda!",
+        "problem_context": "Thandi subah ka shower",
+        "story_motifs": [
+          "towel mystery",
+          "winter lodge",
+          "steam postcard"
+        ],
+        "voice_tone": "winter storytellers",
+        "music_mood": "cozy acoustic rhythm",
+        "sfx": [
+          "steam pfft",
+          " winter wind",
+          " kettle ping"
+        ],
+        "humor": "friendly Indian situational comedy",
+        "interaction_requirement": "two characters physically act/react and address each other; not 'fifth said' enumeration"
+      },
+      "education": {
+        "product_role": "geyser ghar mein water heating ke liye use hota hai",
+        "feature_priority": [
+          {
+            "key": "capacity",
+            "accepted_source_keys": [
+              "Capacity",
+              "Tank Capacity"
+            ],
+            "explanation_goal": "capacity"
+          },
+          {
+            "key": "heating",
+            "accepted_source_keys": [
+              "Heating Time"
+            ],
+            "explanation_goal": "heating"
+          },
+          {
+            "key": "power",
+            "accepted_source_keys": [
+              "Power Consumption",
+              "Wattage"
+            ],
+            "explanation_goal": "power"
+          },
+          {
+            "key": "safety",
+            "accepted_source_keys": [
+              "Safety Features",
+              "Thermostat"
+            ],
+            "explanation_goal": "safety"
+          },
+          {
+            "key": "type",
+            "accepted_source_keys": [
+              "Type",
+              "Storage Type"
+            ],
+            "explanation_goal": "type"
+          }
+        ],
+        "user_personas": [
+          "small bathroom",
+          "larger household needs based on capacity"
+        ],
+        "explanation_requirements": [
+          "product role",
+          "verified differentiating specification or explicit evidence-unavailable notice",
+          "conditional user suitability, never guarantee",
+          "backend rank as given; do not infer proprietary ranking weights"
+        ],
+        "why_best_policy": "Only say TrustFolio ranks this product at #N based on authoritative backend; do not invent a causal score or claim universally best. State observed facts; if score factors unavailable, explicitly avoid causal reason."
+      },
+      "modes": {
+        "budget": {
+          "title": "Budget story",
+          "angle": "five friends solve the same relatable need; reveal pre-ranked top five"
+        },
+        "brand_budget": {
+          "title": "Brand squad",
+          "angle": "five genuine same-brand products only; skip otherwise"
+        },
+        "comparison": {
+          "title": "Friendly comparison",
+          "angle": "side-by-side only verified feature values; never declare an unsupported test winner"
+        }
+      },
+      "cta": "Compare current Top 5 and check latest price on trustfolio.in",
+      "publication": "BLOCK_UNTIL_PRICE_AND_ASSET_RIGHTS_VERIFIED"
+    },
+    {
+      "slot": 9,
+      "backend_slug": "headphones-earbuds",
+      "backend_category_id": "69f5797c48fae9a9269a0810",
+      "enabled": true,
+      "backend_status": "VERIFIED_CATEGORY_ONLY_NOT_LIVE_PRICE_APPROVAL",
+      "name": "Headphones Earbuds",
+      "theme": "Beat Street",
+      "environment": {
+        "location": "music lane with animated equalizer graffiti",
+        "character_action": "earbud buddies pass the beat on a dance-stage",
+        "render_target": "immersive cinematic 3D/2.5D story environment; not flat podium cards",
+        "original_product_identity": "retain separate genuine model photo or faithful approved packshot"
+      },
+      "creative": {
+        "problem_hook": "DJ ne kaunsa earbud dhoondha? Beat kahaan gayi!",
+        "problem_context": "Crowded commute mein music/calls",
+        "story_motifs": [
+          "dance circle",
+          "beat bus",
+          "mic mixup"
+        ],
+        "voice_tone": "dancing friends",
+        "music_mood": "original dance groove",
+        "sfx": [
+          "beat drop",
+          " cartoon boing",
+          " DJ rewind"
+        ],
+        "humor": "friendly Indian situational comedy",
+        "interaction_requirement": "two characters physically act/react and address each other; not 'fifth said' enumeration"
+      },
+      "education": {
+        "product_role": "earbuds aur headphones personal listening aur calls ke liye hain",
+        "feature_priority": [
+          {
+            "key": "battery",
+            "accepted_source_keys": [
+              "Playback Time",
+              "Battery Life"
+            ],
+            "explanation_goal": "battery"
+          },
+          {
+            "key": "noise",
+            "accepted_source_keys": [
+              "Noise Cancellation",
+              "ANC",
+              "ENC"
+            ],
+            "explanation_goal": "noise"
+          },
+          {
+            "key": "connect",
+            "accepted_source_keys": [
+              "Bluetooth Version",
+              "Connectivity"
+            ],
+            "explanation_goal": "connect"
+          },
+          {
+            "key": "ip",
+            "accepted_source_keys": [
+              "IP Rating"
+            ],
+            "explanation_goal": "ip"
+          },
+          {
+            "key": "drivers",
+            "accepted_source_keys": [
+              "Driver Size"
+            ],
+            "explanation_goal": "drivers"
+          },
+          {
+            "key": "latency",
+            "accepted_source_keys": [
+              "Latency"
+            ],
+            "explanation_goal": "latency"
+          }
+        ],
+        "user_personas": [
+          "commuters",
+          "music listeners",
+          "work calls with verified mic/call info"
+        ],
+        "explanation_requirements": [
+          "product role",
+          "verified differentiating specification or explicit evidence-unavailable notice",
+          "conditional user suitability, never guarantee",
+          "backend rank as given; do not infer proprietary ranking weights"
+        ],
+        "why_best_policy": "Only say TrustFolio ranks this product at #N based on authoritative backend; do not invent a causal score or claim universally best. State observed facts; if score factors unavailable, explicitly avoid causal reason."
+      },
+      "modes": {
+        "budget": {
+          "title": "Budget story",
+          "angle": "five friends solve the same relatable need; reveal pre-ranked top five"
+        },
+        "brand_budget": {
+          "title": "Brand squad",
+          "angle": "five genuine same-brand products only; skip otherwise"
+        },
+        "comparison": {
+          "title": "Friendly comparison",
+          "angle": "side-by-side only verified feature values; never declare an unsupported test winner"
+        }
+      },
+      "cta": "Compare current Top 5 and check latest price on trustfolio.in",
+      "publication": "BLOCK_UNTIL_PRICE_AND_ASSET_RIGHTS_VERIFIED"
+    },
+    {
+      "slot": 10,
+      "backend_slug": "induction-cooktops",
+      "backend_category_id": "69f5799c48fae9a9269a0835",
+      "enabled": true,
+      "backend_status": "VERIFIED_CATEGORY_ONLY_NOT_LIVE_PRICE_APPROVAL",
+      "name": "Induction Cooktops",
+      "theme": "Chai Space Kitchen",
+      "environment": {
+        "location": "floating masala space cafe",
+        "character_action": "induction pads rocket-launch chapati-shaped moons",
+        "render_target": "immersive cinematic 3D/2.5D story environment; not flat podium cards",
+        "original_product_identity": "retain separate genuine model photo or faithful approved packshot"
+      },
+      "creative": {
+        "problem_hook": "Space kitchen mein chai ka timer kisne uda diya?",
+        "problem_context": "Chhoti kitchen mein quick cooking",
+        "story_motifs": [
+          "chai launch",
+          "biscuit orbit",
+          "kitchen countdown"
+        ],
+        "voice_tone": "space cooks",
+        "music_mood": "kitchen bounce",
+        "sfx": [
+          "kettle hiss",
+          " electronic beep",
+          " spoon clink"
+        ],
+        "humor": "friendly Indian situational comedy",
+        "interaction_requirement": "two characters physically act/react and address each other; not 'fifth said' enumeration"
+      },
+      "education": {
+        "product_role": "induction cooktop compatible cookware se electric heating karta hai",
+        "feature_priority": [
+          {
+            "key": "power",
+            "accepted_source_keys": [
+              "Power",
+              "Wattage"
+            ],
+            "explanation_goal": "power"
+          },
+          {
+            "key": "settings",
+            "accepted_source_keys": [
+              "Presets",
+              "Cooking Modes"
+            ],
+            "explanation_goal": "settings"
+          },
+          {
+            "key": "timer",
+            "accepted_source_keys": [
+              "Timer"
+            ],
+            "explanation_goal": "timer"
+          },
+          {
+            "key": "safety",
+            "accepted_source_keys": [
+              "Auto Shut Off",
+              "Overheat Protection"
+            ],
+            "explanation_goal": "safety"
+          },
+          {
+            "key": "surface",
+            "accepted_source_keys": [
+              "Cooktop Surface"
+            ],
+            "explanation_goal": "surface"
+          }
+        ],
+        "user_personas": [
+          "hostel cooking with compatible pan",
+          "compact kitchens"
+        ],
+        "explanation_requirements": [
+          "product role",
+          "verified differentiating specification or explicit evidence-unavailable notice",
+          "conditional user suitability, never guarantee",
+          "backend rank as given; do not infer proprietary ranking weights"
+        ],
+        "why_best_policy": "Only say TrustFolio ranks this product at #N based on authoritative backend; do not invent a causal score or claim universally best. State observed facts; if score factors unavailable, explicitly avoid causal reason."
+      },
+      "modes": {
+        "budget": {
+          "title": "Budget story",
+          "angle": "five friends solve the same relatable need; reveal pre-ranked top five"
+        },
+        "brand_budget": {
+          "title": "Brand squad",
+          "angle": "five genuine same-brand products only; skip otherwise"
+        },
+        "comparison": {
+          "title": "Friendly comparison",
+          "angle": "side-by-side only verified feature values; never declare an unsupported test winner"
+        }
+      },
+      "cta": "Compare current Top 5 and check latest price on trustfolio.in",
+      "publication": "BLOCK_UNTIL_PRICE_AND_ASSET_RIGHTS_VERIFIED"
+    },
+    {
+      "slot": 11,
+      "backend_slug": "laptops",
+      "backend_category_id": "69f579c948fae9a9269a085b",
+      "enabled": true,
+      "backend_status": "VERIFIED_CATEGORY_ONLY_NOT_LIVE_PRICE_APPROVAL",
+      "name": "Laptops",
+      "theme": "Digital Classroom Challenge",
+      "environment": {
+        "location": "smart classroom with animated digital blackboard",
+        "character_action": "laptop class races to submit a glowing homework file",
+        "render_target": "immersive cinematic 3D/2.5D story environment; not flat podium cards",
+        "original_product_identity": "retain separate genuine model photo or faithful approved packshot"
+      },
+      "creative": {
+        "problem_hook": "Homework file ne keyboard se bhaagne ka plan banaya!",
+        "problem_context": "Office-study assignments",
+        "story_motifs": [
+          "homework portal",
+          "project day",
+          "keyboard comedy"
+        ],
+        "voice_tone": "classroom friends",
+        "music_mood": "upbeat study beat",
+        "sfx": [
+          "keyboard clicks",
+          " class bell",
+          " swoosh"
+        ],
+        "humor": "friendly Indian situational comedy",
+        "interaction_requirement": "two characters physically act/react and address each other; not 'fifth said' enumeration"
+      },
+      "education": {
+        "product_role": "laptop portable computing aur learning ke liye use hota hai",
+        "feature_priority": [
+          {
+            "key": "processor",
+            "accepted_source_keys": [
+              "Processor",
+              "CPU"
+            ],
+            "explanation_goal": "processor"
+          },
+          {
+            "key": "ram",
+            "accepted_source_keys": [
+              "RAM",
+              "Memory"
+            ],
+            "explanation_goal": "ram"
+          },
+          {
+            "key": "ssd",
+            "accepted_source_keys": [
+              "SSD",
+              "Storage"
+            ],
+            "explanation_goal": "ssd"
+          },
+          {
+            "key": "display",
+            "accepted_source_keys": [
+              "Display",
+              "Screen Size"
+            ],
+            "explanation_goal": "display"
+          },
+          {
+            "key": "battery",
+            "accepted_source_keys": [
+              "Battery Life",
+              "Battery Capacity"
+            ],
+            "explanation_goal": "battery"
+          },
+          {
+            "key": "weight",
+            "accepted_source_keys": [
+              "Weight"
+            ],
+            "explanation_goal": "weight"
+          }
+        ],
+        "user_personas": [
+          "students",
+          "mobile work",
+          "creators only if specs support"
+        ],
+        "explanation_requirements": [
+          "product role",
+          "verified differentiating specification or explicit evidence-unavailable notice",
+          "conditional user suitability, never guarantee",
+          "backend rank as given; do not infer proprietary ranking weights"
+        ],
+        "why_best_policy": "Only say TrustFolio ranks this product at #N based on authoritative backend; do not invent a causal score or claim universally best. State observed facts; if score factors unavailable, explicitly avoid causal reason."
+      },
+      "modes": {
+        "budget": {
+          "title": "Budget story",
+          "angle": "five friends solve the same relatable need; reveal pre-ranked top five"
+        },
+        "brand_budget": {
+          "title": "Brand squad",
+          "angle": "five genuine same-brand products only; skip otherwise"
+        },
+        "comparison": {
+          "title": "Friendly comparison",
+          "angle": "side-by-side only verified feature values; never declare an unsupported test winner"
+        }
+      },
+      "cta": "Compare current Top 5 and check latest price on trustfolio.in",
+      "publication": "BLOCK_UNTIL_PRICE_AND_ASSET_RIGHTS_VERIFIED"
+    },
+    {
+      "slot": 12,
+      "backend_slug": "microwave-ovens",
+      "backend_category_id": "69f57a1248fae9a9269a0882",
+      "enabled": true,
+      "backend_status": "VERIFIED_CATEGORY_ONLY_NOT_LIVE_PRICE_APPROVAL",
+      "name": "Microwave Ovens",
+      "theme": "Midnight Snack Theatre",
+      "environment": {
+        "location": "movie-style midnight snack kitchen",
+        "character_action": "microwave friends host popcorn movie-premiere",
+        "render_target": "immersive cinematic 3D/2.5D story environment; not flat podium cards",
+        "original_product_identity": "retain separate genuine model photo or faithful approved packshot"
+      },
+      "creative": {
+        "problem_hook": "Popcorn ne apni movie ke liye ticket maanga!",
+        "problem_context": "Dinner jaldi reheat karna",
+        "story_motifs": [
+          "snack audition",
+          "midnight theatre",
+          "curtain call"
+        ],
+        "voice_tone": "snack stage actors",
+        "music_mood": "light jazz bounce",
+        "sfx": [
+          "popcorn pop",
+          " timer ding",
+          " curtain swish"
+        ],
+        "humor": "friendly Indian situational comedy",
+        "interaction_requirement": "two characters physically act/react and address each other; not 'fifth said' enumeration"
+      },
+      "education": {
+        "product_role": "microwave oven suitable food reheat/cook karta hai",
+        "feature_priority": [
+          {
+            "key": "capacity",
+            "accepted_source_keys": [
+              "Capacity",
+              "Volume"
+            ],
+            "explanation_goal": "capacity"
+          },
+          {
+            "key": "type",
+            "accepted_source_keys": [
+              "Type",
+              "Solo",
+              "Convection"
+            ],
+            "explanation_goal": "type"
+          },
+          {
+            "key": "power",
+            "accepted_source_keys": [
+              "Power",
+              "Wattage"
+            ],
+            "explanation_goal": "power"
+          },
+          {
+            "key": "mode",
+            "accepted_source_keys": [
+              "Cooking Modes",
+              "Grill"
+            ],
+            "explanation_goal": "mode"
+          },
+          {
+            "key": "program",
+            "accepted_source_keys": [
+              "Auto Cook Menus"
+            ],
+            "explanation_goal": "program"
+          }
+        ],
+        "user_personas": [
+          "quick reheating",
+          "small family after capacity check"
+        ],
+        "explanation_requirements": [
+          "product role",
+          "verified differentiating specification or explicit evidence-unavailable notice",
+          "conditional user suitability, never guarantee",
+          "backend rank as given; do not infer proprietary ranking weights"
+        ],
+        "why_best_policy": "Only say TrustFolio ranks this product at #N based on authoritative backend; do not invent a causal score or claim universally best. State observed facts; if score factors unavailable, explicitly avoid causal reason."
+      },
+      "modes": {
+        "budget": {
+          "title": "Budget story",
+          "angle": "five friends solve the same relatable need; reveal pre-ranked top five"
+        },
+        "brand_budget": {
+          "title": "Brand squad",
+          "angle": "five genuine same-brand products only; skip otherwise"
+        },
+        "comparison": {
+          "title": "Friendly comparison",
+          "angle": "side-by-side only verified feature values; never declare an unsupported test winner"
+        }
+      },
+      "cta": "Compare current Top 5 and check latest price on trustfolio.in",
+      "publication": "BLOCK_UNTIL_PRICE_AND_ASSET_RIGHTS_VERIFIED"
+    },
+    {
+      "slot": 13,
+      "backend_slug": "mixer-grinders",
+      "backend_category_id": "69f57a3a48fae9a9269a08aa",
+      "enabled": true,
+      "backend_status": "VERIFIED_CATEGORY_ONLY_NOT_LIVE_PRICE_APPROVAL",
+      "name": "Mixer Grinders",
+      "theme": "Masala Music Studio",
+      "environment": {
+        "location": "masala recording studio with spices",
+        "character_action": "mixer friends perform spice percussion on a concert stage",
+        "render_target": "immersive cinematic 3D/2.5D story environment; not flat podium cards",
+        "original_product_identity": "retain separate genuine model photo or faithful approved packshot"
+      },
+      "creative": {
+        "problem_hook": "Chutney banate hue mixer ne DJ banne ka decide kiya!",
+        "problem_context": "Indian kitchen mein grinding/chutney",
+        "story_motifs": [
+          "spice rehearsal",
+          "recipe radio",
+          "masala concert"
+        ],
+        "voice_tone": "kitchen bandmates",
+        "music_mood": "original percussion",
+        "sfx": [
+          "blender buzz",
+          " drums",
+          " whistle"
+        ],
+        "humor": "friendly Indian situational comedy",
+        "interaction_requirement": "two characters physically act/react and address each other; not 'fifth said' enumeration"
+      },
+      "education": {
+        "product_role": "mixer grinder chutney, masala aur compatible food grind karta hai",
+        "feature_priority": [
+          {
+            "key": "motor",
+            "accepted_source_keys": [
+              "Motor Power",
+              "Power",
+              "Wattage"
+            ],
+            "explanation_goal": "motor"
+          },
+          {
+            "key": "jars",
+            "accepted_source_keys": [
+              "Number of Jars",
+              "Jars"
+            ],
+            "explanation_goal": "jars"
+          },
+          {
+            "key": "rpm",
+            "accepted_source_keys": [
+              "RPM"
+            ],
+            "explanation_goal": "rpm"
+          },
+          {
+            "key": "speed",
+            "accepted_source_keys": [
+              "Speed Settings"
+            ],
+            "explanation_goal": "speed"
+          },
+          {
+            "key": "protection",
+            "accepted_source_keys": [
+              "Overload Protection"
+            ],
+            "explanation_goal": "protection"
+          }
+        ],
+        "user_personas": [
+          "home kitchens",
+          "chutney prep",
+          "spice grinding when compatible"
+        ],
+        "explanation_requirements": [
+          "product role",
+          "verified differentiating specification or explicit evidence-unavailable notice",
+          "conditional user suitability, never guarantee",
+          "backend rank as given; do not infer proprietary ranking weights"
+        ],
+        "why_best_policy": "Only say TrustFolio ranks this product at #N based on authoritative backend; do not invent a causal score or claim universally best. State observed facts; if score factors unavailable, explicitly avoid causal reason."
+      },
+      "modes": {
+        "budget": {
+          "title": "Budget story",
+          "angle": "five friends solve the same relatable need; reveal pre-ranked top five"
+        },
+        "brand_budget": {
+          "title": "Brand squad",
+          "angle": "five genuine same-brand products only; skip otherwise"
+        },
+        "comparison": {
+          "title": "Friendly comparison",
+          "angle": "side-by-side only verified feature values; never declare an unsupported test winner"
+        }
+      },
+      "cta": "Compare current Top 5 and check latest price on trustfolio.in",
+      "publication": "BLOCK_UNTIL_PRICE_AND_ASSET_RIGHTS_VERIFIED"
+    },
+    {
+      "slot": 14,
+      "backend_slug": "refrigerators",
+      "backend_category_id": "69f57a5e48fae9a9269a08d3",
+      "enabled": true,
+      "backend_status": "VERIFIED_CATEGORY_ONLY_NOT_LIVE_PRICE_APPROVAL",
+      "name": "Refrigerators",
+      "theme": "Freshness Ice Kingdom",
+      "environment": {
+        "location": "frost palace with miniature food citizens",
+        "character_action": "five fridges host tiffin reunion at snow castle",
+        "render_target": "immersive cinematic 3D/2.5D story environment; not flat podium cards",
+        "original_product_identity": "retain separate genuine model photo or faithful approved packshot"
+      },
+      "creative": {
+        "problem_hook": "Ice kingdom mein doodh ka packet bahar kyun khada hai?",
+        "problem_context": "Ghar mein khana thanda store karna",
+        "story_motifs": [
+          "ice parade",
+          "tiffin reunion",
+          "palace picnic"
+        ],
+        "voice_tone": "ice palace friends",
+        "music_mood": "sparkling waltz",
+        "sfx": [
+          "ice tinkle",
+          " door thunk",
+          " winter sparkle"
+        ],
+        "humor": "friendly Indian situational comedy",
+        "interaction_requirement": "two characters physically act/react and address each other; not 'fifth said' enumeration"
+      },
+      "education": {
+        "product_role": "refrigerator food ko controlled cooling mein store karta hai",
+        "feature_priority": [
+          {
+            "key": "capacity",
+            "accepted_source_keys": [
+              "Capacity",
+              "Net Capacity",
+              "Volume"
+            ],
+            "explanation_goal": "capacity"
+          },
+          {
+            "key": "type",
+            "accepted_source_keys": [
+              "Door Type",
+              "Type"
+            ],
+            "explanation_goal": "type"
+          },
+          {
+            "key": "rating",
+            "accepted_source_keys": [
+              "Energy Rating",
+              "Star Rating"
+            ],
+            "explanation_goal": "rating"
+          },
+          {
+            "key": "cooling",
+            "accepted_source_keys": [
+              "Frost Free",
+              "Direct Cool"
+            ],
+            "explanation_goal": "cooling"
+          },
+          {
+            "key": "convert",
+            "accepted_source_keys": [
+              "Convertible"
+            ],
+            "explanation_goal": "convert"
+          }
+        ],
+        "user_personas": [
+          "single users or families depending verified capacity"
+        ],
+        "explanation_requirements": [
+          "product role",
+          "verified differentiating specification or explicit evidence-unavailable notice",
+          "conditional user suitability, never guarantee",
+          "backend rank as given; do not infer proprietary ranking weights"
+        ],
+        "why_best_policy": "Only say TrustFolio ranks this product at #N based on authoritative backend; do not invent a causal score or claim universally best. State observed facts; if score factors unavailable, explicitly avoid causal reason."
+      },
+      "modes": {
+        "budget": {
+          "title": "Budget story",
+          "angle": "five friends solve the same relatable need; reveal pre-ranked top five"
+        },
+        "brand_budget": {
+          "title": "Brand squad",
+          "angle": "five genuine same-brand products only; skip otherwise"
+        },
+        "comparison": {
+          "title": "Friendly comparison",
+          "angle": "side-by-side only verified feature values; never declare an unsupported test winner"
+        }
+      },
+      "cta": "Compare current Top 5 and check latest price on trustfolio.in",
+      "publication": "BLOCK_UNTIL_PRICE_AND_ASSET_RIGHTS_VERIFIED"
+    },
+    {
+      "slot": 15,
+      "backend_slug": "smart-tvs",
+      "backend_category_id": "69f57a8b48fae9a9269a08fd",
+      "enabled": true,
+      "backend_status": "VERIFIED_CATEGORY_ONLY_NOT_LIVE_PRICE_APPROVAL",
+      "name": "Smart Tv",
+      "theme": "Cartoon Cinema City",
+      "environment": {
+        "location": "miniature colorful movie boulevard",
+        "character_action": "TV screens lead a film premiere with popcorn cast",
+        "render_target": "immersive cinematic 3D/2.5D story environment; not flat podium cards",
+        "original_product_identity": "retain separate genuine model photo or faithful approved packshot"
+      },
+      "creative": {
+        "problem_hook": "Remote ne popcorn chhupa diya—movie kab chalegi?",
+        "problem_context": "Living room movie night",
+        "story_motifs": [
+          "remote premiere",
+          "popcorn balcony",
+          "cinema awards"
+        ],
+        "voice_tone": "cinema hosts",
+        "music_mood": "cinema fanfare",
+        "sfx": [
+          "camera flash",
+          " remote click",
+          " cinema sparkle"
+        ],
+        "humor": "friendly Indian situational comedy",
+        "interaction_requirement": "two characters physically act/react and address each other; not 'fifth said' enumeration"
+      },
+      "education": {
+        "product_role": "smart TV apps aur video content big-screen par dikha sakta hai",
+        "feature_priority": [
+          {
+            "key": "size",
+            "accepted_source_keys": [
+              "Screen Size",
+              "Display Size"
+            ],
+            "explanation_goal": "size"
+          },
+          {
+            "key": "resolution",
+            "accepted_source_keys": [
+              "Resolution",
+              "Display Resolution"
+            ],
+            "explanation_goal": "resolution"
+          },
+          {
+            "key": "platform",
+            "accepted_source_keys": [
+              "Operating System",
+              "Smart OS"
+            ],
+            "explanation_goal": "platform"
+          },
+          {
+            "key": "sound",
+            "accepted_source_keys": [
+              "Audio Output",
+              "Speakers"
+            ],
+            "explanation_goal": "sound"
+          },
+          {
+            "key": "refresh",
+            "accepted_source_keys": [
+              "Refresh Rate"
+            ],
+            "explanation_goal": "refresh"
+          }
+        ],
+        "user_personas": [
+          "OTT movie night",
+          "family screen by size",
+          "gaming if refresh verified"
+        ],
+        "explanation_requirements": [
+          "product role",
+          "verified differentiating specification or explicit evidence-unavailable notice",
+          "conditional user suitability, never guarantee",
+          "backend rank as given; do not infer proprietary ranking weights"
+        ],
+        "why_best_policy": "Only say TrustFolio ranks this product at #N based on authoritative backend; do not invent a causal score or claim universally best. State observed facts; if score factors unavailable, explicitly avoid causal reason."
+      },
+      "modes": {
+        "budget": {
+          "title": "Budget story",
+          "angle": "five friends solve the same relatable need; reveal pre-ranked top five"
+        },
+        "brand_budget": {
+          "title": "Brand squad",
+          "angle": "five genuine same-brand products only; skip otherwise"
+        },
+        "comparison": {
+          "title": "Friendly comparison",
+          "angle": "side-by-side only verified feature values; never declare an unsupported test winner"
+        }
+      },
+      "cta": "Compare current Top 5 and check latest price on trustfolio.in",
+      "publication": "BLOCK_UNTIL_PRICE_AND_ASSET_RIGHTS_VERIFIED"
+    },
+    {
+      "slot": 16,
+      "backend_slug": "smartwatches",
+      "backend_category_id": "69f57abb48fae9a9269a0928",
+      "enabled": true,
+      "backend_status": "VERIFIED_CATEGORY_ONLY_NOT_LIVE_PRICE_APPROVAL",
+      "name": "SmartWatches",
+      "theme": "Fitness Time Arena",
+      "environment": {
+        "location": "fitness track with confetti arches",
+        "character_action": "watch pals run obstacle course with stopwatch",
+        "render_target": "immersive cinematic 3D/2.5D story environment; not flat podium cards",
+        "original_product_identity": "retain separate genuine model photo or faithful approved packshot"
+      },
+      "creative": {
+        "problem_hook": "Watch gang ne race mein ghadi ko hi late kar diya!",
+        "problem_context": "Steps aur phone notifications",
+        "story_motifs": [
+          "warmup parade",
+          "shoelace comedy",
+          "fitness festival"
+        ],
+        "voice_tone": "fitness cheerleaders",
+        "music_mood": "energetic clean beat",
+        "sfx": [
+          "heartbeat",
+          " steps",
+          " cheering"
+        ],
+        "humor": "friendly Indian situational comedy",
+        "interaction_requirement": "two characters physically act/react and address each other; not 'fifth said' enumeration"
+      },
+      "education": {
+        "product_role": "smartwatch time, notifications aur supported activity tracking ke liye hai",
+        "feature_priority": [
+          {
+            "key": "screen",
+            "accepted_source_keys": [
+              "Display",
+              "Display Size"
+            ],
+            "explanation_goal": "screen"
+          },
+          {
+            "key": "battery",
+            "accepted_source_keys": [
+              "Battery Life",
+              "Battery Capacity"
+            ],
+            "explanation_goal": "battery"
+          },
+          {
+            "key": "calling",
+            "accepted_source_keys": [
+              "Bluetooth Calling",
+              "Calling"
+            ],
+            "explanation_goal": "calling"
+          },
+          {
+            "key": "fitness",
+            "accepted_source_keys": [
+              "Sports Modes",
+              "Activity Tracking"
+            ],
+            "explanation_goal": "fitness"
+          },
+          {
+            "key": "resistance",
+            "accepted_source_keys": [
+              "Water Resistance",
+              "IP Rating"
+            ],
+            "explanation_goal": "resistance"
+          }
+        ],
+        "user_personas": [
+          "fitness beginners",
+          "notification checks",
+          "calling users if supported"
+        ],
+        "explanation_requirements": [
+          "product role",
+          "verified differentiating specification or explicit evidence-unavailable notice",
+          "conditional user suitability, never guarantee",
+          "backend rank as given; do not infer proprietary ranking weights"
+        ],
+        "why_best_policy": "Only say TrustFolio ranks this product at #N based on authoritative backend; do not invent a causal score or claim universally best. State observed facts; if score factors unavailable, explicitly avoid causal reason."
+      },
+      "modes": {
+        "budget": {
+          "title": "Budget story",
+          "angle": "five friends solve the same relatable need; reveal pre-ranked top five"
+        },
+        "brand_budget": {
+          "title": "Brand squad",
+          "angle": "five genuine same-brand products only; skip otherwise"
+        },
+        "comparison": {
+          "title": "Friendly comparison",
+          "angle": "side-by-side only verified feature values; never declare an unsupported test winner"
+        }
+      },
+      "cta": "Compare current Top 5 and check latest price on trustfolio.in",
+      "publication": "BLOCK_UNTIL_PRICE_AND_ASSET_RIGHTS_VERIFIED"
+    },
+    {
+      "slot": 17,
+      "backend_slug": "speakers",
+      "backend_category_id": "69f57adb48fae9a9269a0955",
+      "enabled": true,
+      "backend_status": "VERIFIED_CATEGORY_ONLY_NOT_LIVE_PRICE_APPROVAL",
+      "name": "Speakers",
+      "theme": "Music Battle Arena",
+      "environment": {
+        "location": "colourful sound concert stage",
+        "character_action": "five speakers bounce between musical amplifiers",
+        "render_target": "immersive cinematic 3D/2.5D story environment; not flat podium cards",
+        "original_product_identity": "retain separate genuine model photo or faithful approved packshot"
+      },
+      "creative": {
+        "problem_hook": "Microphone ne bass se bola: awaaz kam karo yaar!",
+        "problem_context": "Small party mein music",
+        "story_motifs": [
+          "stage banter",
+          "backstage pass",
+          "rhythm parade"
+        ],
+        "voice_tone": "friendly stage performers",
+        "music_mood": "original bass groove",
+        "sfx": [
+          "bass",
+          " crowd cheer",
+          " whoosh"
+        ],
+        "humor": "friendly Indian situational comedy",
+        "interaction_requirement": "two characters physically act/react and address each other; not 'fifth said' enumeration"
+      },
+      "education": {
+        "product_role": "speaker external music/audio ko play karta hai",
+        "feature_priority": [
+          {
+            "key": "power",
+            "accepted_source_keys": [
+              "Audio Output",
+              "Output Power",
+              "Wattage"
+            ],
+            "explanation_goal": "power"
+          },
+          {
+            "key": "battery",
+            "accepted_source_keys": [
+              "Battery Life",
+              "Playback Time"
+            ],
+            "explanation_goal": "battery"
+          },
+          {
+            "key": "connect",
+            "accepted_source_keys": [
+              "Bluetooth",
+              "Connectivity"
+            ],
+            "explanation_goal": "connect"
+          },
+          {
+            "key": "resistance",
+            "accepted_source_keys": [
+              "IP Rating"
+            ],
+            "explanation_goal": "resistance"
+          },
+          {
+            "key": "format",
+            "accepted_source_keys": [
+              "Audio Formats"
+            ],
+            "explanation_goal": "format"
+          }
+        ],
+        "user_personas": [
+          "home listening",
+          "portable music if battery supported",
+          "party use after output"
+        ],
+        "explanation_requirements": [
+          "product role",
+          "verified differentiating specification or explicit evidence-unavailable notice",
+          "conditional user suitability, never guarantee",
+          "backend rank as given; do not infer proprietary ranking weights"
+        ],
+        "why_best_policy": "Only say TrustFolio ranks this product at #N based on authoritative backend; do not invent a causal score or claim universally best. State observed facts; if score factors unavailable, explicitly avoid causal reason."
+      },
+      "modes": {
+        "budget": {
+          "title": "Budget story",
+          "angle": "five friends solve the same relatable need; reveal pre-ranked top five"
+        },
+        "brand_budget": {
+          "title": "Brand squad",
+          "angle": "five genuine same-brand products only; skip otherwise"
+        },
+        "comparison": {
+          "title": "Friendly comparison",
+          "angle": "side-by-side only verified feature values; never declare an unsupported test winner"
+        }
+      },
+      "cta": "Compare current Top 5 and check latest price on trustfolio.in",
+      "publication": "BLOCK_UNTIL_PRICE_AND_ASSET_RIGHTS_VERIFIED"
+    },
+    {
+      "slot": 18,
+      "backend_slug": "tablets",
+      "backend_category_id": "69f57af848fae9a9269a0982",
+      "enabled": true,
+      "backend_status": "VERIFIED_CATEGORY_ONLY_NOT_LIVE_PRICE_APPROVAL",
+      "name": "Tablets",
+      "theme": "Creative Sketch Island",
+      "environment": {
+        "location": "colourful island of sketchbooks",
+        "character_action": "tablet friends draw a bridge out of doodles",
+        "render_target": "immersive cinematic 3D/2.5D story environment; not flat podium cards",
+        "original_product_identity": "retain separate genuine model photo or faithful approved packshot"
+      },
+      "creative": {
+        "problem_hook": "Pen ne island ka map ulta bana diya!",
+        "problem_context": "Study, reading ya drawing",
+        "story_motifs": [
+          "doodle ferry",
+          "sketch treasure",
+          "page picnic"
+        ],
+        "voice_tone": "creative island explorers",
+        "music_mood": "playful bells",
+        "sfx": [
+          "scribble",
+          " page flip",
+          " magic ping"
+        ],
+        "humor": "friendly Indian situational comedy",
+        "interaction_requirement": "two characters physically act/react and address each other; not 'fifth said' enumeration"
+      },
+      "education": {
+        "product_role": "tablet portable big-screen study/reading/apps ke liye hai",
+        "feature_priority": [
+          {
+            "key": "display",
+            "accepted_source_keys": [
+              "Display",
+              "Screen Size"
+            ],
+            "explanation_goal": "display"
+          },
+          {
+            "key": "processor",
+            "accepted_source_keys": [
+              "Processor",
+              "CPU"
+            ],
+            "explanation_goal": "processor"
+          },
+          {
+            "key": "storage",
+            "accepted_source_keys": [
+              "Storage",
+              "RAM"
+            ],
+            "explanation_goal": "storage"
+          },
+          {
+            "key": "stylus",
+            "accepted_source_keys": [
+              "Stylus Support",
+              "Pen Support"
+            ],
+            "explanation_goal": "stylus"
+          },
+          {
+            "key": "battery",
+            "accepted_source_keys": [
+              "Battery Capacity",
+              "Battery Life"
+            ],
+            "explanation_goal": "battery"
+          }
+        ],
+        "user_personas": [
+          "students",
+          "reading",
+          "notes if stylus support verified"
+        ],
+        "explanation_requirements": [
+          "product role",
+          "verified differentiating specification or explicit evidence-unavailable notice",
+          "conditional user suitability, never guarantee",
+          "backend rank as given; do not infer proprietary ranking weights"
+        ],
+        "why_best_policy": "Only say TrustFolio ranks this product at #N based on authoritative backend; do not invent a causal score or claim universally best. State observed facts; if score factors unavailable, explicitly avoid causal reason."
+      },
+      "modes": {
+        "budget": {
+          "title": "Budget story",
+          "angle": "five friends solve the same relatable need; reveal pre-ranked top five"
+        },
+        "brand_budget": {
+          "title": "Brand squad",
+          "angle": "five genuine same-brand products only; skip otherwise"
+        },
+        "comparison": {
+          "title": "Friendly comparison",
+          "angle": "side-by-side only verified feature values; never declare an unsupported test winner"
+        }
+      },
+      "cta": "Compare current Top 5 and check latest price on trustfolio.in",
+      "publication": "BLOCK_UNTIL_PRICE_AND_ASSET_RIGHTS_VERIFIED"
+    },
+    {
+      "slot": 19,
+      "backend_slug": "vacuum-cleaners",
+      "backend_category_id": "69f57b1948fae9a9269a09b0",
+      "enabled": true,
+      "backend_status": "VERIFIED_CATEGORY_ONLY_NOT_LIVE_PRICE_APPROVAL",
+      "name": "Vacuum Cleaners",
+      "theme": "Dust Detective Town",
+      "environment": {
+        "location": "detective house with sofa tunnel",
+        "character_action": "vacuum heroes chase a dust cloud with magnifying glasses",
+        "render_target": "immersive cinematic 3D/2.5D story environment; not flat podium cards",
+        "original_product_identity": "retain separate genuine model photo or faithful approved packshot"
+      },
+      "creative": {
+        "problem_hook": "Sofa ke neeche dhool ka villain chhup gaya!",
+        "problem_context": "Floor aur corners clean karna",
+        "story_motifs": [
+          "dust mystery",
+          "sofa patrol",
+          "crumb chase"
+        ],
+        "voice_tone": "friendly detectives",
+        "music_mood": "comic detective groove",
+        "sfx": [
+          "suction",
+          " mystery sting",
+          " comic footsteps"
+        ],
+        "humor": "friendly Indian situational comedy",
+        "interaction_requirement": "two characters physically act/react and address each other; not 'fifth said' enumeration"
+      },
+      "education": {
+        "product_role": "vacuum cleaner household dirt/dust suction se collect karta hai",
+        "feature_priority": [
+          {
+            "key": "suction",
+            "accepted_source_keys": [
+              "Suction Power",
+              "Suction"
+            ],
+            "explanation_goal": "suction"
+          },
+          {
+            "key": "type",
+            "accepted_source_keys": [
+              "Type",
+              "Cleaning Type"
+            ],
+            "explanation_goal": "type"
+          },
+          {
+            "key": "capacity",
+            "accepted_source_keys": [
+              "Dust Capacity",
+              "Bin Capacity"
+            ],
+            "explanation_goal": "capacity"
+          },
+          {
+            "key": "power",
+            "accepted_source_keys": [
+              "Wattage",
+              "Power Consumption"
+            ],
+            "explanation_goal": "power"
+          },
+          {
+            "key": "filter",
+            "accepted_source_keys": [
+              "HEPA Filter",
+              "Filter"
+            ],
+            "explanation_goal": "filter"
+          }
+        ],
+        "user_personas": [
+          "apartments",
+          "home cleaning",
+          "pet fur only when suction/brush specs verified"
+        ],
+        "explanation_requirements": [
+          "product role",
+          "verified differentiating specification or explicit evidence-unavailable notice",
+          "conditional user suitability, never guarantee",
+          "backend rank as given; do not infer proprietary ranking weights"
+        ],
+        "why_best_policy": "Only say TrustFolio ranks this product at #N based on authoritative backend; do not invent a causal score or claim universally best. State observed facts; if score factors unavailable, explicitly avoid causal reason."
+      },
+      "modes": {
+        "budget": {
+          "title": "Budget story",
+          "angle": "five friends solve the same relatable need; reveal pre-ranked top five"
+        },
+        "brand_budget": {
+          "title": "Brand squad",
+          "angle": "five genuine same-brand products only; skip otherwise"
+        },
+        "comparison": {
+          "title": "Friendly comparison",
+          "angle": "side-by-side only verified feature values; never declare an unsupported test winner"
+        }
+      },
+      "cta": "Compare current Top 5 and check latest price on trustfolio.in",
+      "publication": "BLOCK_UNTIL_PRICE_AND_ASSET_RIGHTS_VERIFIED"
+    },
+    {
+      "slot": 20,
+      "backend_slug": "washing-machines",
+      "backend_category_id": "69f57b3f48fae9a9269a09df",
+      "enabled": true,
+      "backend_status": "VERIFIED_CATEGORY_ONLY_NOT_LIVE_PRICE_APPROVAL",
+      "name": "Washing Machines",
+      "theme": "Bubble Laundry Kingdom",
+      "environment": {
+        "location": "sunny village road and laundry square with soap bubble market",
+        "character_action": "five walking washing-machine friends race to return a runaway sock",
+        "render_target": "immersive cinematic 3D/2.5D story environment; not flat podium cards",
+        "original_product_identity": "retain separate genuine model photo or faithful approved packshot"
+      },
+      "creative": {
+        "problem_hook": "Kapdon ka pahaad aaya, missing sock kahan gaya?",
+        "problem_context": "Kapde dhona aur laundry time kam karna",
+        "story_motifs": [
+          "missing sock",
+          "bubble parade",
+          "laundry picnic"
+        ],
+        "voice_tone": "five laundry friends",
+        "music_mood": "bubbly percussion",
+        "sfx": [
+          "bubble pop",
+          " water splash",
+          " comic footstep"
+        ],
+        "humor": "friendly Indian situational comedy",
+        "interaction_requirement": "two characters physically act/react and address each other; not 'fifth said' enumeration"
+      },
+      "education": {
+        "product_role": "washing machine kapdon ko wash/spin karne ke liye hai",
+        "feature_priority": [
+          {
+            "key": "capacity",
+            "accepted_source_keys": [
+              "Capacity",
+              "Wash Capacity"
+            ],
+            "explanation_goal": "capacity"
+          },
+          {
+            "key": "automatic",
+            "accepted_source_keys": [
+              "Automation Type",
+              "Washing Machine Type"
+            ],
+            "explanation_goal": "automatic"
+          },
+          {
+            "key": "load",
+            "accepted_source_keys": [
+              "Load Type"
+            ],
+            "explanation_goal": "load"
+          },
+          {
+            "key": "rating",
+            "accepted_source_keys": [
+              "Energy Rating",
+              "Star Rating"
+            ],
+            "explanation_goal": "rating"
+          },
+          {
+            "key": "speed",
+            "accepted_source_keys": [
+              "Spin Speed"
+            ],
+            "explanation_goal": "speed"
+          },
+          {
+            "key": "heater",
+            "accepted_source_keys": [
+              "Wash Features"
+            ],
+            "explanation_goal": "heater"
+          }
+        ],
+        "user_personas": [
+          "couples or families after checking kg capacity",
+          "frequent laundry"
+        ],
+        "explanation_requirements": [
+          "product role",
+          "verified differentiating specification or explicit evidence-unavailable notice",
+          "conditional user suitability, never guarantee",
+          "backend rank as given; do not infer proprietary ranking weights"
+        ],
+        "why_best_policy": "Only say TrustFolio ranks this product at #N based on authoritative backend; do not invent a causal score or claim universally best. State observed facts; if score factors unavailable, explicitly avoid causal reason."
+      },
+      "modes": {
+        "budget": {
+          "title": "Budget story",
+          "angle": "five friends solve the same relatable need; reveal pre-ranked top five"
+        },
+        "brand_budget": {
+          "title": "Brand squad",
+          "angle": "five genuine same-brand products only; skip otherwise"
+        },
+        "comparison": {
+          "title": "Friendly comparison",
+          "angle": "side-by-side only verified feature values; never declare an unsupported test winner"
+        }
+      },
+      "cta": "Compare current Top 5 and check latest price on trustfolio.in",
+      "publication": "BLOCK_UNTIL_PRICE_AND_ASSET_RIGHTS_VERIFIED"
+    },
+    {
+      "slot": 21,
+      "enabled": false,
+      "backend_slug": null,
+      "backend_category_id": null,
+      "name": "Cameras",
+      "theme_idea": "Cameras — future creative concept",
+      "disabled_reason": "Creative idea only: not present in verified backend category registry. No API, rank, products or publish until separately verified."
+    },
+    {
+      "slot": 22,
+      "enabled": false,
+      "backend_slug": null,
+      "backend_category_id": null,
+      "name": "Printers",
+      "theme_idea": "Printers — future creative concept",
+      "disabled_reason": "Creative idea only: not present in verified backend category registry. No API, rank, products or publish until separately verified."
+    },
+    {
+      "slot": 23,
+      "enabled": false,
+      "backend_slug": null,
+      "backend_category_id": null,
+      "name": "Wi-Fi Routers",
+      "theme_idea": "Wi-Fi Routers — future creative concept",
+      "disabled_reason": "Creative idea only: not present in verified backend category registry. No API, rank, products or publish until separately verified."
+    },
+    {
+      "slot": 24,
+      "enabled": false,
+      "backend_slug": null,
+      "backend_category_id": null,
+      "name": "Power Banks",
+      "theme_idea": "Power Banks — future creative concept",
+      "disabled_reason": "Creative idea only: not present in verified backend category registry. No API, rank, products or publish until separately verified."
+    },
+    {
+      "slot": 25,
+      "enabled": false,
+      "backend_slug": null,
+      "backend_category_id": null,
+      "name": "Projectors",
+      "theme_idea": "Projectors — future creative concept",
+      "disabled_reason": "Creative idea only: not present in verified backend category registry. No API, rank, products or publish until separately verified."
+    },
+    {
+      "slot": 26,
+      "enabled": false,
+      "backend_slug": null,
+      "backend_category_id": null,
+      "name": "Kitchen Chimneys",
+      "theme_idea": "Kitchen Chimneys — future creative concept",
+      "disabled_reason": "Creative idea only: not present in verified backend category registry. No API, rank, products or publish until separately verified."
+    },
+    {
+      "slot": 27,
+      "enabled": false,
+      "backend_slug": null,
+      "backend_category_id": null,
+      "name": "Grooming Devices",
+      "theme_idea": "Grooming Devices — future creative concept",
+      "disabled_reason": "Creative idea only: not present in verified backend category registry. No API, rank, products or publish until separately verified."
+    },
+    {
+      "slot": 28,
+      "enabled": false,
+      "backend_slug": null,
+      "backend_category_id": null,
+      "name": "Inverters",
+      "theme_idea": "Inverters — future creative concept",
+      "disabled_reason": "Creative idea only: not present in verified backend category registry. No API, rank, products or publish until separately verified."
+    },
+    {
+      "slot": 29,
+      "enabled": false,
+      "backend_slug": null,
+      "backend_category_id": null,
+      "name": "Monitors",
+      "theme_idea": "Monitors — future creative concept",
+      "disabled_reason": "Creative idea only: not present in verified backend category registry. No API, rank, products or publish until separately verified."
+    },
+    {
+      "slot": 30,
+      "enabled": false,
+      "backend_slug": null,
+      "backend_category_id": null,
+      "name": "Sewing Machines",
+      "theme_idea": "Sewing Machines — future creative concept",
+      "disabled_reason": "Creative idea only: not present in verified backend category registry. No API, rank, products or publish until separately verified."
+    }
+  ]
+}
