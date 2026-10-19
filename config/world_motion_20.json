@@ -1,0 +1,690 @@
+{
+  "version": 1,
+  "description": "Twenty original category-specific technical cartoon environment presets; these are NOT approved finished videos.",
+  "source_registry": "config/category_education_30.json",
+  "enabled_worlds": [
+    {
+      "slug": "smart-phones",
+      "kind": "neon-city",
+      "colors": {
+        "sky": "#160E3D",
+        "hill": "#6C34CD",
+        "gold": "#F846BE",
+        "detail": "#67FCF1"
+      },
+      "landmark": "neon smartphones and charging kiosks",
+      "particles": "signal waves",
+      "character_action": "swipe",
+      "parallax": [
+        {
+          "speed": 0.2,
+          "depth": "distant"
+        },
+        {
+          "speed": 0.65,
+          "depth": "mid"
+        },
+        {
+          "speed": 1.15,
+          "depth": "foreground"
+        }
+      ],
+      "visual_notes": [
+        "Category-built cinematic cartoon scenery, with 3 independent depth layers",
+        "Never use an unverified product photograph in scenery; characters are separate real ranked packshots",
+        "Visual environment is an editorial concept; it does not assert product performance"
+      ],
+      "render_eligibility": "BACKGROUND_QA_ONLY_NO_PRODUCTS",
+      "asset_rights": "original-generated vector geometry; no third-party photo rights implied"
+    },
+    {
+      "slug": "air-conditioners",
+      "kind": "summer-rescue",
+      "colors": {
+        "sky": "#FFF0D6",
+        "hill": "#EF7854",
+        "gold": "#FFDA68",
+        "detail": "#75E1FC"
+      },
+      "landmark": "summer rooftop and cool wind arches",
+      "particles": "sunbeams",
+      "character_action": "gust",
+      "parallax": [
+        {
+          "speed": 0.2,
+          "depth": "distant"
+        },
+        {
+          "speed": 0.65,
+          "depth": "mid"
+        },
+        {
+          "speed": 1.15,
+          "depth": "foreground"
+        }
+      ],
+      "visual_notes": [
+        "Category-built cinematic cartoon scenery, with 3 independent depth layers",
+        "Never use an unverified product photograph in scenery; characters are separate real ranked packshots",
+        "Visual environment is an editorial concept; it does not assert product performance"
+      ],
+      "render_eligibility": "BACKGROUND_QA_ONLY_NO_PRODUCTS",
+      "asset_rights": "original-generated vector geometry; no third-party photo rights implied"
+    },
+    {
+      "slug": "air-coolers",
+      "kind": "desert-carnival",
+      "colors": {
+        "sky": "#FFD9B1",
+        "hill": "#E6A048",
+        "gold": "#63C2C2",
+        "detail": "#FDF1CC"
+      },
+      "landmark": "desert dunes, tents, water cart",
+      "particles": "droplets",
+      "character_action": "splashes",
+      "parallax": [
+        {
+          "speed": 0.2,
+          "depth": "distant"
+        },
+        {
+          "speed": 0.65,
+          "depth": "mid"
+        },
+        {
+          "speed": 1.15,
+          "depth": "foreground"
+        }
+      ],
+      "visual_notes": [
+        "Category-built cinematic cartoon scenery, with 3 independent depth layers",
+        "Never use an unverified product photograph in scenery; characters are separate real ranked packshots",
+        "Visual environment is an editorial concept; it does not assert product performance"
+      ],
+      "render_eligibility": "BACKGROUND_QA_ONLY_NO_PRODUCTS",
+      "asset_rights": "original-generated vector geometry; no third-party photo rights implied"
+    },
+    {
+      "slug": "ceiling-fans",
+      "kind": "wind-stadium",
+      "colors": {
+        "sky": "#C1EFF7",
+        "hill": "#307FC6",
+        "gold": "#FFE47A",
+        "detail": "#9DEDC9"
+      },
+      "landmark": "circular wind sports stadium",
+      "particles": "ribbons",
+      "character_action": "spin",
+      "parallax": [
+        {
+          "speed": 0.2,
+          "depth": "distant"
+        },
+        {
+          "speed": 0.65,
+          "depth": "mid"
+        },
+        {
+          "speed": 1.15,
+          "depth": "foreground"
+        }
+      ],
+      "visual_notes": [
+        "Category-built cinematic cartoon scenery, with 3 independent depth layers",
+        "Never use an unverified product photograph in scenery; characters are separate real ranked packshots",
+        "Visual environment is an editorial concept; it does not assert product performance"
+      ],
+      "render_eligibility": "BACKGROUND_QA_ONLY_NO_PRODUCTS",
+      "asset_rights": "original-generated vector geometry; no third-party photo rights implied"
+    },
+    {
+      "slug": "desktop-computers",
+      "kind": "pixel-office",
+      "colors": {
+        "sky": "#252259",
+        "hill": "#5646A3",
+        "gold": "#9EE5FF",
+        "detail": "#FFE082"
+      },
+      "landmark": "pixel office towers and desk lamps",
+      "particles": "pixels",
+      "character_action": "type",
+      "parallax": [
+        {
+          "speed": 0.2,
+          "depth": "distant"
+        },
+        {
+          "speed": 0.65,
+          "depth": "mid"
+        },
+        {
+          "speed": 1.15,
+          "depth": "foreground"
+        }
+      ],
+      "visual_notes": [
+        "Category-built cinematic cartoon scenery, with 3 independent depth layers",
+        "Never use an unverified product photograph in scenery; characters are separate real ranked packshots",
+        "Visual environment is an editorial concept; it does not assert product performance"
+      ],
+      "render_eligibility": "BACKGROUND_QA_ONLY_NO_PRODUCTS",
+      "asset_rights": "original-generated vector geometry; no third-party photo rights implied"
+    },
+    {
+      "slug": "drones",
+      "kind": "sky-post-office",
+      "colors": {
+        "sky": "#8CDBFE",
+        "hill": "#4086CE",
+        "gold": "#FFF2E0",
+        "detail": "#FDD36D"
+      },
+      "landmark": "floating sky post office and cloud islands",
+      "particles": "postcards",
+      "character_action": "propellers",
+      "parallax": [
+        {
+          "speed": 0.2,
+          "depth": "distant"
+        },
+        {
+          "speed": 0.65,
+          "depth": "mid"
+        },
+        {
+          "speed": 1.15,
+          "depth": "foreground"
+        }
+      ],
+      "visual_notes": [
+        "Category-built cinematic cartoon scenery, with 3 independent depth layers",
+        "Never use an unverified product photograph in scenery; characters are separate real ranked packshots",
+        "Visual environment is an editorial concept; it does not assert product performance"
+      ],
+      "render_eligibility": "BACKGROUND_QA_ONLY_NO_PRODUCTS",
+      "asset_rights": "original-generated vector geometry; no third-party photo rights implied"
+    },
+    {
+      "slug": "water-purifiers",
+      "kind": "crystal-water-village",
+      "colors": {
+        "sky": "#B9F2FF",
+        "hill": "#2BA8C4",
+        "gold": "#CEFEEA",
+        "detail": "#B9E9FF"
+      },
+      "landmark": "crystalline river channel and filter towers",
+      "particles": "water drops",
+      "character_action": "trickle",
+      "parallax": [
+        {
+          "speed": 0.2,
+          "depth": "distant"
+        },
+        {
+          "speed": 0.65,
+          "depth": "mid"
+        },
+        {
+          "speed": 1.15,
+          "depth": "foreground"
+        }
+      ],
+      "visual_notes": [
+        "Category-built cinematic cartoon scenery, with 3 independent depth layers",
+        "Never use an unverified product photograph in scenery; characters are separate real ranked packshots",
+        "Visual environment is an editorial concept; it does not assert product performance"
+      ],
+      "render_eligibility": "BACKGROUND_QA_ONLY_NO_PRODUCTS",
+      "asset_rights": "original-generated vector geometry; no third-party photo rights implied"
+    },
+    {
+      "slug": "geysers",
+      "kind": "winter-lodge",
+      "colors": {
+        "sky": "#B5D9FA",
+        "hill": "#6686AD",
+        "gold": "#FFE0AE",
+        "detail": "#E7F6FF"
+      },
+      "landmark": "winter wooden lodge and chimneys",
+      "particles": "steam puffs",
+      "character_action": "hiss",
+      "parallax": [
+        {
+          "speed": 0.2,
+          "depth": "distant"
+        },
+        {
+          "speed": 0.65,
+          "depth": "mid"
+        },
+        {
+          "speed": 1.15,
+          "depth": "foreground"
+        }
+      ],
+      "visual_notes": [
+        "Category-built cinematic cartoon scenery, with 3 independent depth layers",
+        "Never use an unverified product photograph in scenery; characters are separate real ranked packshots",
+        "Visual environment is an editorial concept; it does not assert product performance"
+      ],
+      "render_eligibility": "BACKGROUND_QA_ONLY_NO_PRODUCTS",
+      "asset_rights": "original-generated vector geometry; no third-party photo rights implied"
+    },
+    {
+      "slug": "headphones-earbuds",
+      "kind": "beat-street",
+      "colors": {
+        "sky": "#211040",
+        "hill": "#8431AD",
+        "gold": "#F4519B",
+        "detail": "#4DE6D8"
+      },
+      "landmark": "night street concert and equalizer towers",
+      "particles": "sound notes",
+      "character_action": "beats",
+      "parallax": [
+        {
+          "speed": 0.2,
+          "depth": "distant"
+        },
+        {
+          "speed": 0.65,
+          "depth": "mid"
+        },
+        {
+          "speed": 1.15,
+          "depth": "foreground"
+        }
+      ],
+      "visual_notes": [
+        "Category-built cinematic cartoon scenery, with 3 independent depth layers",
+        "Never use an unverified product photograph in scenery; characters are separate real ranked packshots",
+        "Visual environment is an editorial concept; it does not assert product performance"
+      ],
+      "render_eligibility": "BACKGROUND_QA_ONLY_NO_PRODUCTS",
+      "asset_rights": "original-generated vector geometry; no third-party photo rights implied"
+    },
+    {
+      "slug": "induction-cooktops",
+      "kind": "space-kitchen",
+      "colors": {
+        "sky": "#1C2263",
+        "hill": "#574CC5",
+        "gold": "#FFC75D",
+        "detail": "#85EAE9"
+      },
+      "landmark": "space cafe with cooking ring planets",
+      "particles": "sparkles",
+      "character_action": "pan",
+      "parallax": [
+        {
+          "speed": 0.2,
+          "depth": "distant"
+        },
+        {
+          "speed": 0.65,
+          "depth": "mid"
+        },
+        {
+          "speed": 1.15,
+          "depth": "foreground"
+        }
+      ],
+      "visual_notes": [
+        "Category-built cinematic cartoon scenery, with 3 independent depth layers",
+        "Never use an unverified product photograph in scenery; characters are separate real ranked packshots",
+        "Visual environment is an editorial concept; it does not assert product performance"
+      ],
+      "render_eligibility": "BACKGROUND_QA_ONLY_NO_PRODUCTS",
+      "asset_rights": "original-generated vector geometry; no third-party photo rights implied"
+    },
+    {
+      "slug": "laptops",
+      "kind": "digital-classroom",
+      "colors": {
+        "sky": "#EEF3FF",
+        "hill": "#5D71BC",
+        "gold": "#FFD083",
+        "detail": "#9BCBEF"
+      },
+      "landmark": "large digital blackboard and school desks",
+      "particles": "letters",
+      "character_action": "bell",
+      "parallax": [
+        {
+          "speed": 0.2,
+          "depth": "distant"
+        },
+        {
+          "speed": 0.65,
+          "depth": "mid"
+        },
+        {
+          "speed": 1.15,
+          "depth": "foreground"
+        }
+      ],
+      "visual_notes": [
+        "Category-built cinematic cartoon scenery, with 3 independent depth layers",
+        "Never use an unverified product photograph in scenery; characters are separate real ranked packshots",
+        "Visual environment is an editorial concept; it does not assert product performance"
+      ],
+      "render_eligibility": "BACKGROUND_QA_ONLY_NO_PRODUCTS",
+      "asset_rights": "original-generated vector geometry; no third-party photo rights implied"
+    },
+    {
+      "slug": "microwave-ovens",
+      "kind": "snack-theatre",
+      "colors": {
+        "sky": "#F6CCAB",
+        "hill": "#C46581",
+        "gold": "#FFEB8D",
+        "detail": "#E6C0FA"
+      },
+      "landmark": "red velvet snack cinema theatre",
+      "particles": "popcorn",
+      "character_action": "curtain",
+      "parallax": [
+        {
+          "speed": 0.2,
+          "depth": "distant"
+        },
+        {
+          "speed": 0.65,
+          "depth": "mid"
+        },
+        {
+          "speed": 1.15,
+          "depth": "foreground"
+        }
+      ],
+      "visual_notes": [
+        "Category-built cinematic cartoon scenery, with 3 independent depth layers",
+        "Never use an unverified product photograph in scenery; characters are separate real ranked packshots",
+        "Visual environment is an editorial concept; it does not assert product performance"
+      ],
+      "render_eligibility": "BACKGROUND_QA_ONLY_NO_PRODUCTS",
+      "asset_rights": "original-generated vector geometry; no third-party photo rights implied"
+    },
+    {
+      "slug": "mixer-grinders",
+      "kind": "masala-studio",
+      "colors": {
+        "sky": "#FBDE98",
+        "hill": "#CC623F",
+        "gold": "#F2A94D",
+        "detail": "#D7D56A"
+      },
+      "landmark": "masala spices and musical recording booth",
+      "particles": "spice stars",
+      "character_action": "percussion",
+      "parallax": [
+        {
+          "speed": 0.2,
+          "depth": "distant"
+        },
+        {
+          "speed": 0.65,
+          "depth": "mid"
+        },
+        {
+          "speed": 1.15,
+          "depth": "foreground"
+        }
+      ],
+      "visual_notes": [
+        "Category-built cinematic cartoon scenery, with 3 independent depth layers",
+        "Never use an unverified product photograph in scenery; characters are separate real ranked packshots",
+        "Visual environment is an editorial concept; it does not assert product performance"
+      ],
+      "render_eligibility": "BACKGROUND_QA_ONLY_NO_PRODUCTS",
+      "asset_rights": "original-generated vector geometry; no third-party photo rights implied"
+    },
+    {
+      "slug": "refrigerators",
+      "kind": "ice-kingdom",
+      "colors": {
+        "sky": "#C9EEFF",
+        "hill": "#5A98CB",
+        "gold": "#E9F9FF",
+        "detail": "#9BDFFB"
+      },
+      "landmark": "ice palace and glowing frost arches",
+      "particles": "snowflakes",
+      "character_action": "freeze",
+      "parallax": [
+        {
+          "speed": 0.2,
+          "depth": "distant"
+        },
+        {
+          "speed": 0.65,
+          "depth": "mid"
+        },
+        {
+          "speed": 1.15,
+          "depth": "foreground"
+        }
+      ],
+      "visual_notes": [
+        "Category-built cinematic cartoon scenery, with 3 independent depth layers",
+        "Never use an unverified product photograph in scenery; characters are separate real ranked packshots",
+        "Visual environment is an editorial concept; it does not assert product performance"
+      ],
+      "render_eligibility": "BACKGROUND_QA_ONLY_NO_PRODUCTS",
+      "asset_rights": "original-generated vector geometry; no third-party photo rights implied"
+    },
+    {
+      "slug": "smart-tvs",
+      "kind": "cinema-city",
+      "colors": {
+        "sky": "#1E1D63",
+        "hill": "#7D4DB1",
+        "gold": "#F8D25F",
+        "detail": "#D36CDA"
+      },
+      "landmark": "cinema city theatre marquee and popcorn",
+      "particles": "tickets",
+      "character_action": "premiere",
+      "parallax": [
+        {
+          "speed": 0.2,
+          "depth": "distant"
+        },
+        {
+          "speed": 0.65,
+          "depth": "mid"
+        },
+        {
+          "speed": 1.15,
+          "depth": "foreground"
+        }
+      ],
+      "visual_notes": [
+        "Category-built cinematic cartoon scenery, with 3 independent depth layers",
+        "Never use an unverified product photograph in scenery; characters are separate real ranked packshots",
+        "Visual environment is an editorial concept; it does not assert product performance"
+      ],
+      "render_eligibility": "BACKGROUND_QA_ONLY_NO_PRODUCTS",
+      "asset_rights": "original-generated vector geometry; no third-party photo rights implied"
+    },
+    {
+      "slug": "smartwatches",
+      "kind": "fitness-arena",
+      "colors": {
+        "sky": "#C8ECDF",
+        "hill": "#36AD83",
+        "gold": "#FFC65B",
+        "detail": "#9EDFF4"
+      },
+      "landmark": "fitness race track and heart counter",
+      "particles": "pulse hearts",
+      "character_action": "steps",
+      "parallax": [
+        {
+          "speed": 0.2,
+          "depth": "distant"
+        },
+        {
+          "speed": 0.65,
+          "depth": "mid"
+        },
+        {
+          "speed": 1.15,
+          "depth": "foreground"
+        }
+      ],
+      "visual_notes": [
+        "Category-built cinematic cartoon scenery, with 3 independent depth layers",
+        "Never use an unverified product photograph in scenery; characters are separate real ranked packshots",
+        "Visual environment is an editorial concept; it does not assert product performance"
+      ],
+      "render_eligibility": "BACKGROUND_QA_ONLY_NO_PRODUCTS",
+      "asset_rights": "original-generated vector geometry; no third-party photo rights implied"
+    },
+    {
+      "slug": "speakers",
+      "kind": "music-arena",
+      "colors": {
+        "sky": "#241B55",
+        "hill": "#8241C8",
+        "gold": "#E94F91",
+        "detail": "#FDE276"
+      },
+      "landmark": "concert speaker wall and spotlight truss",
+      "particles": "audio pulses",
+      "character_action": "bass",
+      "parallax": [
+        {
+          "speed": 0.2,
+          "depth": "distant"
+        },
+        {
+          "speed": 0.65,
+          "depth": "mid"
+        },
+        {
+          "speed": 1.15,
+          "depth": "foreground"
+        }
+      ],
+      "visual_notes": [
+        "Category-built cinematic cartoon scenery, with 3 independent depth layers",
+        "Never use an unverified product photograph in scenery; characters are separate real ranked packshots",
+        "Visual environment is an editorial concept; it does not assert product performance"
+      ],
+      "render_eligibility": "BACKGROUND_QA_ONLY_NO_PRODUCTS",
+      "asset_rights": "original-generated vector geometry; no third-party photo rights implied"
+    },
+    {
+      "slug": "tablets",
+      "kind": "sketch-island",
+      "colors": {
+        "sky": "#DAF1DF",
+        "hill": "#6CAB99",
+        "gold": "#FCCB81",
+        "detail": "#C5AAEE"
+      },
+      "landmark": "sketchbook palm island and drawing clouds",
+      "particles": "drawn stars",
+      "character_action": "scribbles",
+      "parallax": [
+        {
+          "speed": 0.2,
+          "depth": "distant"
+        },
+        {
+          "speed": 0.65,
+          "depth": "mid"
+        },
+        {
+          "speed": 1.15,
+          "depth": "foreground"
+        }
+      ],
+      "visual_notes": [
+        "Category-built cinematic cartoon scenery, with 3 independent depth layers",
+        "Never use an unverified product photograph in scenery; characters are separate real ranked packshots",
+        "Visual environment is an editorial concept; it does not assert product performance"
+      ],
+      "render_eligibility": "BACKGROUND_QA_ONLY_NO_PRODUCTS",
+      "asset_rights": "original-generated vector geometry; no third-party photo rights implied"
+    },
+    {
+      "slug": "vacuum-cleaners",
+      "kind": "dust-detective",
+      "colors": {
+        "sky": "#E8D3B8",
+        "hill": "#90716D",
+        "gold": "#FFCE6D",
+        "detail": "#A9C2D3"
+      },
+      "landmark": "detective townhouse sofa and magnifying glass",
+      "particles": "dust swirls",
+      "character_action": "swoosh",
+      "parallax": [
+        {
+          "speed": 0.2,
+          "depth": "distant"
+        },
+        {
+          "speed": 0.65,
+          "depth": "mid"
+        },
+        {
+          "speed": 1.15,
+          "depth": "foreground"
+        }
+      ],
+      "visual_notes": [
+        "Category-built cinematic cartoon scenery, with 3 independent depth layers",
+        "Never use an unverified product photograph in scenery; characters are separate real ranked packshots",
+        "Visual environment is an editorial concept; it does not assert product performance"
+      ],
+      "render_eligibility": "BACKGROUND_QA_ONLY_NO_PRODUCTS",
+      "asset_rights": "original-generated vector geometry; no third-party photo rights implied"
+    },
+    {
+      "slug": "washing-machines",
+      "kind": "bubble-laundry-road",
+      "colors": {
+        "sky": "#B8EEFF",
+        "hill": "#4994D1",
+        "gold": "#FCEB9A",
+        "detail": "#A77CF2"
+      },
+      "landmark": "sunny tropical lane, laundry cottages and soap bubbles",
+      "particles": "soap bubbles",
+      "character_action": "washing spin",
+      "parallax": [
+        {
+          "speed": 0.2,
+          "depth": "distant"
+        },
+        {
+          "speed": 0.65,
+          "depth": "mid"
+        },
+        {
+          "speed": 1.15,
+          "depth": "foreground"
+        }
+      ],
+      "visual_notes": [
+        "Category-built cinematic cartoon scenery, with 3 independent depth layers",
+        "Never use an unverified product photograph in scenery; characters are separate real ranked packshots",
+        "Visual environment is an editorial concept; it does not assert product performance"
+      ],
+      "render_eligibility": "BACKGROUND_QA_ONLY_NO_PRODUCTS",
+      "asset_rights": "original-generated vector geometry; no third-party photo rights implied"
+    }
+  ],
+  "unverified_future_slots": 10,
+  "feature_data": "NEVER_INFER_FROM_SCENERY",
+  "production_approved": false
+}
