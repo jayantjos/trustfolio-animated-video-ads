@@ -238,11 +238,14 @@ const OutroScene=({t})=><div style={{
     borderRadius:50,background:"rgba(255,255,255,.55)",border:"3px solid #fff"}}/>
   {[1,2,3,4,5].map((n,i)=>{
     const p=rankProduct(n);
-    return <Buddy key={p.id} product={p} x={-12+i*182} y={402+(i%2)*36}
-      t={t} delay={i} angle={-6+i*3} scale={.48}/>;
+    return <Buddy key={p.id} product={p} x={-12+i*182} y={320+(i%2)*34}
+      t={t} delay={i} angle={-6+i*3} scale={.44}/>;
   })}
-  <div style={{position:"absolute",top:790,left:100,right:100,textAlign:"center",
-    fontSize:37,fontWeight:950,color:COLORS.purple}}>
+  <div style={{position:"absolute",top:835,left:110,right:110,textAlign:"center",
+    fontSize:35,fontWeight:950,color:COLORS.purple,
+    background:"rgba(255,255,255,.94)",padding:"14px 12px",
+    border:"3px solid rgba(127,78,229,.19)",borderRadius:26,
+    boxShadow:"0 10px 24px rgba(30,30,90,.11)"}}>
     अपनी ज़रूरत का मैच चुनो!
   </div>
 </div>;
