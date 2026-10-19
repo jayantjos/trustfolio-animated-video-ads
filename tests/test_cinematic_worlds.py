@@ -46,6 +46,26 @@ class Cinematic3DWorldTests(unittest.TestCase):
             self.assertNotIn(banned,self.code)
         self.assertIn('"source_product_count":0',self.code)
         self.assertIn('"production_approved":False',self.code)
+    def test_scenery_helper_arguments_match_blender_procedural_api(self):
+        # Previous showreel failed late on mixer-grinders because a scene
+        # helper was called with coordinates bundled in one tuple instead
+        # of separate x/y/z arguments. Reject such regressions statically.
+        for node in ast.walk(self.ast):
+            if not isinstance(node, ast.FunctionDef) or node.name!="scenefx":
+                continue
+            calls=[c for c in ast.walk(node) if isinstance(c,ast.Call)
+                   and isinstance(c.func,ast.Name) and c.func.id in ("s","c")]
+            self.assertGreater(len(calls),50)
+            for call in calls:
+                count=len(call.args)
+                if call.func.id=="s":
+                    self.assertIn(count,(5,6),f"Sphere helper at line {call.lineno} requires name,x,y,z,radius[,material]")
+                elif call.func.id=="c":
+                    self.assertIn(count,(8,9),f"Cube helper at line {call.lineno} requires name,x,y,z,sx,sy,sz[,material[,bevel]]")
+            break
+        else:
+            self.fail("Category scenery function not found")
+
     def test_video_renderer_does_not_network_fetch(self):
         self.assertNotIn("urlopen",self.code)
         self.assertNotIn("requests.get",self.code)
