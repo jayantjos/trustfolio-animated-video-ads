@@ -65,3 +65,24 @@ Date: 2026-10-19. This is a private, demo-only branch of
 Old TrustFolio website, VPS, MongoDB, Android, scraper, static image ads,
 scheduled posts, social account tokens and publishing ledgers remain untouched.
 GitHub Actions only generates private artifacts for creative review.
+
+## Latest corrected pilot QA evidence — 2026-10-19
+
+- Feature code commit: `6fd8b4cbb7d285614c1c1dd83cb27a8eebca2e67`.
+- Successful private demo render:
+  https://github.com/jayantjos/trustfolio-animated-video-ads/actions/runs/39242812092
+- GitHub Actions artifact: `trustfolio-premium-bubble-kingdom-private-demo`.
+- 36 regression tests passed; 5/5 original washing-machine product images
+  downloaded. Source-rank and H.264/AAC technical video checks passed.
+- Output: 30.058667 seconds, 1080x1920, MP4 H.264 + AAC.
+- Eight extracted visual keyframes: 1/5/9/13/17/21/26/29 seconds.
+  Manual frame inspection confirmed that the new final CTA has its own
+  white rounded plate below the five product characters instead of
+  overlapping their visible historical price labels.
+- Animated arms and hands are now visible to either side of the product
+  cards. Distinct mouth movement and brand hero framing remain basic:
+  **human creative approval remains FALSE**.
+- Neural Hindi generation passed waveform/audio codec checks.
+  **Natural-language clarity remains subject to native Hindi listening**.
+- This output is permanently marked concept demo, historical prices,
+  NOT FOR PUBLICATION. No social account was accessed or posted to.
