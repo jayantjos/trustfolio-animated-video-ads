@@ -7,6 +7,8 @@ on:
       - 'trustfolio_video/educational.py'
       - 'trustfolio_video/educational_cli.py'
       - 'tests/test_educational.py'
+      - 'tests/test_readiness.py'
+      - 'trustfolio_video/readiness.py'
       - '.github/workflows/educational-storyboards.yml'
   workflow_dispatch:
 permissions: {contents: read}
@@ -70,6 +72,25 @@ jobs:
           print('REAL_EDUCATIONAL_DEMOS_QA_PASSED=3')
           print('TOTAL_SOURCE_RANKED_PRODUCTS=15')
           print('PUBLISHING_ENABLED=false')
+          PY
+      - name: Audit safe publication readiness for the three historical ranked sources
+        run: |
+          set -euo pipefail
+          python -m trustfolio_video.readiness --snapshot evidence/washing-machines-snapshot.json --story educational-output/washing-machines-budget.json --output educational-output/washing-machines-release-readiness.json
+          python -m trustfolio_video.readiness --snapshot evidence/smart-phones-snapshot.json --story educational-output/samsung-phones-brand-budget.json --output educational-output/samsung-phones-release-readiness.json
+          python -m trustfolio_video.readiness --snapshot evidence/headphones-earbuds-snapshot.json --story educational-output/earbuds-comparison.json --output educational-output/earbuds-release-readiness.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          reports=list(Path('educational-output').glob('*release-readiness.json'))
+          assert len(reports)==3
+          for p in reports:
+              x=json.loads(p.read_text())
+              assert x['production_ready'] is False and x['publishing_enabled'] is False
+              assert x['source']['individual_fresh_prices_verified'] is False
+              assert x['story']['rank_and_hash_match'] is True
+              assert all(v=='OFF' for v in x['social'].values())
+          print('PRODUCTION_PUBLICATION_BLOCKED_SAFELY_FOR_ALL_3_PILOTS')
           PY
       - name: Upload full source-verified storyboards and educational explanations for review
         uses: actions/upload-artifact@v4
