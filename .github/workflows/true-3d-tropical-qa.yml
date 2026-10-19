@@ -1,0 +1,169 @@
+name: True 3D Tropical Laundry Cartoon Pilot (private QA)
+on:
+  push:
+    branches: [feature/true-3d-cinematic-washing-pilot-20261019]
+    paths:
+      - 'three_d/**'
+      - 'tests/test_true3d.py'
+      - '.github/workflows/true-3d-tropical-qa.yml'
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency:
+  group: true-3d-washing-machine-private-demo
+  cancel-in-progress: true
+jobs:
+  real-3d-animated-pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    env:
+      LIBGL_ALWAYS_SOFTWARE: '1'
+      PYTHONPATH: '.'
+      OMP_NUM_THREADS: '2'
+      PYTORCH_NUM_THREADS: '2'
+      HF_HUB_DISABLE_TELEMETRY: '1'
+      TOKENIZERS_PARALLELISM: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - name: Install genuine Blender scene renderer, fonts and FFmpeg
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq blender ffmpeg espeak-ng libsndfile1 fonts-dejavu-core fonts-noto-core libegl1 libgl1-mesa-dri libosmesa6 libglvnd0
+          blender -b --version | head -3
+          ffmpeg -hide_banner -encoders | grep 'libx264'
+      - name: Install reproducible source/photo and offline Hindi voice requirements
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check 'Pillow==11.3.0' 'numpy==2.2.6' 'soundfile==0.13.1' 'kokoro==0.9.4'
+      - name: Run all strict source, factual education, world and 3D safety regressions
+        run: |
+          set -euo pipefail
+          python -m compileall -q trustfolio_video tests three_d
+          python -m unittest discover -s tests -v
+      - name: Download five genuine historical photo identities and educational details
+        run: |
+          set -euo pipefail
+          python premium/prepare.py --snapshot evidence/washing-machines-snapshot.json --output premium/public
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          story=json.loads(Path('premium/public/story.json').read_text(encoding='utf-8'))
+          assert story['status']=='HISTORICAL_DEMO_NOT_FOR_PUBLICATION'
+          assert story['publishing_enabled'] is False
+          assert [p['rank'] for p in story['products']]==[1,2,3,4,5]
+          assert len(set(story['rankedProductIds']))==5
+          assert all(Path('premium/public',p['image']).is_file() for p in story['products'])
+          print('FIVE_AUTHENTIC_PHOTO_REFERENCES_PRESENT=true')
+          PY
+      - name: Synthesize native Hindi speech from open Kokoro TTS for private acting proof
+        run: |
+          set -euo pipefail
+          python premium/tts_kokoro.py --root premium/public
+          test -s premium/public/audio/soundtrack.wav
+      - name: True 3D Blender animation, physically modeled rigs and parallax camera (72 frames)
+        run: |
+          set -euo pipefail
+          mkdir -p three_d/output/frames
+          /usr/bin/time -v blender -b -t 2 --python three_d/tropical_laundry.py -- \
+            --story premium/public/story.json --output three_d/output/frames \
+            --frames 72 --resolution 70 2>&1 | tee three_d/output/blender-log.txt
+          test "$(find three_d/output/frames -name 'frame_*.png' | wc -l)" -eq 72
+          echo 'TRUE_3D_GEOMETRY_FRAMES_RENDERED=72'
+      - name: Encode 6s cinematic 1080x1920 H264 with original Hindi audio
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
+          target=Path('three_d/output')
+          target.mkdir(parents=True,exist_ok=True)
+          font='/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
+          layers=[
+             'scale=1080:1920:flags=lanczos',
+             'fps=24',
+             'drawbox=x=38:y=30:w=1004:h=126:color=0x24143F@0.91:t=fill',
+             'drawtext=fontfile='+font+':text=TRUSTFOLIO  TRUE 3D CARTOON:fontcolor=white:fontsize=49:x=(w-text_w)/2:y=73',
+             'drawbox=x=30:y=1787:w=1020:h=105:color=0x191335@0.94:t=fill',
+             'drawtext=fontfile='+font+':text=HISTORICAL DEMO - NOT FOR PUBLICATION:fontcolor=yellow:fontsize=32:x=(w-text_w)/2:y=1821',
+          ]
+          cmd=['ffmpeg','-nostdin','-hide_banner','-loglevel','error',
+              '-framerate','12','-start_number','1','-i',
+              'three_d/output/frames/frame_%04d.png',
+              '-i','premium/public/audio/soundtrack.wav',
+              '-filter_complex','[0:v]'+','.join(layers)+'[v]',
+              '-map','[v]','-map','1:a:0',
+              '-c:v','libx264','-preset','fast','-crf','20',
+              '-pix_fmt','yuv420p','-c:a','aac','-b:a','160k',
+              '-t','6','-movflags','+faststart',
+              '-y',str(target/'trustfolio-true-3d-tropical-laundry-DEMO.mp4')]
+          subprocess.run(cmd,check=True,timeout=190)
+          print('TRUE_3D_VIDEO_MP4_CREATED='+str(target/'trustfolio-true-3d-tropical-laundry-DEMO.mp4'))
+          PY
+      - name: Verify genuine source products, codec, audio, resolution and unpublishable watermark
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json,hashlib,subprocess
+          from pathlib import Path
+          target=Path('three_d/output')
+          file=target/'trustfolio-true-3d-tropical-laundry-DEMO.mp4'
+          story=json.loads(Path('premium/public/story.json').read_text(encoding='utf-8'))
+          raw=json.loads(Path('evidence/washing-machines-snapshot.json').read_text(encoding='utf-8'))
+          voice=json.loads(Path('premium/public/audio/qa.json').read_text(encoding='utf-8'))
+          assert story['sourceSha256']==raw['response_sha256']
+          assert story['rankedProductIds']==[p['id'] for p in raw['response']['data']['products']]
+          assert story['publishing_enabled'] is False
+          assert voice['human_voice_quality_approved'] is False
+          assert file.exists() and file.stat().st_size>100000
+          ffprobe=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-show_format','-of','json',str(file)]))
+          video=next(s for s in ffprobe['streams'] if s['codec_type']=='video')
+          audio=next(s for s in ffprobe['streams'] if s['codec_type']=='audio')
+          assert video['codec_name']=='h264' and video['width']==1080 and video['height']==1920
+          assert audio['codec_name']=='aac'
+          assert 5.8<=float(ffprobe['format']['duration'])<=6.2
+          for t in (0.5,2.0,4.0,5.6):
+              still=target/('frame-check-'+str(t).replace('.','_')+'.png')
+              subprocess.run(['ffmpeg','-nostdin','-hide_banner','-loglevel','error',
+                 '-ss',str(t),'-i',str(file),'-frames:v','1','-y',str(still)],
+                 check=True,timeout=40)
+              assert still.stat().st_size>10000
+          report={
+            'status':'TRUE_3D_BLENDER_PRIVATE_DEMO_TECHNICAL_QA_PASSED',
+            'blender':True,'source_product_ids':story['rankedProductIds'],
+            'source_sha256':story['sourceSha256'],
+            'historical_price_not_live_verified':True,
+            'character_design':'fictional 3D walking mascot; source photos displayed separately, not accurate product-mesh reproductions',
+            'source_photos_count':5,'actual_3d_geometry':True,'frames_blender':72,
+            'rendered_source_resolution': [378,672],
+            'upscaled_delivery_resolution':[1080,1920],
+            'fps':24,'codec':'h264','audio_codec':'aac','duration_seconds':ffprobe['format']['duration'],
+            'video_sha256':hashlib.sha256(file.read_bytes()).hexdigest(),
+            'voice_provider':'Kokoro Hindi neural evaluation',
+            'natural_hindi_voice_human_approved':False,
+            'artwork_human_approved':False,'official_logo_verified':False,
+            'third_party_photo_commercial_rights_verified':False,
+            'production_approved':False,'publishing_enabled':False,
+            'no_social_platform_writes':True,
+            'demo_watermark':'HISTORICAL DEMO - NOT FOR PUBLICATION',
+          }
+          (target/'true-3d-qa.json').write_text(json.dumps(report,indent=2)+'\n')
+          print('TRUE_3D_BLENDER_PRIVATE_MP4_QA_PASSED=true')
+          print('PUBLICATION_AND_SOCIAL_WRITES_DISABLED=true')
+          print('SOURCE_PRICES_HISTORICAL_NOT_LIVE=true')
+          PY
+      - name: Upload 3D demo MP4, 4 visual frames and verifiable QA evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trustfolio-true-3d-tropical-laundry-premium-private-demo
+          path: |
+            three_d/output/*.mp4
+            three_d/output/*.png
+            three_d/output/*qa.json
+            three_d/output/blender-log.txt
+            premium/public/story.json
+            premium/public/audio/qa.json
+          retention-days: 30
+          if-no-files-found: warn
