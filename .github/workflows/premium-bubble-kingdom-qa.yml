@@ -1,8 +1,8 @@
 name: Premium Bubble Kingdom cartoon Reel QA (private demo)
 on:
   push:
-    branches: [feature/premium-bubble-kingdom-reel-20261019]
-    paths: ['premium/**', '.github/workflows/premium-bubble-kingdom-qa.yml']
+    branches: [feature/premium-bubble-kingdom-reel-20261019, feature/30-category-educational-story-engine-20261019]
+    paths: ['premium/**', 'trustfolio_video/educational.py', 'config/category_education_30.json', '.github/workflows/premium-bubble-kingdom-qa.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -75,6 +75,9 @@ jobs:
           assert a['speech_energy']>0 and a['paid_api_used'] is False
           assert len(j['voiceCues'])==7 and len(j['mouthEnvelope100ms'])==300
           assert all(p['image'].startswith('products/') and p['sha256'] for p in j['products'])
+          assert all(p.get('educationFact') is None or p['educationFact']['sourceProductId']==p['id'] for p in j['products'])
+          assert j['educationalStorySourceSha256']==j['sourceSha256']
+          assert len(j['educationGuidance']['productRole'])>15
           probe=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-show_format','-of','json',str(video)]))
           v=next(s for s in probe['streams'] if s['codec_type']=='video')
           sound=next(s for s in probe['streams'] if s['codec_type']=='audio')
@@ -114,6 +117,7 @@ jobs:
             premium/output/*.png
             premium/output/*.json
             premium/public/story.json
+            premium/public/educational-story.json
             premium/public/audio/qa.json
           retention-days: 30
           if-no-files-found: warn
