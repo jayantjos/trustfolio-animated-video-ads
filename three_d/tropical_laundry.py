@@ -163,13 +163,15 @@ def character(product, location, rank, palette, materials, photos):
     uv("dark glossy washer glass",(0,-.444,.98),(.263,.019,.263),materials["glass"],root)
     uv("glass shine",( -.10,-.477,1.086),(.063,.009,.040),materials["shine"],root)
     # expressive face exists as independent moving meshes, never part of source photo
+    # Eyes and expressive speaking mouth sit on the front-load drum itself.
+    # Their geometry has real depth and independent animation, not a flat sticker.
     eyes=[]
-    for eye_x in (-.17,.17):
-        uv("cheek eye whites",(eye_x,-.462,1.295),(.091,.035,.081),materials["cream"],root)
-        eyes.append(uv("eyeball",(eye_x,-.503,1.291),(.036,.024,.052),materials["ink"],root))
-    for ch_x in (-.32,.32):
-        uv("pink cheek",(ch_x,-.47,1.205),(.065,.012,.031),materials["blush"],root)
-    mouth=uv("speaking mouth",(0,-.50,1.18),(.087,.019,.031),materials["mouth"],root)
+    for eye_x in (-.134,.134):
+        uv("bright cartoon eye white",(eye_x,-.49,1.054),(.122,.037,.120),materials["cream"],root)
+        eyes.append(uv("animated dark pupil",(eye_x,-.532,1.049),(.052,.030,.074),materials["ink"],root))
+    for ch_x in (-.253,.253):
+        uv("soft pink cheek",(ch_x,-.495,.856),(.070,.021,.048),materials["blush"],root)
+    mouth=uv("large smiling speaking mouth",(0,-.53,.824),(.126,.025,.061),materials["mouth"],root)
     # genuine photo follows same 3D character, always identifiable as photo reference
     identity_photo(rank,photos[rank],root,materials["gold"],materials["ink"])
     # real product brand/rank: text display on 3D molded character, from original source
@@ -190,7 +192,8 @@ def character(product, location, rank, palette, materials, photos):
         uv("3D cartoon shoe",(0,-.123,-.46),(.165,.255,.088),materials["navy"],leg)
         feet.append(leg)
     wheels=[]
-    return {"root":root,"arms":arms,"legs":feet,"eyes":eyes,"mouth":mouth,"rank":rank}
+    return {"root":root,"arms":arms,"legs":feet,"eyes":eyes,"mouth":mouth,"rank":rank,
+            "base_y":py}
 
 def palm(x,y,materials,size=1):
     base=empty("Palm tree",(x,y,0))
@@ -221,6 +224,13 @@ def building(x,y,materials,idx):
 def stage(materials):
     cube("tropical sunshine sky visual background",(0,30,13),(80,1,40),materials["sky"])
     cube("physical ground plane",(0,0,-.16),(70,90,.30),materials["grass"],.03)
+    for offset,peak in ((-10,3.7),(1,5.1),(11,4.2)):
+        bpy.ops.mesh.primitive_cone_add(vertices=6,radius1=4.9,radius2=0,
+            depth=peak,location=(offset,16,peak*.42))
+        hill=bpy.context.object
+        hill.name="Layered tropical mountain real mesh"
+        assign(hill,materials["hedge"])
+
     cube("curving stylized royal lavender road",(0,0,-.006),(10,90,.08),materials["road"],.01)
     for i in range(-9,18):
         cube("road center golden dash",(0.0,i*1.55+.3,.05),(.14,.68,.007),materials["stripe"],.0)
@@ -240,7 +250,7 @@ def stage(materials):
         x=random.uniform(-5.8,5.8);y=random.uniform(-8,13)
         if abs(x)<4.7:continue
         uv("ground leaf detail",(x,y,.13),(.26,.35,.13),materials["hedge"],segments=8,rings=6)
-    text_obj("TrustFolio scenic sign","T R U S T F O L I O",(0,8.6,4.75),materials["purple"],.7)
+    text_obj("TrustFolio scenic sign","T R U S T F O L I O",(0,8.6,4.75),materials["ink"],.82)
 
 def setup_render(args,materials):
     scene=bpy.context.scene
@@ -278,7 +288,7 @@ def setup_render(args,materials):
             break
         except (TypeError,ValueError):
             continue
-    scene.view_settings.exposure=.25
+    scene.view_settings.exposure=-.15
     scene.view_settings.gamma=1
     world=bpy.data.worlds.new("Warm tropical daylight world")
     world.use_nodes=True
@@ -300,13 +310,13 @@ def setup_render(args,materials):
     camera_data=bpy.data.cameras.new("Cinematic 38mm moving camera")
     cam=bpy.data.objects.new("Cinematic 38mm moving camera",camera_data)
     bpy.context.collection.objects.link(cam)
-    cam.location=(0,-14.9,4.25)
-    point=Vector((0,1.5,1.33))
+    cam.location=(0,-11.1,3.57)
+    point=Vector((0,-1.40,1.50))
     cam.rotation_euler=(point-Vector(cam.location)).to_track_quat('-Z','Y').to_euler()
     camera_data.type="PERSP";camera_data.lens=35
     camera_data.dof.use_dof=True
-    camera_data.dof.focus_distance=17
-    camera_data.dof.aperture_fstop=8
+    camera_data.dof.focus_distance=9.0
+    camera_data.dof.aperture_fstop=11
     scene.camera=cam
     return cam
 
@@ -345,9 +355,9 @@ def materials():
                   mat("Sunny yellow washer",(1.,.77,.35,1),rough=.23),
                   mat("Blush lavender washer",(.77,.66,.95,1),rough=.2),
                   mat("Powder coral washer",(.99,.62,.62,1),rough=.22)],
-        "sky":mat("sky cyclorama",(.54,.84,.98,1),rough=1),
+        "sky":mat("sky cyclorama",(.39,.72,.94,1),rough=1),
         "grass":mat("lush emerald grass",(.31,.66,.39,1),rough=.89),
-        "road":mat("tropical purple asphalt",(.46,.38,.67,1),rough=.86),
+        "road":mat("cinematic warm tropical road",(.33,.35,.45,1),rough=.84),
         "stripe":mat("sun yellow center line",(.99,.87,.47,1),rough=.83),
         "silver":mat("bright chrome metal",(.87,.90,.96,1),metal=.80,rough=.15),
         "cream":mat("soft cream white",WHITE,rough=.33),
@@ -381,7 +391,7 @@ def animate(scene,characters,cam,frames):
             # Scene flows toward camera, characters perform parade movement
             move=t*.125
             wavephase=t*5.1+order*.58
-            rig["root"].location[1]=1.2+(order%2)*.35+move
+            rig["root"].location[1]=rig["base_y"]+move
             rig["root"].location[2]=.04*max(0,math.sin(wavephase*2))
             rig["root"].rotation_euler[2]=math.sin(wavephase*.35)*.035
             rig["root"].keyframe_insert(data_path="location",frame=f)
@@ -400,7 +410,7 @@ def animate(scene,characters,cam,frames):
                 eye.scale[2]=.009 if (int(t*5+order*4)%41==0) else .052
                 eye.keyframe_insert(data_path="scale",frame=f)
         cam.location[0]=math.sin(t*.36)*.23
-        cam.location[2]=4.25+.06*math.sin(t*.46)
+        cam.location[2]=3.57+.06*math.sin(t*.46)
         cam.keyframe_insert(data_path="location",frame=f)
     scene.frame_set(1)
     scene.frame_start=1;scene.frame_end=frames
@@ -417,12 +427,15 @@ def main():
                    for rank,img in images.items()}
     stage(mats)
     characters=[]
-    poses=[(-3.45,1.1),(-1.7,1.1),(0,1.1),(1.7,1.1),(3.45,1.1)]
+    # Stagger real 3D friends in depth: two back, two middle, hero foreground.
+    # Reader sees cinematic perspective rather than five tiny figures in one row.
+    poses=[(-2.73,.70),(2.73,.70),(-1.97,-1.85),(1.97,-1.85),(0,-5.12)]
     for i,rank in enumerate((5,4,3,2,1)):
         product=products[rank-1]
-        characters.append(character(product,poses[i],rank,
-                                    mats["shells"][i],mats,
-                                    mats["photo"]))
+        rig=character(product,poses[i],rank,mats["shells"][i],mats,mats["photo"])
+        if rank==1:
+            rig["root"].scale=(1.14,1.14,1.14)
+        characters.append(rig)
     cam=setup_render(args,mats)
     scene=bpy.context.scene
     animate(scene,characters,cam,args.frames)
