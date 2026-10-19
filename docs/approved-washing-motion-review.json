@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "title": "Washing-machine premium approved-reference motion review",
+  "reference": {
+    "filename": "trustfolio_s_top_5_washing_machines.png",
+    "sha256": "c5ce062090f34ab414a125d91c3ad39ff81f37a8ad4e629726e5ced0f3458ba1",
+    "source": "user-approved style image from conversation",
+    "width": 1024,
+    "height": 1536
+  },
+  "video": {
+    "filename": "TrustFolio_WashingMachine_Approved_AnimatedCharacters_30s_REVIEW.mp4",
+    "sha256": "5c240840bcb09db4fb2a5ad59d5210e973edebfaa9d537ee232e638c3a8155fd",
+    "width": 1080,
+    "height": 1920,
+    "frame_rate": 24,
+    "duration_seconds": 29.667,
+    "video_codec": "h264",
+    "audio_codec": "aac",
+    "available_as": "conversation attachment only; NOT yet a GitHub Actions artifact"
+  },
+  "method": "Original user-approved high-fidelity comic panels, separately segmented and animated cartoon puppet cutouts, original backgrounds, color-matched header/footer, animated particles, subtitles, existing offline neural Hindi demo dialogue",
+  "editorial": "The example reference picture contains fictional brand/price/rank captions that do not match real backend snapshot. These are creative examples, not offers. Renderer covers example price labels, and no live price or actual ranked SKU claims are asserted.",
+  "approval": {
+    "creative_human": false,
+    "native_Hindi_human": false,
+    "full_3D_rig": false,
+    "complete_20_category_assets": false,
+    "official_logo_rights": false,
+    "retailer_images_ad_rights": false,
+    "all_individual_live_prices": false
+  },
+  "production_approved": false,
+  "publishing_enabled": false,
+  "production_schedules_modified": false,
+  "blocked_next": [
+    "Need properly independently rigged cinematic 3D talking product bodies",
+    "Need verified approved official logo and commercial media asset rights",
+    "Need human natural Hindi voice review and synchronized mouth phoneme QA",
+    "Need source-verified actual five products and per-product live price proof",
+    "Need art pipeline master assets in durable GitHub-compatible storage before autonomous CI render"
+  ]
+}
