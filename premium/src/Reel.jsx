@@ -229,16 +229,16 @@ const BattleScene=({t,rank})=>{
 const OutroScene=({t})=><div style={{
   position:"absolute",top:425,left:0,right:0,height:1010,zIndex:10
 }}>
-  <div style={{textAlign:"center",fontSize:57,color:COLORS.deep,fontWeight:950}}>
+  <div style={{textAlign:"center",paddingTop:136,fontSize:55,color:COLORS.deep,fontWeight:950}}>
     पाँच दोस्त, आपकी पसंद!
   </div>
   <div style={{textAlign:"center",marginTop:16,fontSize:31,color:COLORS.purple,
     fontWeight:850}}>RECORDED TOP 5 • ORIGINAL RANK ORDER</div>
-  <div style={{position:"absolute",left:35,top:145,width:1010,height:660,
+  <div style={{position:"absolute",left:35,top:285,width:1010,height:660,
     borderRadius:50,background:"rgba(255,255,255,.55)",border:"3px solid #fff"}}/>
   {[1,2,3,4,5].map((n,i)=>{
     const p=rankProduct(n);
-    return <Buddy key={p.id} product={p} x={-12+i*182} y={285+(i%2)*36}
+    return <Buddy key={p.id} product={p} x={-12+i*182} y={402+(i%2)*36}
       t={t} delay={i} angle={-6+i*3} scale={.48}/>;
   })}
   <div style={{position:"absolute",top:790,left:100,right:100,textAlign:"center",
