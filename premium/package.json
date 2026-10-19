@@ -1,0 +1,15 @@
+{
+  "name": "trustfolio-premium-bubble-kingdom-qa",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "render": "remotion render src/index.jsx TrustFolioBubbleKingdom output/bubble-kingdom-premium-concept.mp4 --codec=h264 --crf=21 --concurrency=2 --log=error",
+    "still": "remotion still src/index.jsx TrustFolioBubbleKingdom output/bubble-preview.png --frame=478"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.385",
+    "remotion": "4.0.385",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  }
+}

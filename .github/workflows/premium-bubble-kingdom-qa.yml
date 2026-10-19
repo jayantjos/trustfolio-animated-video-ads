@@ -1,0 +1,119 @@
+name: Premium Bubble Kingdom cartoon Reel QA (private demo)
+on:
+  push:
+    branches: [feature/premium-bubble-kingdom-reel-20261019]
+    paths: ['premium/**', '.github/workflows/premium-bubble-kingdom-qa.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: premium-bubble-kingdom-private-qa
+  cancel-in-progress: true
+jobs:
+  premium-pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 48
+    env:
+      HF_HUB_DISABLE_TELEMETRY: '1'
+      TOKENIZERS_PARALLELISM: 'false'
+      PYTORCH_NUM_THREADS: '2'
+      OMP_NUM_THREADS: '2'
+      PYTHONPATH: '.'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install system fonts, ffmpeg and Hindi phonemizer (no secrets)
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ffmpeg espeak-ng libsndfile1 fonts-noto-core fonts-dejavu-core
+          fc-match 'Noto Sans Devanagari'
+          ffmpeg -hide_banner -encoders | grep 'libx264'
+      - name: Install pinned renderer and Hindi TTS
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check 'Pillow==11.3.0' 'numpy==2.2.6' 'soundfile==0.13.1' 'kokoro==0.9.4'
+          cd premium
+          npm install --no-audit --no-fund
+      - name: Preserve old validators; run all previous story/rank tests
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -v
+      - name: Retrieve original recorded real washing machine product photography
+        run: |
+          set -euo pipefail
+          python premium/prepare.py --snapshot evidence/washing-machines-snapshot.json --output premium/public
+      - name: Evaluate genuine neural Hindi audio, no robotic eSpeak fallback
+        run: |
+          set -euo pipefail
+          python premium/tts_kokoro.py --root premium/public
+      - name: Render professional 1080x1920 30 second H264 AAC MP4
+        run: |
+          set -euo pipefail
+          cd premium
+          npx remotion browser ensure
+          npx remotion render src/index.jsx TrustFolioBubbleKingdom output/bubble-kingdom-premium-concept.mp4 --codec=h264 --crf=23 --concurrency=2 --log=error
+      - name: Technical QA source, demo watermark, actual voice and timeline
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib,json,subprocess
+          from pathlib import Path
+          video=Path('premium/output/bubble-kingdom-premium-concept.mp4')
+          j=json.loads(Path('premium/public/story.json').read_text())
+          a=json.loads(Path('premium/public/audio/qa.json').read_text())
+          original=json.loads(Path('evidence/washing-machines-snapshot.json').read_text())
+          assert j['status']=='HISTORICAL_DEMO_NOT_FOR_PUBLICATION' and j['publishing_enabled'] is False
+          assert j['rankedProductIds']==[p['id'] for p in original['response']['data']['products']]
+          assert [p['rank'] for p in j['products']]==[1,2,3,4,5]
+          assert 'NOT FOR PUBLICATION' in j['watermark']
+          assert a['speech_energy']>0 and a['paid_api_used'] is False
+          assert len(j['voiceCues'])==7 and len(j['mouthEnvelope100ms'])==300
+          assert all(p['image'].startswith('products/') and p['sha256'] for p in j['products'])
+          probe=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-show_format','-of','json',str(video)]))
+          v=next(s for s in probe['streams'] if s['codec_type']=='video')
+          sound=next(s for s in probe['streams'] if s['codec_type']=='audio')
+          assert v['width']==1080 and v['height']==1920 and v['codec_name']=='h264'
+          assert sound['codec_name']=='aac'
+          assert 29.8<float(probe['format']['duration'])<30.2
+          assert video.stat().st_size>600_000
+          (Path('premium/output')/'qa-report.json').write_text(json.dumps({
+              'status':'PRIVATE_HISTORICAL_PREMIUM_VIDEO_TECHNICAL_QA_PASSED',
+              'source_ids':j['rankedProductIds'],
+              'source_hash':j['sourceSha256'],
+              'codec':'h264','audio_codec':'aac',
+              'size':[1080,1920],'duration':probe['format']['duration'],
+              'voice_engine':j['voiceEngine'],'audio_qa_sha256':a['audio_sha256'],
+              'video_sha256':hashlib.sha256(video.read_bytes()).hexdigest(),
+              'publish_enabled':False,
+              'natural_hindi_voice_human_approved':False,
+              'design_human_approved':False,
+              'source_prices_production_approved':False,
+              'logo_official_verified':False
+          },indent=2))
+          for sec in (1,5,9,13,17,21,26,29):
+              dest=f'premium/output/frame-{sec:02d}.png'
+              subprocess.run(['ffmpeg','-nostdin','-hide_banner','-loglevel','error','-ss',str(sec),'-i',str(video),'-frames:v','1','-y',dest],check=True,timeout=45)
+              assert Path(dest).stat().st_size>20_000
+          print('PREMIUM_REEL_VIDEO_TECHNICAL_QA_PASSED=true')
+          print('PUBLISHING_ENABLED=false')
+          print('VOICE_HUMAN_REVIEW_REQUIRED=true')
+          PY
+      - name: Upload real MP4, 8 visual frames, genuine input and TTS QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trustfolio-premium-bubble-kingdom-private-demo
+          path: |
+            premium/output/*.mp4
+            premium/output/*.png
+            premium/output/*.json
+            premium/public/story.json
+            premium/public/audio/qa.json
+          retention-days: 30
+          if-no-files-found: warn
