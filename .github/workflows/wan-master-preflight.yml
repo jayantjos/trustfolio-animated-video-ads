@@ -1,0 +1,48 @@
+name: Approved Master Theme Wan2.2 character preflight — PRIVATE QA ONLY
+on:
+  push:
+    branches:
+      - feature/wan-image-to-live-master-pilot-20261020
+    paths:
+      - 'trustfolio_video/wan_master_pilot.py'
+      - 'tests/test_wan_master_pilot.py'
+      - 'docs/WAN_MASTER_MOTION_IMPLEMENTATION.md'
+      - '.github/workflows/wan-master-preflight.yml'
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  model-and-source-preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - name: Install CPU-only manifest generation and test requirements (NO AI weights)
+        run: python -m pip install --disable-pip-version-check 'Pillow==11.3.0' 'numpy==2.2.6'
+      - name: Unit tests for approved Master SHA, source crop, GPU and publication blockers
+        run: python -m unittest discover -s tests -p 'test_wan_master_pilot.py' -v
+      - name: Check inference eligibility WITHOUT downloading GPU model or making API calls
+        run: |
+          mkdir -p out
+          python -m trustfolio_video.wan_master_pilot --action check > out/wan-gpu-capabilities.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('out/wan-gpu-capabilities.json')
+          d=json.loads(p.read_text())
+          assert d['inference_executed'] is False
+          assert d['publishing_enabled'] is False
+          assert d['production_approved'] is False
+          if d['gpu_meets_requirement']:
+              print('GPU_PRESENT_BUT_WAN_INFERENCE_NOT_AUTOMATICALLY_ALLOWED=true')
+          else:
+              print('GPU_INFERENCE_BLOCKED_24GB_VRAM_OR_AUDITED_CHECKPOINT_REQUIRED=true')
+          print('MASTER_THEME_INFERENCE_EXECUTED=false')
+          PY
+      - name: Publish truthful readiness report as CI artifact (not a video)
+        uses: actions/upload-artifact@v4
+        with:
+          name: trustfolio-approved-master-wan-2character-preflight-qa
+          path: out/wan-gpu-capabilities.json
+          retention-days: 30
