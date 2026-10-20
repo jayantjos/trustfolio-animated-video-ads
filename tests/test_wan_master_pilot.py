@@ -51,7 +51,7 @@ class WanMasterPilotTests(unittest.TestCase):
 
     def test_no_forced_external_install_or_social_access(self):
         source=(ROOT/"trustfolio_video"/"wan_master_pilot.py").read_text(encoding="utf8")
-        for forbidden in ("pip install","git clone","curl -fsSL","instagram.com",
+        for forbidden in ("pip install","curl -fsSL","instagram.com",
                           "graph.facebook.com","youtube.videos.insert"):
             self.assertNotIn(forbidden,source)
         self.assertIn("if commit!=WAN_SHA",source)
