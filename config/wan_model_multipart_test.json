@@ -1,0 +1,8 @@
+{
+  "file": "diffusion_pytorch_model-00003-of-00003.safetensors",
+  "volume": "1bch597yrz",
+  "gpu_enabled": false,
+  "publish_enabled": false,
+  "model_revision": "921dbaf3f1674a56f47e83fb80a34bac8a8f203e",
+  "test": "multipart and real upstream SHA256 on a 179MB weight file, before 10GB transfers"
+}
