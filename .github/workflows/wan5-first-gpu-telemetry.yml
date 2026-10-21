@@ -52,7 +52,7 @@ jobs:
           import urllib.request,urllib.error,os,re,time
           from urllib.parse import urlencode
           pod='8vwc7sykues9r9'
-          u='https://api.runpod.io/v2/pods/'+pod+'/logs?'+urlencode({'tail':15})
+          u='https://api.runpod.io/v2/pods/'+pod+'/logs?'+urlencode({'tail':10,'source':'system'})
           req=urllib.request.Request(u,headers={'Authorization':'Bearer '+os.environ['RUNPOD_API_KEY'],
                     'Accept':'text/event-stream'})
           try:
@@ -68,12 +68,11 @@ jobs:
               print('RUNPOD_POD_LOG_EVENTS='+str(len(lines)))
               for line in lines[-12:]:
                   low=line.lower()
-                  if any(word in low for word in ['pull','image','started','created',
-                      'waiting','stopping','failed','error','cuda','model','checkpoint','running']):
-                      if any(secret in low for secret in ['token','secret','password','authorization','api_key']):
-                          print('RUNPOD_POD_LOG=REDACTED_SENSITIVE_EVENT')
-                      else:
-                          print('RUNPOD_POD_LOG_EVENT='+re.sub(r'[^ -~]', '?',line)[:250])
+                  if any(secret in low for secret in ['token','secret','password','authorization','api_key','bearer']):
+                      print('RUNPOD_POD_LOG=REDACTED_SENSITIVE_EVENT')
+                  else:
+                      safe=re.sub(r'[^ -~]', '?',line)[:300]
+                      print('RUNPOD_POD_SYSTEM_EVENT='+safe)
           except urllib.error.HTTPError as ex:
               print('RUNPOD_POD_LOG_HTTP='+str(ex.code))
           except Exception:
