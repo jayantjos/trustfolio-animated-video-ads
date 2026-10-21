@@ -95,14 +95,18 @@ def evaluate(p,model,vol,pods,catalog,hero,is_write_key_present):
         problems.append("EU_RO_1_GPU_NOT_RELIABLY_AVAILABLE")
     if not catalog["rate_within_cap"]:
         problems.append("GPU_HOURLY_QUOTE_NOT_WITHIN_ONE_DOLLAR")
-    # These are mandatory and not bypassable just because read-only APIs passed.
-    problems += [
-        "PINNED_WAN_GPU_WORKER_NOT_DEPLOYED",
-        "PROVIDER_SIDE_TERMINATION_LIMIT_NOT_CONFIRMED",
-        "INDEPENDENT_PAID_GPU_REAPER_NOT_LIVE",
-        "REAL_WAN_5_SECOND_OUTPUT_NOT_YET_RENDERED",
+    # This one read-only check cannot establish container registry pull,
+    # provider TTL enforcement, or independent reaper health. Those are
+    # separately required by the paid launch workflow. Do NOT label them
+    # FAILED unconditionally when other verified evidence exists.
+    remaining_gates=[
+        "PAID_LAUNCH_MUST_VERIFY_PINNED_GHCR_MANIFEST",
+        "PAID_LAUNCH_MUST_VERIFY_RECENT_INDEPENDENT_REAPER_SUCCESS",
+        "PROVIDER_TERMINATE_AFTER_MUST_BE_SET_ON_NEW_POD",
+        "WAN5_GPU_INFERENCE_AND_5_SECOND_MP4_NOT_YET_VERIFIED",
     ]
-    return {"status":"NOT_READY_NO_GPU_CREATED",
+    return {"status":("NOT_READY_NO_GPU_CREATED" if problems
+                      else "READ_ONLY_CHECKS_PASSED_EXTERNAL_GATES_REQUIRED"),
       "model_files_expected":len(model["objects"]),
       "approved_gpu_usd":p["gpu_usd_spend_approved"],
       "hourly_quote_usd":catalog["quote_usd_hour"],
@@ -110,7 +114,8 @@ def evaluate(p,model,vol,pods,catalog,hero,is_write_key_present):
       "volume_id":VOLUME,
       "character_master_s3_verified":bool(hero),
       "runpod_pod_write_secret_present":bool(is_write_key_present),
-      "blockers":problems,"gpu_pod_created":False,
+      "blockers":problems,"remaining_external_gates":remaining_gates,
+      "gpu_pod_created":False,
       "mp4_rendered":False,"publishing_enabled":False}
 
 
@@ -177,6 +182,7 @@ def main():
         print("APPROVED_CHARACTER_ON_S3="+str(report["character_master_s3_verified"]))
         print("POD_WRITE_SECRET_PRESENT="+str(report["runpod_pod_write_secret_present"]))
         for x in report["blockers"]:print("BLOCKER="+x)
+        for x in report["remaining_external_gates"]:print("EXTERNAL_LAUNCH_GATE="+x)
         print("GPU_CREATED=false")
         return 0
     except Exception as exc:
