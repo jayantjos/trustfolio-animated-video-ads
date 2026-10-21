@@ -1,0 +1,43 @@
+name: RunPod EU-RO-1 GPU stock alternatives and quote (NO GPU)
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths: ['.github/workflows/wan5-compatible-gpu-stock.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  stock-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read live GPU availability and price, never POST
+        run: |
+          python - <<'PY'
+          import json,os,urllib.request
+          k=os.environ['RUNPOD_API_KEY']
+          def get(path):
+              req=urllib.request.Request('https://api.runpod.io/v2'+path,
+                headers={'Authorization':'Bearer '+k,'Accept':'application/json'})
+              with urllib.request.urlopen(req,timeout=25) as r:
+                  assert r.status==200
+                  return json.loads(r.read(1500000))
+          all_g=get('/catalog/gpus').get('gpus',[])
+          centers=get('/catalog/datacenters?include=GPU_AVAILABILITY').get('dataCenters',[])
+          dc=next(x for x in centers if x.get('id')=='EU-RO-1')
+          avail=dc.get('gpuAvailability',[])
+          print('EU_RO_1_AVAILABLE_GPU_COUNT='+str(len(avail)))
+          print('EU_RO_1_ALL_STOCK='+','.join(str(x.get('id'))+':'+str(x.get('availability')) for x in avail))
+          by_id={x.get('id'):x for x in all_g}
+          for x in avail:
+              g=by_id.get(x.get('id'),{})
+              id=str(x.get('id',''))
+              price=g.get('price',{})
+              dollar=price.get('secure') if isinstance(price,dict) else None
+              hint=str(g.get('memoryInGb',g.get('vramInGb','')))
+              print('GPU_CANDIDATE='+json.dumps({'id':id,'stock':x.get('availability'),'usd_hour':dollar,'vram_hint_gb':hint},sort_keys=True))
+          print('GPU_CREATED=false')
+          PY
