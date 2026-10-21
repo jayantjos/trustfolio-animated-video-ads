@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "category": "washing-machines",
+  "working_title": "Laundry Pile Panic / Bubble Laundry Kingdom",
+  "mode": "budget",
+  "budget_inr": 35000,
+  "production_publishing": false,
+  "voice_language": "hi-IN",
+  "voice_gender": "FEMALE",
+  "voice_status": "AWAITING_APPROVED_AUDIO",
+  "character_id": "trustfolio-washing-machines-lead-v1",
+  "canonical_image": "assets/characters/washing-machines/hero.png",
+  "canonical_image_sha256": "7f9ca4e47803ff9df57ff389ede1bba15eb6cb761c2fe4521edfe4036bc20ac6",
+  "canonical_image_staging_name": "washing-machines/hero.png",
+  "video_model": {
+    "name": "Wan2.2-TI2V-5B",
+    "model_repository": "https://huggingface.co/Wan-AI/Wan2.2-TI2V-5B",
+    "code_repository": "https://github.com/Wan-Video/Wan2.2",
+    "required_gpu_vram_gb": 24,
+    "checkpoint_committed_to_git": false
+  },
+  "scene_blueprint": [
+    {
+      "id": "01_laundry_panic",
+      "seconds": 5,
+      "kind": "character",
+      "location": "sunny Indian courtyard with giant laundry pile",
+      "text_hi": "अरे! इतने सारे कपड़े! अब कौन धोएगा?",
+      "voice_actor": "lead",
+      "image_asset": "assets/characters/washing-machines/hero.png",
+      "prompt_en": "Animate exact reference: young Indian 3D cartoon lady with pink kurta, hands at her head, startled blinking and slight expressive head turn at a giant pile of clothes. Original face, clothes, body and tropical courtyard unchanged. No text, no new characters, no photorealism."
+    },
+    {
+      "id": "02_machine_entrance",
+      "seconds": 4,
+      "kind": "machine_character",
+      "location": "colorful Bubble Laundry Kingdom",
+      "text_hi": "घबराओ मत! सही वॉशिंग मशीन चुनते हैं!",
+      "voice_actor": "support",
+      "image_asset": "assets/locations/washing-machines/scene02.png",
+      "prompt_en": "Colorful playful premium 3D laundry kingdom, friendly anthropomorphic washing machine mascot entering, cinematic gentle motion; no fake product logos."
+    },
+    {
+      "id": "03_to_07_rank_reveal",
+      "seconds": 15,
+      "kind": "five_authoritative_products",
+      "rank_order": [
+        5,
+        4,
+        3,
+        2,
+        1
+      ],
+      "location": "glowing washing machine showroom podiums",
+      "text_hi_template": "ये है रैंक {rank}. पूरी जानकारी TrustFolio पर देखें.",
+      "source_rule": "Only validated official live Top 5 data; each product image must be source-verified. Missing/live-stale product blocks production.",
+      "image_asset": "assets/locations/washing-machines/showroom.png",
+      "prompt_en": "Five consecutive 3D cartoon-style podium reveals with original product photos overlaid separately, preserving actual rank and retailer evidence."
+    },
+    {
+      "id": "08_cta",
+      "seconds": 6,
+      "kind": "cta",
+      "location": "Bubble Laundry Kingdom hero stage",
+      "text_hi": "अपने बजट की टॉप पाँच मशीनें देखो, TrustFolio डॉट इन पर!",
+      "voice_actor": "lead",
+      "image_asset": "assets/locations/washing-machines/cta.png",
+      "prompt_en": "Premium cartoon woman points toward empty space reserved for text compositing. No baked text or invented prices."
+    }
+  ],
+  "total_seconds": 30,
+  "shots_qa_policy": "Only actual I2V output counts as animation; audio mux is NOT lip sync.",
+  "publish_gate": {
+    "required": [
+      "verified current Top 5 prices and stock",
+      "approved licensed character/location assets",
+      "natural Hindi voice QA",
+      "independent lip-sync QA",
+      "final MP4 and exact hash",
+      "account credentials and publishing ledger"
+    ],
+    "enabled": false
+  }
+}
