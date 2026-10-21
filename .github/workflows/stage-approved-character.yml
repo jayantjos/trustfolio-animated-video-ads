@@ -1,0 +1,34 @@
+name: Approved shared cartoon woman image to RunPod S3 (no GPU)
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths:
+      - 'assets/characters/shared/pink_kurta_lady_v1.png'
+      - 'scripts/stage_canonical_character.py'
+      - '.github/workflows/stage-approved-character.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  approved-character:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      RUNPOD_S3_ACCESS_KEY_ID: ${{ secrets.RUNPOD_S3_ACCESS_KEY_ID }}
+      RUNPOD_S3_SECRET_ACCESS_KEY: ${{ secrets.RUNPOD_S3_SECRET_ACCESS_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate original approved master image, not a new woman
+        run: python -m unittest discover -s tests -p test_stage_canonical_character.py -v
+      - run: python -m pip install "boto3>=1.35,<2"
+      - name: Upload exact SHA256-approved 2.48MB source to preexisting volume
+        run: python -m scripts.stage_canonical_character
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: exact-sha256-character-upload-verified
+          path: output/approved-character-upload.json
+          retention-days: 30
