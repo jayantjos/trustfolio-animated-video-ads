@@ -22,12 +22,14 @@ def validate_owned_pod(pod,pod_id,job_id):
         raise UnsafeCleanup("POD_ID_MISMATCH")
     if pod.get("name")!="trustfolio-video-"+job_id:
         raise UnsafeCleanup("NOT_OWNED_VIDEO_JOB_POD")
-    mounts=pod.get("mounts")
-    mount=(mounts or {}).get("networkVolume") if isinstance(mounts,dict) else None
-    mount_id=mount.get("id") if isinstance(mount,dict) else None
-    # Alternate standard response form (read-only API verification required).
-    bound=pod.get("networkVolumeId") or mount_id
-    if bound != VOLUME:
+    mounts=pod.get("mounts",{})
+    net=mounts.get("network") if isinstance(mounts,dict) else None
+    # v2 documented network mount schema: mounts.network=[{volumeId, path}].
+    if not isinstance(net,list) or len(net)!=1:
+        raise UnsafeCleanup("NETWORK_MOUNT_NOT_V2_VERIFIED")
+    mount=net[0]
+    if (not isinstance(mount,dict) or mount.get("volumeId")!=VOLUME
+        or mount.get("path")!="/workspace"):
         raise UnsafeCleanup("WRONG_OR_UNVERIFIED_NETWORK_VOLUME")
     return True
 
