@@ -34,7 +34,7 @@ jobs:
         with:
           python-version: '3.11'
       - run: python -m unittest discover -s tests -p 'test_runpod_storage_provision.py' -v
-      - run: python scripts/runpod_storage_provision.py
+      - run: python -m scripts.runpod_storage_provision
       - uses: actions/upload-artifact@v4
         with:
           name: runpod-100gb-storage-purchase-dry-run
@@ -55,7 +55,7 @@ jobs:
         env:
           CONFIRMATION: ${{ inputs.confirmation }}
         run: |
-          python scripts/runpod_storage_provision.py --create --confirmation "$CONFIRMATION"
+          python -m scripts.runpod_storage_provision --create --confirmation "$CONFIRMATION"
       - uses: actions/upload-artifact@v4
         if: success()
         with:
