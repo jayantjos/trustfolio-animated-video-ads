@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Safety-scoped independent RunPod Pod reaper, one TrustFolio pilot only.
 
-This runs from DEFAULT branch every ten minutes. It only DELETEs the precise
-private video GPU Pod attached to the known 100GB EU-RO-1 network volume,
-*after* it is too old for the approved $1 first pilot. No other Pod or any
+This runs from DEFAULT branch on a best-effort 5-minute schedule. It only
+DELETEs the exact verified TrustFolio GPU Pod mounted to its known 100GB
+EU-RO-1 volume when either its logs show a fatal error or it exceeds the
+35-minute stale threshold. No other Pod or any
 volume will be touched. The provider-native auto-terminate TTL is separately
 mandatory for paid creation; Actions scheduling is best-effort, not a hard TTL.
 """
@@ -15,6 +16,8 @@ import time
 from datetime import datetime, timezone
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
+
+from scripts.wan5_live_log_guard import scan_container_logs
 
 BASE="https://api.runpod.io/v2/pods"
 NAME="trustfolio-video-wan5-laundry-first-20261021"
@@ -49,7 +52,7 @@ def request_json(key,path="",method="GET",opener=urlopen):
     except (URLError,ValueError,TimeoutError,OSError):
         raise ReaperBlock("RUNPOD_REQUEST_UNAVAILABLE") from None
 
-def valid_target(pod,now=None):
+def valid_target(pod,now=None,min_age_minutes=STALE_MINUTES):
     now=now or datetime.now(timezone.utc)
     if not isinstance(pod,dict) or pod.get("name")!=NAME:
         return False
@@ -73,9 +76,10 @@ def valid_target(pod,now=None):
     minutes=(now-dt).total_seconds()/60
     if minutes<0:
         raise ReaperBlock("TARGET_CLOCK_SKEW")
-    return minutes>=STALE_MINUTES
+    return minutes>=min_age_minutes
 
-def scan(key,client=request_json,sleep=time.sleep,now=None,apply=False):
+def scan(key,client=request_json,sleep=time.sleep,now=None,apply=False,
+         log_scanner=scan_container_logs):
     body=client(key,"","GET")
     pods=body.get("pods")
     if not isinstance(pods,list):
@@ -86,23 +90,36 @@ def scan(key,client=request_json,sleep=time.sleep,now=None,apply=False):
     if not matches:
         return {"status":"NO_TARGET_POD","pod_deleted":False}
     pod=matches[0]
-    if not valid_target(pod,now):
-        return {"status":"TARGET_NOT_STALE_OR_UNVERIFIED","pod_deleted":False}
+    # Exact name alone is never enough to inspect, stop or destroy a Pod.
+    valid_target(pod,now,min_age_minutes=0)
+    stale=valid_target(pod,now)
+    fatal=None
+    if not stale:
+        observed=log_scanner(key,pod["id"])
+        fatal=observed.get("fatal")
+    if not stale and not fatal:
+        return {"status":"TARGET_NOT_STALE_OR_UNVERIFIED",
+                "pod_deleted":False}
+    reason="FATAL" if fatal else "STALE"
     if not apply:
-        return {"status":"WOULD_DELETE_STALE_OWNED_POD","pod_deleted":False}
+        return {"status":"WOULD_DELETE_"+reason+"_OWNED_POD",
+                "pod_deleted":False}
     pid=pod["id"]
-    # Second GET protects against a reused/stale Pod ID or modified mount.
+    # Re-GET identity, region, volume, mount and age BEFORE any DELETE.
     fresh=client(key,"/"+pid,"GET")
     if fresh.get("deleted"):
         return {"status":"ALREADY_TERMINATED","pod_deleted":True}
-    if fresh.get("id")!=pid or not valid_target(fresh,now):
+    min_age=0 if fatal else STALE_MINUTES
+    if fresh.get("id")!=pid or not valid_target(
+            fresh,now,min_age_minutes=min_age):
         raise ReaperBlock("RECHECK_DID_NOT_MATCH_TARGET")
     client(key,"/"+pid,"DELETE")
     for attempt in range(7):
         current=client(key,"/"+pid,"GET")
         if current.get("deleted"):
-            return {"status":"STALE_GPU_POD_DELETED_AND_404_CONFIRMED",
-                    "pod_deleted":True}
+            return {"status":reason+"_GPU_POD_DELETED_AND_404_CONFIRMED",
+                    "pod_deleted":True,
+                    "log_failure_class":fatal}
         if attempt<6:sleep(3)
     raise ReaperBlock("CRITICAL_DELETE_SENT_NOT_CONFIRMED")
 
