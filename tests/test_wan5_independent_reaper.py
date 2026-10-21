@@ -45,6 +45,61 @@ class TestIndependentReaper(unittest.TestCase):
         self.assertEqual(r["status"],"STALE_GPU_POD_DELETED_AND_404_CONFIRMED")
         self.assertEqual([("","GET"),("/abc123456","GET"),
                           ("/abc123456","DELETE"),("/abc123456","GET")],calls)
+    def test_fresh_fatal_log_deletes_only_verified_own_pod(self):
+        p=target(age=4)
+        calls=[]
+        def api(key,path,method):
+            calls.append((path,method))
+            if not path:return {"pods":[p,{"id":"another","name":"other"}]}
+            if method=="DELETE":return {"http_status":204}
+            if len(calls)>=4:return {"deleted":True}
+            return p
+        seen=[]
+        def fatal(key,pid):
+            seen.append(pid)
+            return {"fatal":"MISSING_DEPENDENCY","available":True}
+        r=scan("k",api,lambda _:None,now=NOW,apply=True,log_scanner=fatal)
+        self.assertEqual(r["status"],"FATAL_GPU_POD_DELETED_AND_404_CONFIRMED")
+        self.assertEqual(r["log_failure_class"],"MISSING_DEPENDENCY")
+        self.assertEqual(seen,["abc123456"])
+        self.assertEqual([("", "GET"),("/abc123456","GET"),
+                          ("/abc123456","DELETE"),("/abc123456","GET")],calls)
+
+    def test_fresh_healthy_never_deleted(self):
+        p=target(age=4)
+        calls=[]
+        def api(key,path,method):
+            calls.append((path,method))
+            return {"pods":[p]}
+        r=scan("k",api,now=NOW,apply=True,
+               log_scanner=lambda key,pid:{"fatal":None,"available":True})
+        self.assertFalse(r["pod_deleted"])
+        self.assertEqual(calls,[("", "GET")])
+
+    def test_fresh_unavailable_logs_do_not_false_delete(self):
+        p=target(age=4)
+        calls=[]
+        def api(key,path,method):
+            calls.append(method)
+            return {"pods":[p]}
+        r=scan("k",api,now=NOW,apply=True,
+               log_scanner=lambda key,pid:{"fatal":None,"available":False})
+        self.assertFalse(r["pod_deleted"])
+        self.assertNotIn("DELETE",calls)
+
+    def test_fresh_fatal_mismatch_recheck_refuses_deletion(self):
+        p=target(age=4)
+        altered=target(age=4)
+        altered["mounts"]["network"][0]["volumeId"]="other"
+        calls=[]
+        def api(key,path,method):
+            calls.append(method)
+            return {"pods":[p]} if not path else altered
+        with self.assertRaises(ReaperBlock):
+            scan("k",api,now=NOW,apply=True,
+                 log_scanner=lambda key,pid:{"fatal":"MISSING_DEPENDENCY"})
+        self.assertNotIn("DELETE",calls)
+
     def test_mismatch_recheck_refuses_deletion(self):
         p=target()
         altered=target()
