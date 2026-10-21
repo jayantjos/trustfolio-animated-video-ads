@@ -26,6 +26,32 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_stage_wan5_tokenizer.py' -v
       - name: Fetch official pinned tokenizer and independently verify S3 readback
         run: python -m scripts.stage_wan5_tokenizer
+      - name: CPU load the ACTUAL S3 tokenizer using Wan-pinned Transformers (no GPU)
+        run: |
+          python -m pip install 'transformers>=4.49,<=4.51.3' 'sentencepiece>=0.2,<1'
+          python - <<'PY'
+          import tempfile
+          import hashlib
+          from pathlib import Path
+          from transformers import AutoTokenizer
+          from scripts.stage_wan5_tokenizer import get_s3, TOKENIZER, MODEL_PREFIX, BUCKET
+          s3=get_s3()
+          with tempfile.TemporaryDirectory() as tmp:
+              base=Path(tmp)
+              for name,(max_bytes,expected_sha) in TOKENIZER.items():
+                  result=s3.get_object(Bucket=BUCKET,Key=MODEL_PREFIX+name)
+                  body=result["Body"]
+                  try: data=body.read(max_bytes+1)
+                  finally: body.close()
+                  assert 10<len(data)<=max_bytes,"INVALID_S3_TOKENIZER_FILE_"+name
+                  if expected_sha:
+                      assert hashlib.sha256(data).hexdigest()==expected_sha, "S3_TOKENIZER_SHA_MISMATCH"
+                  (base/name).write_bytes(data)
+              tokenizer=AutoTokenizer.from_pretrained(str(base),local_files_only=True)
+              ids=tokenizer("नमस्ते भारत. TrustFolio 5-second video.",add_special_tokens=True)["input_ids"]
+              assert len(ids)>4, "WAN_TOKENIZER_CPU_ENCODING_FAILED"
+              print("WAN_REAL_REMOTE_S3_TOKENIZER_CPU_LOAD_AND_HINDI_ENCODING=PASS")
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
