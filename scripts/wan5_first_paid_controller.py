@@ -37,6 +37,12 @@ RECEIPT="videos/private-qa/"+JOB_ID+"/scene01.receipt.json"
 MP4="videos/private-qa/"+JOB_ID+"/scene01.mp4"
 # $0.89/h initially. Even $1.50/h over 38 minutes is < $1.
 POD_PROVIDER_TTL_MINUTES=38
+# Each of these models offers >=24GiB physical VRAM. Prefer 32GB, then
+# established RTX4090, and use cost-effective RTX PRO4000 if it is the only
+# EU-RO-1 stock. All are for the SAME one approved $1 pilot.
+GPU_PREFERENCE=("NVIDIA RTX PRO 4500 Blackwell",
+                "NVIDIA GeForce RTX 4090",
+                "NVIDIA RTX PRO 4000 Blackwell")
 OWN_POLL_MAX_MINUTES=30
 MAX_ACCEPTED_RATE_USD_PER_HR=Decimal("1.50")
 
@@ -216,15 +222,32 @@ def check_cost_and_availability(read_key):
         raise PilotError("EXISTING_NETWORK_VOLUME_MISMATCH")
     g=api_read(read_key,BASE+"/catalog/gpus")
     d=api_read(read_key,BASE+"/catalog/datacenters?include=GPU_AVAILABILITY")
-    quote=check_catalog(g,d)
-    try:rate=Decimal(str(quote.get("quote_usd_hour")))
-    except Exception:raise PilotError("GPU_RATE_UNAVAILABLE") from None
-    if (not rate.is_finite() or rate<=0 or rate>MAX_ACCEPTED_RATE_USD_PER_HR
-        or rate*POD_PROVIDER_TTL_MINUTES/60>=Decimal("1")):
-        raise PilotError("GPU_QUOTE_EXCEEDS_ONE_DOLLAR_TEST")
-    if quote["stock"] not in ("LOW","MEDIUM","HIGH"):
-        raise PilotError("EU_RO_1_GPU_NOT_AVAILABLE")
-    return {"rate_usd_per_hour":str(rate),"stock":quote["stock"],
+    center=next((x for x in d.get("dataCenters",[])
+                 if x.get("id")==DATACENTER),None)
+    if not isinstance(center,dict):
+        raise PilotError("EU_RO_1_CATALOG_MISSING")
+    available={
+        x.get("id"):x.get("availability")
+        for x in center.get("gpuAvailability",[])
+        if isinstance(x,dict)
+    }
+    gpu_by_id={x.get("id"):x for x in g.get("gpus",[]) if isinstance(x,dict)}
+    options=[]
+    for gpu_id in GPU_PREFERENCE:
+        if available.get(gpu_id) not in ("LOW","MEDIUM","HIGH"):
+            continue
+        price=gpu_by_id.get(gpu_id,{}).get("price",{})
+        try:rate=Decimal(str(price.get("secure")))
+        except Exception:continue
+        if (rate.is_finite() and rate>0
+            and rate<=MAX_ACCEPTED_RATE_USD_PER_HR
+            and rate*POD_PROVIDER_TTL_MINUTES/60<Decimal("1")):
+            options.append((gpu_id,rate,available[gpu_id]))
+    if not options:
+        raise PilotError("NO_CURRENT_IN_REGION_APPROVED_24GB_GPU_STOCK")
+    gpu_id,rate,stock=options[0]
+    return {"gpu_type":gpu_id,
+            "rate_usd_per_hour":str(rate),"stock":stock,
             "max_gpu_usd_at_38m":str(round(rate*POD_PROVIDER_TTL_MINUTES/60,4))}
 
 def create_registry(key,github_token,requester=safe_api):
@@ -241,13 +264,15 @@ def create_registry(key,github_token,requester=safe_api):
         raise PilotError("REGISTRY_AUTH_CREATE_ID_MISSING")
     return rid
 
-def make_graphql_payload(registry_id,now=None):
+def make_graphql_payload(registry_id,now=None,gpu_id=None):
     if not re.fullmatch("[A-Za-z0-9_-]{5,80}",registry_id):
         raise PilotError("REGISTRY_ID_INVALID")
+    gpu_id=gpu_id or "NVIDIA GeForce RTX 4090"
+    if gpu_id not in GPU_PREFERENCE:raise PilotError("GPU_NOT_IN_24GB_PLUS_ALLOWLIST")
     now=now or datetime.now(timezone.utc)
     deadline=(now+timedelta(minutes=POD_PROVIDER_TTL_MINUTES)).replace(microsecond=0)
     return {"cloudType":"SECURE",
-            "gpuTypeId":GPU,"gpuCount":1,
+            "gpuTypeId":gpu_id,"gpuCount":1,
             "dataCenterId":DATACENTER,
             "networkVolumeId":VOLUME,
             "volumeMountPath":"/workspace",
@@ -293,6 +318,8 @@ def run():
     report={"status":"NOT_STARTED","video_rendered":False,"gpu_pod_deleted":False}
     try:
         cost=check_cost_and_availability(read_key)
+        print("PILOT_GPU_TYPE="+cost["gpu_type"],flush=True)
+        print("PILOT_GPU_STOCK="+cost["stock"],flush=True)
         print("PILOT_GPU_QUOTE_USD_HR="+cost["rate_usd_per_hour"],flush=True)
         print("PILOT_GPU_MAX_COST_UNDER_1_USD="+cost["max_gpu_usd_at_38m"],flush=True)
         verify_hero(s3)
@@ -300,7 +327,7 @@ def run():
         if find_owned_pods(write_key):
             raise PilotError("ALREADY_EXISTING_PILOT_POD_PREVENT_DUPLICATE")
         registry_id=create_registry(write_key,github_token)
-        payload=make_graphql_payload(registry_id)
+        payload=make_graphql_payload(registry_id,gpu_id=cost["gpu_type"])
         print("PILOT_PROVIDER_TERMINATE_AFTER="+payload["terminateAfter"],flush=True)
         print("PILOT_CREATING_REAL_GPU=TRUE",flush=True)
         pod=graphql_create(write_key,payload)
