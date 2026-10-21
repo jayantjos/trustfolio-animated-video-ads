@@ -50,6 +50,14 @@ MODEL_FILES = {
     "README.md": 15935,
 }
 
+TOKENIZER_FILES = {
+    "tokenizer.json": (17_500_000,"6e197b4d3dbd71da14b4eb255f4fa91c9c1f2068b20a2de2472967ca3d22602b"),
+    "spiece.model": (4_800_000,"e3909a67b780650b35cf529ac782ad2b6b26e6d1f849d3fbb6a872905f452458"),
+    "tokenizer_config.json":(150_000,None),
+    "special_tokens_map.json":(30_000,None),
+}
+FAILURE = OUTDIR / "scene01.failure.json"
+
 class RenderError(RuntimeError):
     pass
 
@@ -59,6 +67,28 @@ def sha256_file(path, chunk=4 * 1024 * 1024):
         for b in iter(lambda: f.read(chunk), b""):
             h.update(b)
     return h.hexdigest()
+
+def verify_tokenizer_dir(root):
+    # The original 9 large checkpoint objects were verified but the official
+    # model requires FOUR additional tokenizer files under google/umt5-xxl/.
+    for name,(max_bytes,digest) in TOKENIZER_FILES.items():
+        file=root / "google" / "umt5-xxl" / name
+        if not file.is_file():
+            raise RenderError("WAN_TOKENIZER_MISSING_"+name.replace(".","_"))
+        size=file.stat().st_size
+        if not 10 <= size <= max_bytes:
+            raise RenderError("WAN_TOKENIZER_SIZE_INVALID_"+name.replace(".","_"))
+        if digest and sha256_file(file)!=digest:
+            raise RenderError("WAN_TOKENIZER_SHA256_MISMATCH_"+name.replace(".","_"))
+        if name.endswith(".json"):
+            try:
+                with open(file,"r",encoding="utf-8") as fh:
+                    value=json.load(fh)
+                if not isinstance(value,dict):
+                    raise ValueError("Expected JSON object")
+            except (OSError,ValueError,UnicodeError):
+                raise RenderError("WAN_TOKENIZER_JSON_INVALID_"+name.replace(".","_")) from None
+    return True
 
 def ensure_approved_files(image=IMAGE, model=MODEL, code=WAN_SOURCE):
     if not image.is_file() or image.stat().st_size != IMAGE_BYTES:
@@ -71,6 +101,7 @@ def ensure_approved_files(image=IMAGE, model=MODEL, code=WAN_SOURCE):
         path = model / name
         if not path.is_file() or path.stat().st_size != size:
             raise RenderError("VERIFIED_MODEL_SHARD_NOT_MOUNTED_" + name)
+    verify_tokenizer_dir(model)
     return True
 
 def gpu_check(runner=subprocess.run):
@@ -162,18 +193,40 @@ def render(*, image=IMAGE, model=MODEL, code=WAN_SOURCE,
         if pending.exists():
             pending.unlink()
 
+def write_failure_receipt(reason,returncode=None):
+    # Diagnostic receipt lives on the EXISTING volume, never raw traceback,
+    # prompts or credentials. Controller can retrieve it via read-only S3.
+    safe=re.sub(r"[^A-Z0-9_]", "_",str(reason).upper())[:115]
+    result={"status":"FAILED_PRIVATE_WAN5","job_id":JOB_ID,
+            "failure_reason":safe,"model":"Wan2.2-TI2V-5B",
+            "social_publishing":False,
+            "return_code":int(returncode) if isinstance(returncode,int) else None}
+    try:
+        OUTDIR.mkdir(parents=True,exist_ok=True)
+        atomic_json(FAILURE,result)
+    except (OSError,ValueError):
+        print("WAN5_FAILURE_RECEIPT=UNAVAILABLE",flush=True)
+
 def main():
     try:
         render()
         return 0
     except subprocess.TimeoutExpired:
-        print("TRUSTFOLIO_WAN5=BLOCKED_GPU_INFERENCE_TIMEOUT", flush=True)
-    except subprocess.CalledProcessError:
-        print("TRUSTFOLIO_WAN5=BLOCKED_GPU_INFERENCE_OR_TOOLS_FAILED", flush=True)
-    except (RenderError, ValueError) as e:
-        print("TRUSTFOLIO_WAN5=BLOCKED_" + str(e), flush=True)
+        reason="GPU_INFERENCE_TIMEOUT"
+        print("TRUSTFOLIO_WAN5=BLOCKED_"+reason,flush=True)
+        write_failure_receipt(reason)
+    except subprocess.CalledProcessError as exc:
+        reason="GPU_INFERENCE_OR_TOOLS_FAILED"
+        print("TRUSTFOLIO_WAN5=BLOCKED_"+reason,flush=True)
+        write_failure_receipt(reason,exc.returncode)
+    except (RenderError, ValueError) as exc:
+        reason=str(exc)
+        print("TRUSTFOLIO_WAN5=BLOCKED_"+reason,flush=True)
+        write_failure_receipt(reason)
     except Exception:
-        print("TRUSTFOLIO_WAN5=BLOCKED_UNEXPECTED_ERROR", flush=True)
+        reason="UNEXPECTED_ERROR"
+        print("TRUSTFOLIO_WAN5=BLOCKED_"+reason,flush=True)
+        write_failure_receipt(reason)
     return 1
 
 if __name__ == "__main__":
