@@ -1,0 +1,11 @@
+{
+  "launch_approved_by_user": true,
+  "job_id": "wan5-laundry-first-20261021",
+  "gpu_usd_max": 1,
+  "seconds": 5,
+  "instance_count_max": 1,
+  "mode": "private-qa",
+  "publish": false,
+  "auto_delete_pod": true,
+  "existing_network_volume": "1bch597yrz"
+}
