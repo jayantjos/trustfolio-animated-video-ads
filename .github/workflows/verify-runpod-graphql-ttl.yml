@@ -37,7 +37,7 @@ jobs:
                   result=inspect(False)
                   auth="bearer"
               except urllib.error.HTTPError as exc:
-                  if exc.code not in (401,403):raise
+                  if exc.code not in (400,401,403):raise
                   result=inspect(True)
                   auth="query_string"
               fields=result.get("data",{}).get("__type",{}).get("inputFields",[])
