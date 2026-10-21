@@ -1,4 +1,5 @@
 name: WAN5 second video live GPU and MP4 status (READ ONLY)
+# Recheck user-requested current status; never launch a paid Pod.
 on:
   push:
     branches: [feat/washing-machine-character-video-pilot]
