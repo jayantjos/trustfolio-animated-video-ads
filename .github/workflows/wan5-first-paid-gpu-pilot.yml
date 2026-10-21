@@ -1,0 +1,69 @@
+name: RUN FIRST APPROVED WAN5 REAL 5-SECOND GPU PILOT (MAX $1 GPU)
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths:
+      - 'pilot/wan5-first-launch.request.json'
+permissions:
+  contents: read
+  packages: read
+concurrency:
+  group: first-wan5-laundry-approved-paid-single-pod
+  cancel-in-progress: false
+jobs:
+  launch-first-real-video:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 44
+    env:
+      RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+      RUNPOD_POD_WRITE_KEY: ${{ secrets.RUNPOD_POD_WRITE_KEY }}
+      RUNPOD_S3_ACCESS_KEY_ID: ${{ secrets.RUNPOD_S3_ACCESS_KEY_ID }}
+      RUNPOD_S3_SECRET_ACCESS_KEY: ${{ secrets.RUNPOD_S3_SECRET_ACCESS_KEY }}
+      GHCR_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TRUSTFOLIO_PAID_FIRST_TEST: 'yes'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - name: Install storage + preflight dependencies, no GPU
+        run: python -m pip install 'boto3>=1.35,<2'
+      - name: Enforce exactly one $1 user-approved 5s pilot request
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          req=json.loads(Path('pilot/wan5-first-launch.request.json').read_text())
+          expected={'launch_approved_by_user':True,
+                    'job_id':'wan5-laundry-first-20261021',
+                    'gpu_usd_max':1,
+                    'seconds':5,
+                    'instance_count_max':1,
+                    'mode':'private-qa',
+                    'publish':False,
+                    'auto_delete_pod':True,
+                    'existing_network_volume':'1bch597yrz'}
+          assert req==expected, 'UNAPPROVED_OR_MODIFIED_PAID_GPU_REQUEST'
+          PY
+      - name: Validate controller safety and immutable original art
+        run: |
+          python -m unittest discover -s tests -p 'test_wan5_first_paid_controller.py' -v
+          python -c 'from scripts.stage_canonical_character import hash_image; assert hash_image()=="7f9ca4e47803ff9df57ff389ede1bba15eb6cb761c2fe4521edfe4036bc20ac6"'
+      - name: Check authenticated private GHCR image manifest without GPU charge
+        env:
+          GHCR_USER: ${{ github.actor }}
+          GHCR_PASS: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          printf '%s' "$GHCR_PASS" | docker login ghcr.io -u "$GHCR_USER" --password-stdin >/dev/null
+          docker manifest inspect ghcr.io/jayantjos/trustfolio-wan5-worker@sha256:5f920321ce5cd6485e560a670b3b53f8f69cc07b2b71b10caa28723eea15cdf1 >/dev/null
+          echo 'WAN5_PINNED_PRIVATE_WORKER_PULL_AUTH=VERIFIED'
+          docker logout ghcr.io >/dev/null
+      - name: REAL $1 MAX GPU LAUNCH, render 5s, S3 verify, destroy owned Pod
+        run: python -m scripts.wan5_first_paid_controller
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: first-real-wan5-5s-gpu-pilot-receipt
+          path: output/wan5-first-paid-test.json
+          if-no-files-found: warn
+          retention-days: 30
