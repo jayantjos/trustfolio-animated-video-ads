@@ -1,0 +1,23 @@
+name: Wan5 Free Worker Watchdog QA
+on:
+  push:
+    branches:
+      - fix/wan5-free-watchdog-worker-qa-20261022
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cpu-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install CPU-only controller dependencies
+        run: python -m pip install boto3
+      - name: Run worker and watchdog unit tests without GPU or RunPod credentials
+        env:
+          TRUSTFOLIO_PAID_FIRST_TEST: 'no'
+        run: python -m unittest discover -s tests -p 'test_wan5_*py' -v
