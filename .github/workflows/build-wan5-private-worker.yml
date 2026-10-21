@@ -8,6 +8,14 @@ on:
       - 'scripts/wan5_gpu_worker.py'
       - 'tests/test_wan5_gpu_worker.py'
       - '.github/workflows/build-wan5-private-worker.yml'
+  pull_request:
+    branches: [feat/animated-engine-foundation]
+    paths:
+      - 'gpu/Dockerfile.wan5'
+      - 'gpu/.dockerignore'
+      - 'scripts/wan5_gpu_worker.py'
+      - 'tests/test_wan5_gpu_worker.py'
+      - '.github/workflows/build-wan5-private-worker.yml'
   workflow_dispatch:
 permissions:
   contents: read
@@ -17,6 +25,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   build-image:
+    if: github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'feat/washing-machine-character-video-pilot')
     runs-on: ubuntu-latest
     timeout-minutes: 65
     steps:
