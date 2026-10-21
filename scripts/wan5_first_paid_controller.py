@@ -27,6 +27,7 @@ from scripts.first_wan5_gpu_preflight import (
     BASE, DATACENTER, GPU, VOLUME, read_inputs, check_catalog, api_read,
 )
 from scripts.wan5_gpu_worker import IMAGE_SHA, IMAGE_BYTES, JOB_ID
+from scripts.wan5_live_log_guard import scan_container_logs
 
 GRAPHQL="https://api.runpod.io/graphql"
 NAME="trustfolio-video-"+JOB_ID
@@ -43,6 +44,8 @@ POD_PROVIDER_TTL_MINUTES=38
 # Fail closed when that GPU is unavailable rather than gambling credits.
 GPU_PREFERENCE=("NVIDIA GeForce RTX 4090",)
 OWN_POLL_MAX_MINUTES=30
+LOG_UNAVAILABLE_STARTUP_SECONDS=180
+LOG_UNAVAILABLE_AFTER_READY_SECONDS=90
 MAX_ACCEPTED_RATE_USD_PER_HR=Decimal("1.50")
 
 class PilotError(RuntimeError): pass
@@ -124,13 +127,15 @@ def find_owned_pods(key, requester=safe_api):
     if not isinstance(pods,list):raise PilotError("RUNPOD_PODS_LIST_SCHEMA_CHANGED")
     return [x for x in pods if isinstance(x,dict) and x.get("name")==NAME]
 
-def kill_owned_pods(key, requester=safe_api, sleep=time.sleep):
+def kill_owned_pods(key, requester=safe_api, sleep=time.sleep, expected_pod_id=None):
     # Handles ambiguous network errors during CREATE where the response might
     # be lost but billing already started. Never touch any other Pod.
     existing=find_owned_pods(key,requester)
     if len(existing)>1:raise PilotError("MULTIPLE_PILOT_PODS_MANUAL_ESCALATION")
     if not existing:return "NO_OWNED_GPU_POD"
     pid=validate_target(existing[0])
+    if expected_pod_id is not None and pid!=expected_pod_id:
+        raise PilotError("POD_ID_CHANGED_REFUSE_UNRELATED_DELETE")
     fresh=requester(key,"/pods/"+pid)
     if fresh.get("deleted"):return "ALREADY_REMOVED"
     validate_target(fresh)
@@ -287,22 +292,55 @@ def make_graphql_payload(registry_id,now=None,gpu_id=None):
             "env":[{"key":"TRUSTFOLIO_PRIVATE_QA","value":"yes"},
                    {"key":"TRUSTFOLIO_GPU_JOB_ID","value":JOB_ID}]}
 
-def polling_for_mp4(s3,write_key,deadline_seconds=OWN_POLL_MAX_MINUTES*60,
-                    interval=20,sleep=time.sleep):
-    started=time.monotonic()
-    while time.monotonic()-started<deadline_seconds:
+def polling_for_mp4(s3,write_key,pod_id,read_key=None,
+                    deadline_seconds=OWN_POLL_MAX_MINUTES*60,
+                    interval=15,sleep=time.sleep,now=time.monotonic,
+                    log_scanner=scan_container_logs):
+    """Real-time cost guard: S3 receipt + exact Pod ownership + live SSE errors.
+
+    Any fatal traceback classification aborts immediately. If log visibility is
+    absent for longer than a bounded grace interval, fail closed rather than
+    continue billing an unmonitored GPU. The caller's finally DELETEs the
+    owned Pod; provider TTL and main-branch reaper remain independent backups.
+    """
+    if not re.fullmatch(r"[A-Za-z0-9_-]{5,80}",str(pod_id)):
+        raise PilotError("MONITOR_POD_ID_INVALID")
+    read_key=read_key or write_key
+    started=now()
+    last_log_seen=started
+    ever_seen_logs=False
+    while now()-started<deadline_seconds:
         try:r=get_object(s3,RECEIPT,64000)
-        except PilotError:
-            r=None
+        except PilotError:r=None
         if r is not None:
             try:receipt=json.loads(r)
-            except (ValueError,TypeError):raise PilotError("CORRUPTED_GPU_RECEIPT") from None
+            except (ValueError,TypeError):
+                raise PilotError("CORRUPTED_GPU_RECEIPT") from None
             return verify_mp4_s3(s3,receipt)
         owned=find_owned_pods(write_key)
-        if len(owned)!=1:raise PilotError("GPU_POD_DISAPPEARED_OR_DUPLICATED")
+        if len(owned)!=1:
+            raise PilotError("GPU_POD_DISAPPEARED_OR_DUPLICATED")
         pod=owned[0]
+        if validate_target(pod)!=pod_id:
+            raise PilotError("GPU_POD_IDENTITY_CHANGED")
         if pod.get("status") in ("EXITED","TERMINATED","FAILED","ERROR"):
             raise PilotError("GPU_POD_EXITED_WITHOUT_MP4")
+        observation=log_scanner(read_key,pod_id)
+        fatal=observation.get("fatal")
+        if fatal:
+            # Only a constant enum is printed, never raw logs or credentials.
+            print("PILOT_LIVE_LOG_FATAL="+fatal,flush=True)
+            raise PilotError("GPU_FATAL_LOG_"+fatal)
+        if observation.get("available"):
+            last_log_seen=now()
+            ever_seen_logs=True
+        else:
+            grace=(LOG_UNAVAILABLE_AFTER_READY_SECONDS
+                   if ever_seen_logs else LOG_UNAVAILABLE_STARTUP_SECONDS)
+            if now()-last_log_seen>=grace:
+                print("PILOT_LIVE_LOG_WATCHDOG=LOST_VISIBILITY",flush=True)
+                raise PilotError("GPU_LOG_VISIBILITY_TIMEOUT_ABORT")
+        print("PILOT_WATCHDOG_HEARTBEAT=ACTIVE",flush=True)
         sleep(interval)
     raise PilotError("GPU_RENDER_TIMEOUT_WITHIN_BUDGET")
 
@@ -317,6 +355,7 @@ def run():
     s3=make_s3()
     verified=None
     registry_id=None
+    pod_id=None
     cleanup_result="NOT_NEEDED"
     report={"status":"NOT_STARTED","video_rendered":False,"gpu_pod_deleted":False}
     try:
@@ -338,16 +377,19 @@ def run():
         print("PILOT_GPU_CREATED_ID="+pod_id,flush=True)
         if pod.get("name")!=NAME or pod.get("imageName")!=IMAGE:
             raise PilotError("CREATED_GPU_POD_NAME_OR_IMAGE_MISMATCH")
-        verified=polling_for_mp4(s3,write_key)
+        verified=polling_for_mp4(s3,write_key,pod_id,read_key=read_key)
         print("PILOT_MP4_SHA256_VERIFIED="+verified["sha256"],flush=True)
         report={**verified,"video_rendered":True,"gpu_pod_deleted":False,
                 "quote_usd_hr":cost["rate_usd_per_hour"]}
         return report
+    except PilotError as exc:
+        report["status"]="FAILED_"+str(exc)[:110]
+        raise
     finally:
         # Even ambiguous create errors or failed inference MUST attempt a scoped
         # clean-up before exiting; confirmation is GET 404.
         try:
-            cleanup_result=kill_owned_pods(write_key)
+            cleanup_result=kill_owned_pods(write_key,expected_pod_id=pod_id)
             report["gpu_pod_deleted"]=cleanup_result in (
                 "NO_OWNED_GPU_POD","DELETE_GET_404_CONFIRMED","ALREADY_REMOVED")
             print("PILOT_GPU_DELETE_RESULT="+cleanup_result,flush=True)
