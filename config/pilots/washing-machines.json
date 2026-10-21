@@ -7,7 +7,7 @@
   "production_publishing": false,
   "voice_language": "hi-IN",
   "voice_gender": "FEMALE",
-  "voice_status": "AWAITING_APPROVED_AUDIO",
+  "voice_status": "THREE_HINDI_NEURAL_MP3_STAGED_ON_S3_LISTENING_QA_PENDING",
   "character_id": "trustfolio-pink-kurta-lady-v1",
   "canonical_image": "assets/characters/shared/pink_kurta_lady_v1.png",
   "canonical_image_sha256": "7f9ca4e47803ff9df57ff389ede1bba15eb6cb761c2fe4521edfe4036bc20ac6",
@@ -81,5 +81,10 @@
     ],
     "enabled": false
   },
-  "shared_character_global_policy": "One approved lead image and face shared across 20 categories. Backgrounds and contexts change, character stays identical."
+  "shared_character_global_policy": "One approved lead image and face shared across 20 categories. Backgrounds and contexts change, character stays identical.",
+  "voice_s3_prefix": "assets/audio/washing-machines/hindi_neural_v1/",
+  "voice_model": "Indus-Labs/indus-pocket-tts",
+  "voice_model_license": "CC-BY-4.0 (commercial attribution required)",
+  "lip_sync_engine_candidate": "MuseTalk 1.5 (separate GPU inference and face preservation QA required)",
+  "lip_sync_engine_status": "SELECTED_NOT_DOWNLOADED_NOT_EXECUTED"
 }

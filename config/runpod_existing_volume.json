@@ -13,9 +13,13 @@
   "gpu_provisioning_enabled": false,
   "new_storage_provisioning_enabled": false,
   "social_publishing_enabled": false,
-  "master_weights_uploaded": false,
+  "master_weights_uploaded": true,
   "approved_images_uploaded": false,
-  "hindi_mp3_uploaded": false,
-  "account_verified_by_get": false,
-  "notes": "Volume survives Pod termination. Storage costs continue even with no GPUs. S3 API key is separate from ordinary RunPod API key."
+  "hindi_mp3_uploaded": true,
+  "account_verified_by_get": true,
+  "notes": "Volume survives Pod termination. Storage costs continue even with no GPUs. S3 API key is separate from ordinary RunPod API key.",
+  "verified_master_weights_bytes": 34180083066,
+  "hindi_neural_qa_clips": 3,
+  "hindi_mp3_approval_status": "PENDING_HUMAN_LISTENING_QA",
+  "model_inference_verified": false
 }

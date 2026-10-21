@@ -17,5 +17,16 @@
   "selected_datacenter": "EU-RO-1",
   "approved_storage_volume_id": "1bch597yrz",
   "upload_verified": false,
-  "emergency_gpu_reaper_implemented": false
+  "emergency_gpu_reaper_implemented": false,
+  "model_storage_bytes_verified": 34180083066,
+  "model_file_count_verified": 9,
+  "model_storage_verification_run": "https://github.com/jayantjos/trustfolio-animated-video-ads/actions/runs/39591459675",
+  "model_storage_verified": true,
+  "model_gpu_inference_verified": false,
+  "approved_shared_character_sha256": "7f9ca4e47803ff9df57ff389ede1bba15eb6cb761c2fe4521edfe4036bc20ac6",
+  "approved_shared_character_s3_uploaded": false,
+  "hindi_neural_voice_s3_clips_uploaded": 3,
+  "hindi_voice_listening_qa_passed": false,
+  "lip_sync_model_inference_verified": false,
+  "approved_gpu_spending_usd": 0
 }

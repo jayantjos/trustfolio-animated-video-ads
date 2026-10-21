@@ -36,3 +36,12 @@ This creates robotic audio for timing only, not production Hindi. To call offici
 
 ## Integration / publishing boundary
 Git is for source + manifests, not GPU checkpoint weights or large MP4 releases. GitHub Actions artifacts/object storage can retain videos. A Hostinger cron/orchestrator could later trigger an authorized GPU worker, upload MP4 + QA hashes, tear down GPU, and forward **only** validated approved videos into an isolated Meta/YouTube publishing queue. No access to Hostinger GPU/provider control plane, Meta tokens, video publishing authorization, or YouTube OAuth was available here. Existing image-ad repository and production crons are untouched. The current `trustfolio_video.publishing.publish` remains hard-disabled. Wan2.2 TI2V motion + separately muxed audio is **not** phoneme-accurate lip-sync; that remains a separate production QA gate.
+
+## Live staging update — October 21, 2026
+
+- Full Wan2.2-TI2V-5B storage confirmed: nine files / 34,180,083,066 bytes, HEAD audit run 39591459675, upload SHA-256 receipts on GitHub. This does not verify GPU inference.
+- Common lead fixed across 20 categories: one exact SHA-pinned `pink_kurta_lady_v1.png`. The approved original is present in the conversation filesystem; it has **NOT yet been uploaded into GitHub or S3**. The new `stage-approved-character.yml` uploads it automatically when user adds it to the specified repo branch path. No fake alternate woman may be substituted.
+- Natural Hindi female voice generated using Indus-Labs/indus-pocket-tts, 3 MP3 clips stored in S3 with SHA-verified receipt 39592735082. Voice needs private listening QA; CC-BY-4.0 attribution required.
+- MuseTalk 1.5 was identified as a commercially supported lip-sync option (subject to checking all dependencies). No MuseTalk weights are stored or inference run. Audio muxing alone cannot pass this gate.
+- New RunPod GPU spending is **NOT approved** (only existing $7/month volume approved). Do not create GPU without explicit separate budget, Pod write permissions, timeout enforcement and teardown/reaper.
+- Live verified ranking and product photos, location art for the other scenes, final 30-sec video, real mouth sync and publishing are all still pending. Publishing OFF.
