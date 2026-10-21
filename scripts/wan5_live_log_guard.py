@@ -76,8 +76,10 @@ def scan_container_logs(api_key, pod_id, opener=urlopen, now=time.monotonic):
                     break
                 if not raw.startswith(b"data:"):
                     continue
-                seen += 1
                 message = _event_line(raw.decode("utf-8", "replace").strip())
+                if not message.strip():
+                    continue
+                seen += 1
                 classification = fatal_classification(message)
                 if classification:
                     return {"available": True, "events": seen,
