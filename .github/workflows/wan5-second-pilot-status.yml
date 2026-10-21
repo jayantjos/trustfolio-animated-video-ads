@@ -1,0 +1,80 @@
+name: WAN5 second video live GPU and MP4 status (READ ONLY)
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths: ['.github/workflows/wan5-second-pilot-status.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  status:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    env:
+      RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+      RUNPOD_S3_ACCESS_KEY_ID: ${{ secrets.RUNPOD_S3_ACCESS_KEY_ID }}
+      RUNPOD_S3_SECRET_ACCESS_KEY: ${{ secrets.RUNPOD_S3_SECRET_ACCESS_KEY }}
+    steps:
+      - run: python -m pip install -q 'boto3>=1.35,<2'
+      - name: Confirm exact Pod lifecycle and S3 receipt; NEVER create or delete
+        run: |
+          python - <<'PY'
+          import os,json,urllib.request,urllib.error,re
+          from urllib.parse import urlencode
+          import boto3
+          from botocore.config import Config
+          token=os.environ['RUNPOD_API_KEY']
+          headers={'Authorization':'Bearer '+token,'Accept':'application/json'}
+          with urllib.request.urlopen(urllib.request.Request('https://api.runpod.io/v2/pods',headers=headers),timeout=30) as resp:
+              records=json.loads(resp.read(1000000)).get('pods',[])
+          owned=[p for p in records if isinstance(p,dict) and p.get('name')=='trustfolio-video-wan5-laundry-first-20261021']
+          print('WAN5_OWNED_GPU_POD_COUNT='+str(len(owned)))
+          for p in owned:
+              print('WAN5_POD_ID='+str(p.get('id','')))
+              print('WAN5_POD_STATUS='+str(p.get('status','')))
+              print('WAN5_POD_REGION='+str(p.get('dataCenterId','')))
+              print('WAN5_POD_CREATED_AT='+str(p.get('createdAt','')))
+              print('WAN5_POD_IMAGE_PIN='+str(p.get('imageName',''))[:180])
+          cli=boto3.client('s3',region_name='eu-ro-1',endpoint_url='https://s3api-eu-ro-1.runpod.io',
+            aws_access_key_id=os.environ['RUNPOD_S3_ACCESS_KEY_ID'],
+            aws_secret_access_key=os.environ['RUNPOD_S3_SECRET_ACCESS_KEY'],
+            config=Config(signature_version='s3v4',s3={'addressing_style':'path'}))
+          key='videos/private-qa/wan5-laundry-first-20261021/scene01.receipt.json'
+          try:
+              r=cli.get_object(Bucket='1bch597yrz',Key=key)
+              b=r['Body'].read(65536)
+              r['Body'].close()
+              receipt=json.loads(b)
+              print('WAN5_MP4_RECEIPT='+str(receipt.get('status','INVALID')))
+              print('WAN5_MP4_SHA256='+str(receipt.get('sha256','')))
+              print('WAN5_MP4_DURATION='+str(receipt.get('seconds','')))
+          except Exception:
+              print('WAN5_MP4_RECEIPT=NOT_YET_AVAILABLE')
+          if len(owned)==1:
+              pod_id=owned[0].get('id','')
+              if re.fullmatch(r'[A-Za-z0-9_-]{5,80}',str(pod_id)):
+                  u='https://api.runpod.io/v2/pods/'+pod_id+'/logs?'+urlencode({'tail':30})
+                  req=urllib.request.Request(u,headers={'Authorization':'Bearer '+token,
+                         'Accept':'text/event-stream'})
+                  try:
+                      import time
+                      with urllib.request.urlopen(req,timeout=15) as resp:
+                          deadline=time.monotonic()+4
+                          lines=[]
+                          while time.monotonic()<deadline and len(lines)<120:
+                              line=resp.readline(2048)
+                              if not line:break
+                              text=line.decode('utf8','replace').strip()
+                              if text.startswith('data:'):
+                                  try:
+                                      obj=json.loads(text[5:])
+                                      raw=str(obj.get('line',''))
+                                      if raw.startswith('TRUSTFOLIO_WAN5=') or raw.startswith('ModuleNotFoundError:') or raw.startswith('RuntimeError:') or raw.startswith('FileNotFoundError:') or raw.startswith('ValueError:'):
+                                          lines.append(re.sub(r'[^A-Za-z0-9_:= /.,-]','?',raw)[:190])
+                                  except ValueError:pass
+                          print('WAN5_ERROR_EVENTS_COUNT='+str(len(lines)))
+                          for line in lines[-10:]:print('WAN5_ERROR_EVENT='+line)
+                  except Exception:
+                      print('WAN5_LOG_STATUS=UNAVAILABLE')
+          print('GPU_CREATED_BY_THIS_CHECK=false')
+          PY
