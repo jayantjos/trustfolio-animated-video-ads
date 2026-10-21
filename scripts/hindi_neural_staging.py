@@ -24,7 +24,7 @@ def main():
         subprocess.run([sys.executable,str(model),item["text"],str(wav),"--int8"],check=True,timeout=300)
         subprocess.run(["ffmpeg","-hide_banner","-loglevel","error","-y","-i",str(wav),"-codec:a","libmp3lame","-qscale:a","3",str(mp3)],check=True,timeout=60)
         if mp3.stat().st_size<3000: raise RuntimeError("MP3 QA failed")
-        digest=sha(mp3); key="assets/audio/washing-machines/hindi_neural_v1/"+name+".mp3"
+        digest=sha(mp3); key="assets/audio/washing-machines/hindi_neural_v1/"+name+"."+digest[:16]+".mp3"
         from botocore.exceptions import ClientError
         try:
             current=s3.head_object(Bucket="1bch597yrz",Key=key)
@@ -32,8 +32,17 @@ def main():
             if str(e.response.get("Error",{}).get("Code")) not in ("404","NoSuchKey","NotFound"):raise
             s3.upload_file(str(mp3),"1bch597yrz",key,ExtraArgs={"ContentType":"audio/mpeg","Metadata":{"sha256":digest}})
             current=s3.head_object(Bucket="1bch597yrz",Key=key)
-        if current["ContentLength"]!=mp3.stat().st_size or current.get("Metadata",{}).get("sha256")!=digest:
-            raise RuntimeError("Existing audio or uploaded copy differs, refusing overwrite")
+        if current["ContentLength"]!=mp3.stat().st_size:
+            raise RuntimeError("Remote Hindi audio size mismatch")
+        obj=s3.get_object(Bucket="1bch597yrz",Key=key)
+        remote=hashlib.sha256()
+        body=obj["Body"]
+        try:
+            for part in iter(lambda:body.read(65536),b""):remote.update(part)
+        finally:
+            body.close()
+        if remote.hexdigest()!=digest:
+            raise RuntimeError("Remote Hindi MP3 SHA mismatch; no overwrite")
         report.append({"id":name,"sha256":digest,"bytes":mp3.stat().st_size,"s3_key":key,"status":"S3_HEAD_VERIFIED_PENDING_HUMAN_LISTENING_QA"})
         wav.unlink(missing_ok=True)
     (out/"qa.json").write_text(json.dumps({"model":cfg["engine"],"license":"CC-BY-4.0","credits_required":True,"clips":report,"lip_sync":False,"publishing":False},ensure_ascii=False,indent=2)+"\n")
