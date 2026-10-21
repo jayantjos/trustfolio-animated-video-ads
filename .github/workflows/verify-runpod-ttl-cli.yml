@@ -21,11 +21,29 @@ jobs:
           chmod 755 /tmp/runpodctl
           /tmp/runpodctl --version
           /tmp/runpodctl pod create --help > /tmp/cli-create-help.txt
-          grep -F -- '--terminate-after' /tmp/cli-create-help.txt
-          grep -F -- '--network-volume-id' /tmp/cli-create-help.txt
-          grep -F -- '--data-center-ids' /tmp/cli-create-help.txt
-          grep -F -- '--gpu-id' /tmp/cli-create-help.txt
-          echo 'NATIVE_CLI_TERMINATE_AFTER_FLAG=VERIFIED_NO_POD_CREATED'
+          if grep -F -- '--terminate-after' /tmp/cli-create-help.txt; then
+            echo 'NATIVE_CLI_V3_TERMINATE_AFTER_FLAG=PRESENT_NOT_LIVE_VERIFIED'
+          else
+            echo 'NATIVE_CLI_V3_TERMINATE_AFTER_FLAG=MISSING_BLOCK_PAID_GPU'
+          fi
+          for flag in --network-volume-id --data-center-ids --gpu-id; do
+            if grep -F -- "$flag" /tmp/cli-create-help.txt; then :; else
+              echo "NATIVE_CLI_V3_REQUIRED_FLAG_MISSING=$flag"
+            fi
+          done
+          echo 'NATIVE_CLI_V3_HELP_HEAD:'
+          head -35 /tmp/cli-create-help.txt
+          curl -fL --retry 3 --silent --show-error -o /tmp/runpodctl-v2             https://github.com/runpod/runpodctl/releases/download/v2.15.0/runpodctl-linux-amd64
+          echo '51c6f5a7e6f6c7cd4a52373f2262b9aeb0f16084e39595d25f71bc0cf5bc826b  /tmp/runpodctl-v2' | sha256sum -c -
+          chmod 755 /tmp/runpodctl-v2
+          /tmp/runpodctl-v2 --version
+          /tmp/runpodctl-v2 pod create --help >/tmp/cli-v2-create-help.txt
+          if grep -F -- '--terminate-after' /tmp/cli-v2-create-help.txt; then
+            echo 'NATIVE_CLI_V2_TERMINATE_AFTER_FLAG=PRESENT_NOT_LIVE_VERIFIED'
+          else
+            echo 'NATIVE_CLI_V2_TERMINATE_AFTER_FLAG=MISSING_BLOCK_PAID_GPU'
+          fi
+          echo 'NO_PAID_GPU_CREATED=true'
       - name: Verify connected write key can at least LIST Pods (NO POST)
         shell: bash
         run: |
