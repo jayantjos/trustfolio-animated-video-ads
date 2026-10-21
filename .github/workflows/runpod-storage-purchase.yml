@@ -1,64 +1,17 @@
-name: RunPod 100GB Storage Purchase — PREPARED ONLY
+name: RunPod Storage Purchase — DISABLED (Existing Volume Registered)
 on:
   push:
     branches: [feat/washing-machine-character-video-pilot]
-    paths:
-      - 'scripts/runpod_storage_provision.py'
-      - 'tests/test_runpod_storage_provision.py'
-      - 'config/runpod_storage_purchase.json'
-      - '.github/workflows/runpod-storage-purchase.yml'
+    paths: ['config/runpod_storage_purchase.json','.github/workflows/runpod-storage-purchase.yml']
   workflow_dispatch:
-    inputs:
-      mode:
-        description: 'No-charge dry run; purchase only after the workflow is on the default branch and a restricted write key is connected'
-        type: choice
-        options: [dry-run, purchase]
-        default: dry-run
-        required: true
-      confirmation:
-        description: 'For purchase enter CREATE_EXACTLY_100GB_EU-RO-1'
-        required: false
-        type: string
 permissions:
   contents: read
-concurrency:
-  group: runpod-trustfolio-volume-provision
-  cancel-in-progress: false
 jobs:
-  audit:
+  existing-storage-reconciliation-only:
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 2
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - run: python -m unittest discover -s tests -p 'test_runpod_storage_provision.py' -v
-      - run: python -m scripts.runpod_storage_provision
-      - uses: actions/upload-artifact@v4
-        with:
-          name: runpod-100gb-storage-purchase-dry-run
-          path: output/runpod-storage-provision-plan.json
-          retention-days: 7
-  purchase:
-    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'purchase' && github.ref == 'refs/heads/main' }}
-    needs: audit
-    environment: runpod-paid-storage
-    runs-on: ubuntu-latest
-    timeout-minutes: 7
-    env:
-      RUNPOD_STORAGE_WRITE_KEY: ${{ secrets.RUNPOD_STORAGE_WRITE_KEY }}
-      TRUSTFOLIO_STORAGE_PAID_OPERATION_ENABLED: 'yes'
-    steps:
-      - uses: actions/checkout@v4
-      - name: Create exactly one 100GB Standard volume after account and region checks
-        env:
-          CONFIRMATION: ${{ inputs.confirmation }}
+      - name: Assert storage already exists and provisioning is disabled
         run: |
-          python -m scripts.runpod_storage_provision --create --confirmation "$CONFIRMATION"
-      - uses: actions/upload-artifact@v4
-        if: success()
-        with:
-          name: runpod-new-volume-creation-receipt
-          path: output/runpod-storage-provision-plan.json
-          retention-days: 14
+          python -c 'import json; p=json.load(open("config/runpod_storage_purchase.json")); assert p["status"]=="CREATED_MANUALLY"; assert p["volume_id"]=="1bch597yrz"; assert p["new_purchase_enabled"] is False; print("Existing network volume registered. No purchase job.")'

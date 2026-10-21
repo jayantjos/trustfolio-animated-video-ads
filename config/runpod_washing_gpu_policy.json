@@ -14,8 +14,8 @@
   "max_runtime_minutes": 60,
   "max_gpu_usd": 1.5,
   "max_concurrent_pods": 1,
-  "selected_datacenter": null,
-  "approved_storage_volume_id": null,
+  "selected_datacenter": "EU-RO-1",
+  "approved_storage_volume_id": "1bch597yrz",
   "upload_verified": false,
   "emergency_gpu_reaper_implemented": false
 }

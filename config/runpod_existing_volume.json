@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "project": "TrustFolio animated Washing Machine pilot",
+  "id": "1bch597yrz",
+  "name": "trustfolio-wan-models-v1",
+  "size_gb": 100,
+  "datacenter": "EU-RO-1",
+  "tier": "STANDARD",
+  "s3_endpoint": "https://s3api-eu-ro-1.runpod.io",
+  "s3_bucket": "1bch597yrz",
+  "monthly_list_price_usd": 7,
+  "storage_provisioned_manually": true,
+  "gpu_provisioning_enabled": false,
+  "new_storage_provisioning_enabled": false,
+  "social_publishing_enabled": false,
+  "master_weights_uploaded": false,
+  "approved_images_uploaded": false,
+  "hindi_mp3_uploaded": false,
+  "account_verified_by_get": false,
+  "notes": "Volume survives Pod termination. Storage costs continue even with no GPUs. S3 API key is separate from ordinary RunPod API key."
+}
