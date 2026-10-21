@@ -1,0 +1,30 @@
+name: TrustFolio VPS cron video contract and GPU auto-destroy dry-run
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths:
+      - 'trustfolio_video/cron_video_job.py'
+      - 'tests/test_cron_video_job.py'
+      - 'config/storyboards/washing-machines-reference30.json'
+      - 'config/runpod_gpu_one_shot_policy.json'
+      - 'scripts/runpod_gpu_one_shot_gate.py'
+      - 'tests/test_runpod_gpu_one_shot_gate.py'
+      - '.github/workflows/vps-cron-video-contract.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cpu-only-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify cron live pricing, budget and storyboard tests
+        run: python -m unittest discover -s tests -p 'test_cron_video_job.py' -v
+      - name: Verify GPU one-shot destroy safeguards
+        run: python -m unittest discover -s tests -p 'test_runpod_gpu_one_shot_gate.py' -v
+      - name: Fail closed on unapproved RunPod GPU charges
+        run: python -m scripts.runpod_gpu_one_shot_gate

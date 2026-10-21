@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "category": "washing-machines",
+  "source": "USER_REFERENCE_TIMELINE_VISUAL_BLUEPRINT",
+  "status": "SCENE_PLAN_ONLY_NOT_RENDERED",
+  "output": {
+    "aspect": "9:16",
+    "seconds": 30,
+    "resolution": [
+      1080,
+      1920
+    ]
+  },
+  "same_lead_character_id": "trustfolio-pink-kurta-lady-v1",
+  "same_lead_hero": "assets/characters/shared/pink_kurta_lady_v1.png",
+  "accent": "TrustFolio purple/yellow",
+  "source_data_rule": "Replace every brand/model/rank/price with one current validated Top5; no sample prices",
+  "shots": [
+    {
+      "id": "reaction",
+      "start": 0,
+      "end": 3,
+      "kind": "lady",
+      "text_hi": "अरे, इतने सारे कपड़े!"
+    },
+    {
+      "id": "intro",
+      "start": 3,
+      "end": 6,
+      "kind": "brand_cast",
+      "text_hi": "आपके बजट की टॉप पाँच मशीनें!"
+    },
+    {
+      "id": "rank5",
+      "start": 6,
+      "end": 10,
+      "kind": "live_product",
+      "rank": 5
+    },
+    {
+      "id": "rank4",
+      "start": 10,
+      "end": 14,
+      "kind": "live_product",
+      "rank": 4
+    },
+    {
+      "id": "rank3",
+      "start": 14,
+      "end": 18,
+      "kind": "live_product",
+      "rank": 3
+    },
+    {
+      "id": "rank2",
+      "start": 18,
+      "end": 22,
+      "kind": "live_product",
+      "rank": 2
+    },
+    {
+      "id": "rank1",
+      "start": 22,
+      "end": 26,
+      "kind": "live_product",
+      "rank": 1
+    },
+    {
+      "id": "ranking",
+      "start": 26,
+      "end": 28,
+      "kind": "podium",
+      "ranks": [
+        5,
+        4,
+        3,
+        2,
+        1
+      ]
+    },
+    {
+      "id": "cta",
+      "start": 28,
+      "end": 30,
+      "kind": "lady_cta",
+      "text_hi": "सही चुनाव, TrustFolio पर!"
+    }
+  ],
+  "claims_rule": "No unsupported AI wash, steam, hygiene, country-origin, energy claims unless product source evidence and human QA exist",
+  "image_rule": "Original product photos must remain intact. Attach eyes, arms, speech bubbles only as separate removable overlays",
+  "hindi_audio_rule": "Recorded audio must match scene timing; audio mux alone never qualifies as lipsync",
+  "publishing_enabled": false
+}
