@@ -55,6 +55,35 @@ def head_or_none(client, key):
             return None
         raise RuntimeError("S3_HEAD_DENIED_OR_FAILED") from None
 
+def audio_file_verified(client, clip):
+    """Verify small Hindi clip bytes using GET; do not rely on provider HEAD metadata."""
+    import hashlib
+    from botocore.exceptions import ClientError
+    key=clip["s3_key"]
+    try:
+        obj=client.get_object(Bucket=BUCKET,Key=key)
+    except ClientError as exc:
+        if str(exc.response.get("Error",{}).get("Code","")) in ("404","NoSuchKey","NotFound"):
+            return False
+        raise RuntimeError("S3_GET_AUDIO_DENIED") from None
+    stream=obj["Body"]
+    digest=hashlib.sha256()
+    count=0
+    try:
+        while True:
+            chunk=stream.read(65536)
+            if not chunk: break
+            count+=len(chunk)
+            if count>1048576:
+                return False
+            digest.update(chunk)
+    finally:
+        stream.close()
+    return (count==clip["bytes"] and
+            int(obj["ContentLength"])==count and
+            digest.hexdigest()==clip["sha256"])
+
+
 def audit(client, m, approved_qa=False):
     blockers=[]
     seen=[]
@@ -79,12 +108,10 @@ def audit(client, m, approved_qa=False):
         key=clip["s3_key"]
         if not key.startswith("assets/audio/washing-machines/hindi_neural_v1/") or not key.endswith(clip["sha256"][:16]+".mp3"):
             raise ValueError("AUDIO_RECEIPT_PATH_MISMATCH")
-        h=head_or_none(client,key)
-        if (h is None or int(h.get("ContentLength",0)) != clip["bytes"]
-            or h.get("Metadata",{}).get("sha256","")!=clip["sha256"]):
-            blockers.append("NEURAL_AUDIO_NOT_STAGED:"+name)
-        else:
+        if audio_file_verified(client,clip):
             audios.append(name)
+        else:
+            blockers.append("NEURAL_AUDIO_NOT_STAGED:"+name)
     locations=[]
     for key in REQUIRED_SCENES:
         h=head_or_none(client,key)
