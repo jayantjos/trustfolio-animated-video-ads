@@ -114,5 +114,6 @@ def main():
         print("TRUSTFOLIO_SHARED_CHARACTER=BLOCKED_UNEXPECTED_S3_SDK_ERROR")
         return 1
 
+# Auto-trigger first real RunPod S3 character upload after exact GitHub PNG verification.
 if __name__ == "__main__":
     sys.exit(main())
