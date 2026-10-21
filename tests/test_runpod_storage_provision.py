@@ -39,6 +39,15 @@ class RunPodProvisionSafetyTests(unittest.TestCase):
     def test_no_key_no_api_calls(self):
         with self.assertRaisesRegex(Blocked,"WRITE_KEY_MISSING"):
             create("",self.file,CONFIRM)
+    def test_manually_created_volume_never_purchases_again(self):
+        self.policy["status"]="CREATED_MANUALLY"
+        self.policy["new_purchase_enabled"]=False
+        self.policy["volume_id"]="1bch597yrz"
+        self.save()
+        def forbidden(*args,**kwargs):
+            raise AssertionError("Existing storage must never trigger network writes")
+        with self.assertRaisesRegex(Blocked,"EXISTING_APPROVED_VOLUME"):
+            create("test",self.file,CONFIRM,writer=forbidden,reader=forbidden)
     def test_stock_check_blocks_create(self):
         def reader(key,endpoint,query=None):
             if endpoint=="/network-volumes":
