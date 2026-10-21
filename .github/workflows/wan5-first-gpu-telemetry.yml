@@ -52,7 +52,7 @@ jobs:
           import urllib.request,urllib.error,os,re,time
           from urllib.parse import urlencode
           pod='8vwc7sykues9r9'
-          u='https://api.runpod.io/v2/pods/'+pod+'/logs?'+urlencode({'tail':100,'source':'system'})
+          u='https://api.runpod.io/v2/pods/'+pod+'/logs?'+urlencode({'tail':70,'source':'container'})
           req=urllib.request.Request(u,headers={'Authorization':'Bearer '+os.environ['RUNPOD_API_KEY'],
                     'Accept':'text/event-stream'})
           try:
@@ -74,7 +74,7 @@ jobs:
                       print('RUNPOD_POD_LOG=REDACTED_SENSITIVE_EVENT')
                   else:
                       safe=re.sub(r'[^ -~]', '?',line)[:300]
-                      print('RUNPOD_POD_SYSTEM_EVENT='+safe)
+                      print('RUNPOD_POD_CONTAINER_EVENT='+safe)
           except urllib.error.HTTPError as ex:
               print('RUNPOD_POD_LOG_HTTP='+str(ex.code))
           except Exception:
