@@ -85,7 +85,7 @@ class Tests(unittest.TestCase):
              "dataCenterId":c.DATACENTER,
              "mounts":{"network":[{"volumeId":c.VOLUME,"path":"/workspace"}]},
              "status":"RUNNING"}
-        with patch.object(c,"get_object",return_value=None), \\
+        with patch.object(c,"get_object",return_value=None), \
              patch.object(c,"find_owned_pods",return_value=[pod]):
             with self.assertRaisesRegex(c.PilotError,"GPU_FATAL_LOG_MISSING_DEPENDENCY"):
                 c.polling_for_mp4(object(),"k","pod123456",
@@ -100,7 +100,7 @@ class Tests(unittest.TestCase):
              "mounts":{"network":[{"volumeId":c.VOLUME,"path":"/workspace"}]},
              "status":"RUNNING"}
         ticks=iter([0, 0, 100, 181, 181, 181, 181, 181])
-        with patch.object(c,"get_object",return_value=None), \\
+        with patch.object(c,"get_object",return_value=None), \
              patch.object(c,"find_owned_pods",return_value=[pod]):
             with self.assertRaisesRegex(c.PilotError,"GPU_LOG_VISIBILITY_TIMEOUT_ABORT"):
                 c.polling_for_mp4(object(),"k","pod123456",
@@ -113,7 +113,7 @@ class Tests(unittest.TestCase):
         pod={"name":c.NAME,"id":"pod_other",
              "dataCenterId":c.DATACENTER,
              "mounts":{"network":[{"volumeId":c.VOLUME,"path":"/workspace"}]}}
-        with patch.object(c,"get_object",return_value=None), \\
+        with patch.object(c,"get_object",return_value=None), \
              patch.object(c,"find_owned_pods",return_value=[pod]):
             with self.assertRaisesRegex(c.PilotError,"GPU_POD_IDENTITY_CHANGED"):
                 c.polling_for_mp4(object(),"k","pod123456",now=lambda:0,
