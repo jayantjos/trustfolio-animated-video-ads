@@ -1,0 +1,31 @@
+name: TrustFolio GPU lifecycle safety simulation (NO GPU)
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths:
+      - 'scripts/runpod_video_lifecycle.py'
+      - 'tests/test_runpod_video_lifecycle.py'
+      - 'config/runpod_gpu_one_shot_policy.json'
+      - '.github/workflows/runpod-video-lifecycle-dryrun.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: trustfolio-single-video-gpu-lifecycle
+  cancel-in-progress: false
+jobs:
+  simulate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m unittest discover -s tests -p test_runpod_video_lifecycle.py -v
+      - run: python -m scripts.runpod_video_lifecycle
+      - uses: actions/upload-artifact@v4
+        with:
+          name: runpod-video-lifecycle-dryrun
+          path: output/gpu-lifecycle-dryrun.json
+          retention-days: 14
