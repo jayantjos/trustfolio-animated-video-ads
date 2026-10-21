@@ -16,9 +16,15 @@ RUN python -m pip install --no-cache-dir \
     "tokenizers>=0.20.3" "accelerate>=1.1.1" \
     "opencv-python-headless>=4.9.0.80" "diffusers>=0.31.0" \
     "imageio[ffmpeg]" "imageio-ffmpeg" \
-    "easydict" "ftfy" "dashscope" "numpy>=1.23.5,<2" \
+    "easydict" "ftfy" "dashscope" "einops>=0.7,<1" "numpy>=1.23.5,<2" \
     "Pillow>=10,<12" \
   && python -m pip check
+# The first REAL GPU attempt failed at import time: "No module named einops".
+# Fail this FREE OCI build if Wan imports or CLI fail; do not burn GPU on errors.
+RUN cd /opt/Wan2.2 \
+  && python -c "import einops; import wan; from wan.modules.vae2_1 import Wan2_1_VAE; print('WAN_DEPENDENCY_IMPORT_SMOKE=PASS')" \
+  && python generate.py --help >/dev/null \
+  && echo "WAN_GENERATE_IMPORT_SMOKE=PASS"
 COPY scripts/wan5_gpu_worker.py /opt/trustfolio/wan5_gpu_worker.py
 WORKDIR /opt/Wan2.2
 ENV PYTHONUNBUFFERED=1 HF_HOME=/workspace/cache/huggingface
