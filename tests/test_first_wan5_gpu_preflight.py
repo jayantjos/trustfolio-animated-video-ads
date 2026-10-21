@@ -28,9 +28,16 @@ class FirstFiveSecondTest(unittest.TestCase):
         r=evaluate(P,M,dict(VOL,size=99),{"pods":[]},CAT,False,True)
         self.assertIn("EXISTING_VOLUME_NOT_VERIFIED",r["blockers"])
         self.assertIn("ORIGINAL_MASTER_ART_NOT_ON_S3",r["blockers"])
+    def test_low_stock_is_real_blocker_not_claimed_as_deployed_failure(self):
+        r=evaluate(P,M,VOL,{"pods":[]},dict(CAT,stock="LOW"),True,True)
+        self.assertEqual(r["blockers"],["EU_RO_1_GPU_NOT_RELIABLY_AVAILABLE"])
+        self.assertNotIn("PINNED_WAN_GPU_WORKER_NOT_DEPLOYED",r["blockers"])
+
     def test_preflight_always_no_bill(self):
         r=evaluate(P,M,VOL,{"pods":[]},CAT,True,True)
         self.assertFalse(r["mp4_rendered"])
         self.assertFalse(r["gpu_pod_created"])
-        self.assertIn("PINNED_WAN_GPU_WORKER_NOT_DEPLOYED",r["blockers"])
+        self.assertEqual(r["blockers"], [])
+        self.assertEqual(r["status"],"READ_ONLY_CHECKS_PASSED_EXTERNAL_GATES_REQUIRED")
+        self.assertIn("PAID_LAUNCH_MUST_VERIFY_PINNED_GHCR_MANIFEST",r["remaining_external_gates"])
 if __name__=="__main__":unittest.main()
