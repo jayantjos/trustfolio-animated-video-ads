@@ -103,7 +103,7 @@ jobs:
           GHCR_PASS: ${{ secrets.GITHUB_TOKEN }}
         run: |
           printf '%s' "$GHCR_PASS" | docker login ghcr.io -u "$GHCR_USER" --password-stdin >/dev/null
-          docker manifest inspect ghcr.io/jayantjos/trustfolio-wan5-worker@sha256:24432e652fcc50c5a00d85d42da45200a9c3bf2e793c7c2069a6686f6c629971 >/dev/null
+          docker manifest inspect ghcr.io/jayantjos/trustfolio-wan5-worker@sha256:2c1b8f960e7084bf7a3aca002c09b72956030c2305aa4c1d4992679ea92eb604 >/dev/null
           echo 'WAN5_PINNED_PRIVATE_WORKER_PULL_AUTH=VERIFIED'
           docker logout ghcr.io >/dev/null
       - name: REAL $1 MAX GPU LAUNCH, render 5s, S3 verify, destroy owned Pod
