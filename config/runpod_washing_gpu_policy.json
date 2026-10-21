@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "category": "washing-machines",
+  "gpu_provisioning_enabled": false,
+  "storage_creation_enabled": false,
+  "publishing_enabled": false,
+  "active_write_key_configured": false,
+  "proposed_network_volume_gb": 100,
+  "storage_tier": "STANDARD",
+  "storage_usd_gb_month": 0.07,
+  "estimate_usd_month": 7,
+  "model_size_gb_approx": 34.2,
+  "gpu_min_vram_gb": 24,
+  "max_runtime_minutes": 60,
+  "max_gpu_usd": 1.5,
+  "max_concurrent_pods": 1,
+  "selected_datacenter": null,
+  "approved_storage_volume_id": null,
+  "upload_verified": false,
+  "emergency_gpu_reaper_implemented": false
+}

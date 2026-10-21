@@ -1,0 +1,31 @@
+name: RunPod storage read-only preflight
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths: ['scripts/runpod_storage_discovery.py','tests/test_runpod_storage_discovery.py','config/runpod_washing_gpu_policy.json','.github/workflows/runpod-storage-readonly.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    env:
+      RUNPOD_API_KEY: \${{ secrets.RUNPOD_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Test safety and no-spend config
+        run: |
+          python -m unittest discover -s tests -p test_runpod_storage_discovery.py -v
+          python -c 'import json; p=json.load(open("config/runpod_washing_gpu_policy.json")); assert p["gpu_provisioning_enabled"] is False and p["storage_creation_enabled"] is False'
+      - name: Query read-only RunPod inventory
+        run: python scripts/runpod_storage_discovery.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: runpod-storage-readonly-inventory
+          path: output/runpod-readonly-inventory.json
+          retention-days: 7
+          if-no-files-found: error
