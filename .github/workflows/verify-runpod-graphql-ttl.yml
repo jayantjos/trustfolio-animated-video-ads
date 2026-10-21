@@ -1,0 +1,59 @@
+name: Verify RunPod GraphQL terminateAfter schema (NO GPU)
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths: ['.github/workflows/verify-runpod-graphql-ttl.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      RUNPOD_POD_WRITE_KEY: ${{ secrets.RUNPOD_POD_WRITE_KEY }}
+    steps:
+      - name: Account-authenticated introspection only; NO mutation / Pod creation
+        run: |
+          python - <<'PY'
+          import os,json,urllib.request,urllib.error
+          k=os.environ.get("RUNPOD_POD_WRITE_KEY","")
+          if not k:raise SystemExit("GRAPHQL_WRITE_KEY_MISSING")
+          query='query TrustfolioReadOnlySchema { __type(name: "PodFindAndDeployOnDemandInput") { inputFields { name } } }'
+          body=json.dumps({"query":query}).encode()
+          def inspect(use_querystring):
+              from urllib.parse import quote
+              u="https://api.runpod.io/graphql"
+              if use_querystring:
+                  u+="?api_key="+quote(k,safe="")
+              h={"Content-Type":"application/json","Accept":"application/json"}
+              if not use_querystring:h["Authorization"]="Bearer "+k
+              req=urllib.request.Request(u,data=body,method="POST",headers=h)
+              with urllib.request.urlopen(req,timeout=20) as r:
+                  if r.status!=200:raise RuntimeError("GRAPHQL_HTTP_NOT_200")
+                  return json.loads(r.read(100001))
+          try:
+              try:
+                  result=inspect(False)
+                  auth="bearer"
+              except urllib.error.HTTPError as exc:
+                  if exc.code not in (401,403):raise
+                  result=inspect(True)
+                  auth="query_string"
+              fields=result.get("data",{}).get("__type",{}).get("inputFields",[])
+              names={x["name"] for x in fields}
+              required={"terminateAfter","networkVolumeId",
+                        "containerRegistryAuthId","dataCenterId","imageName","gpuTypeId"}
+              missing=sorted(required-names)
+              print("GRAPHQL_READ_ONLY_AUTH=SUCCESS_"+auth.upper())
+              print("RUNPOD_POD_CREATE_SCHEMA_NATIVE_TTL="+
+                    ("PRESENT" if "terminateAfter" in names else "ABSENT"))
+              print("REQUIRED_POD_FIELDS_VALIDATED="+str(not missing))
+              if missing:print("SCHEMA_FIELDS_NOT_CONFIRMED="+",".join(missing))
+              print("GPU_PODS_CREATED=false")
+              if missing:raise SystemExit(3)
+          except urllib.error.HTTPError as exc:
+              raise SystemExit("GRAPHQL_READ_ONLY_HTTP_"+str(exc.code))
+          except (urllib.error.URLError,TimeoutError,ValueError):
+              raise SystemExit("GRAPHQL_READ_ONLY_REQUEST_FAILED")
+          PY
