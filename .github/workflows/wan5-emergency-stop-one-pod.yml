@@ -1,0 +1,42 @@
+name: EMERGENCY stop failed WAN5 GPU crash-loop (ONE EXACT POD)
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/wan5-emergency-stop-one-pod.yml']
+permissions:
+  contents: read
+jobs:
+  destroy-crash-loop-pod:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      RUNPOD_POD_WRITE_KEY: ${{ secrets.RUNPOD_POD_WRITE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Terminate ONLY verified crashing first WAN5 Pod, preserve network volume
+        run: |
+          python - <<'PY'
+          import os,sys
+          from scripts.wan5_independent_reaper import request_json, valid_target, NAME, VOLUME, DATACENTER
+          key=os.environ['RUNPOD_POD_WRITE_KEY']
+          pod_id='8vwc7sykues9r9'
+          target=request_json(key,'/'+pod_id,'GET')
+          if target.get('deleted'):
+              print('WAN5_EMERGENCY_GPU_TERMINATED=ALREADY_GONE')
+              raise SystemExit(0)
+          assert target.get('id')==pod_id and target.get('name')==NAME, 'WRONG_POD_REFUSE_DELETE'
+          assert target.get('dataCenterId')==DATACENTER, 'WRONG_REGION_REFUSE_DELETE'
+          assert target.get('mounts',{}).get('network')==[{'volumeId':VOLUME,'path':'/workspace'}], 'WRONG_VOLUME_REFUSE_DELETE'
+          assert target.get('createdAt')=='2026-10-21T14:52:32.698Z', 'WRONG_CREATION_TIMESTAMP_REFUSE_DELETE'
+          print('WAN5_EMERGENCY_POD_NAME_AND_VOLUME_VERIFIED=true',flush=True)
+          import time
+          request_json(key,'/'+pod_id,'DELETE')
+          for i in range(15):
+              state=request_json(key,'/'+pod_id,'GET')
+              if state.get('deleted'):
+                  print('WAN5_EMERGENCY_GPU_TERMINATED=YES_GET_404',flush=True)
+                  print('WAN5_NETWORK_VOLUME_PRESERVED=true',flush=True)
+                  raise SystemExit(0)
+              time.sleep(3)
+          raise SystemExit('CRITICAL_EMERGENCY_DELETE_NOT_CONFIRMED')
+          PY
