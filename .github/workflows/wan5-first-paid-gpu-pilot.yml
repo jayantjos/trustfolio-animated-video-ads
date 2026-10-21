@@ -78,6 +78,25 @@ jobs:
               raise SystemExit("INDEPENDENT_REAPER_NOT_RECENTLY_HEALTHY_REFUSE_PAID_GPU")
           print("INDEPENDENT_REAPER_RECENT_SUCCESS=VERIFIED_NO_GPU_CREATED")
           PY
+      - name: REFUSE paid GPU if any official tokenizer file missing or hash changed on S3
+        run: |
+          python - <<'PY'
+          import hashlib, json
+          from scripts.stage_wan5_tokenizer import TOKENIZER, BUCKET, MODEL_PREFIX, get_s3
+          s3=get_s3()
+          for name,(cap,sha) in TOKENIZER.items():
+              result=s3.get_object(Bucket=BUCKET,Key=MODEL_PREFIX+name)
+              body=result["Body"]
+              try: data=body.read(cap+1)
+              finally:body.close()
+              assert 10<len(data)<=cap, "WAN5_TOKENIZER_MISSING_OR_INVALID_SIZE"
+              if sha:
+                  assert hashlib.sha256(data).hexdigest()==sha, "WAN5_TOKENIZER_SHA256_MISMATCH"
+              else:
+                  assert isinstance(json.loads(data),dict), "WAN5_TOKENIZER_METADATA_INVALID"
+          print("WAN5_ALL_FOUR_OFFICIAL_TOKENIZER_S3_PREFLIGHT=PASS")
+          print("WAN5_GPU_CREATED_BY_THIS_CHECK=false")
+          PY
       - name: Check authenticated private GHCR image manifest without GPU charge
         env:
           GHCR_USER: ${{ github.actor }}
