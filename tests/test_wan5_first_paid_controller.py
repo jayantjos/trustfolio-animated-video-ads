@@ -80,6 +80,16 @@ class Tests(unittest.TestCase):
                               expected_pod_id="originalpod123")
         self.assertEqual(calls,[("/pods","GET")])
 
+    def test_worker_failure_receipt_aborts_and_exposes_safe_reason(self):
+        meta={"status":"FAILED_PRIVATE_WAN5","job_id":c.JOB_ID,
+              "failure_reason":"WAN_TOKENIZER_MISSING_TOKENIZER_JSON",
+              "social_publishing":False}
+        def get_object(s3,key,limit):
+            return json.dumps(meta).encode() if key==c.FAILURE_RECEIPT else None
+        with patch.object(c,"get_object",side_effect=get_object):
+            with self.assertRaisesRegex(c.PilotError,"GPU_WORKER_FAILED_WAN_TOKENIZER_MISSING"):
+                c.polling_for_mp4(object(),"k","pod123456",now=lambda:0,
+                    log_scanner=lambda *a:self.fail("failure receipt should stop before log polling"))
     def test_live_log_fatal_aborts_before_waiting_or_spending_more(self):
         pod={"name":c.NAME,"id":"pod123456",
              "dataCenterId":c.DATACENTER,
