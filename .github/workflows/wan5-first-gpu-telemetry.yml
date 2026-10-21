@@ -52,21 +52,23 @@ jobs:
           import urllib.request,urllib.error,os,re,time
           from urllib.parse import urlencode
           pod='8vwc7sykues9r9'
-          u='https://api.runpod.io/v2/pods/'+pod+'/logs?'+urlencode({'tail':10,'source':'system'})
+          u='https://api.runpod.io/v2/pods/'+pod+'/logs?'+urlencode({'tail':100,'source':'system'})
           req=urllib.request.Request(u,headers={'Authorization':'Bearer '+os.environ['RUNPOD_API_KEY'],
                     'Accept':'text/event-stream'})
           try:
               with urllib.request.urlopen(req,timeout=13) as r:
                   lines=[]
                   stop=time.monotonic()+6
-                  while time.monotonic()<stop and len(lines)<30:
+                  while time.monotonic()<stop and len(lines)<140:
                       line=r.readline(1024)
                       if not line:break
                       s=line.decode('utf-8','replace')
                       if s.startswith('data:'):
                           lines.append(s[5:].strip()[:300])
               print('RUNPOD_POD_LOG_EVENTS='+str(len(lines)))
-              for line in lines[-12:]:
+              unique=list(dict.fromkeys(lines))
+              print('RUNPOD_POD_UNIQUE_SYSTEM_EVENTS='+str(len(unique)))
+              for line in unique[-30:]:
                   low=line.lower()
                   if any(secret in low for secret in ['token','secret','password','authorization','api_key','bearer']):
                       print('RUNPOD_POD_LOG=REDACTED_SENSITIVE_EVENT')
