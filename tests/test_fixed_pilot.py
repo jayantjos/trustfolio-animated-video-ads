@@ -9,12 +9,14 @@ from trustfolio_video.fixed_pilot import check_registry,create_plan,verify_hero
 from trustfolio_video.hindi_voice import google_cloud_mp3
 
 class FixedPilotTests(unittest.TestCase):
-    def test_all_twenty_have_unique_cast_and_world(self):
+    def test_all_twenty_share_one_approved_lead_but_unique_worlds(self):
         result=check_registry()
         self.assertEqual(len(result),20)
         self.assertEqual(result["washing-machines"]["character_id"],
-                         "trustfolio-washing-machines-lead-v1")
+                         "trustfolio-pink-kurta-lady-v1")
         self.assertEqual(len({x["world"] for x in result.values()}),20)
+        self.assertEqual(len({x["hero_asset"] for x in result.values()}),1)
+        self.assertEqual(len({x["location_asset"] for x in result.values()}),20)
     def test_pilot_is_complete_story_but_not_a_fake_render(self):
         job=create_plan()
         self.assertEqual(len(job["scenes"]),4)
@@ -27,7 +29,7 @@ class FixedPilotTests(unittest.TestCase):
         self.assertTrue(job["missing_assets"])
     def test_wrong_cast_or_disabled_slot_fails_closed(self):
         cast=json.loads(Path("config/characters_fixed.json").read_text())
-        cast["categories"][0]["hero_asset"]=cast["categories"][1]["hero_asset"]
+        cast["categories"][0]["hero_asset"]="assets/characters/smart-phones/NEW_FACE.png"
         with self.assertRaises(Blocked):check_registry(cast=cast)
         with self.assertRaises(Blocked):create_plan(category="unknown")
         with self.assertRaises(Blocked):create_plan(category="smart-phones")

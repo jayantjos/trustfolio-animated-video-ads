@@ -1,10 +1,10 @@
 # TrustFolio fixed-character GPU video pilot (Washing Machines)
 ## What is actually implemented
-- 20 uniquely pinned category character IDs, worlds, asset paths and art directions: `config/characters_fixed.json`.
+- One common approved pink-kurta woman across all 20 category worlds, each with unique location assets: `config/characters_fixed.json`.
 - First 30-second Hindi *story plan* with approved lead visual reference SHA, speech scripts, locations and five dynamic ranked product slots: `config/pilots/washing-machines.json`.
 - Strict asset hash check, official Wan2.2 image-to-video 5-second lead-shot wrapper, and two Hindi voice adapters (offline robotic draft; official Google Cloud TTS billable opt-in).
 - All product ranks/prices must come from the existing validated live API before any ad goes public; historical demo data is never publication-ready.
-- The character artwork and location artwork are **not yet in Git**; original output is staged outside the repo and must pass asset intake. No 30-second GPU video or Hindi lip-sync is claimed.
+- The canonical character artwork is verified locally against the approved SHA-256 but **not yet in Git/S3**; all 20 categories share that exact image. Location artwork is **not yet in Git**; original output is staged outside the repo and must pass asset intake. No 30-second GPU video or Hindi lip-sync is claimed.
 
 ## Make a plan on CPU
 ```bash

@@ -22,9 +22,16 @@ def check_registry(cast=None, worlds=None):
     records = cast["categories"]
     if len(records) != 20 or {r["category"] for r in records} != expected:
         raise Blocked("Cast registry must match all 20 enabled worlds exactly")
-    for key in ("character_id", "hero_asset", "location_asset", "seed"):
+    shared = cast.get("shared_character", {})
+    if (shared.get("id") != "trustfolio-pink-kurta-lady-v1"
+            or shared.get("sha256") != "7f9ca4e47803ff9df57ff389ede1bba15eb6cb761c2fe4521edfe4036bc20ac6"):
+        raise Blocked("Approved common lead is not pinned to the original reference")
+    for key in ("location_asset", "seed"):
         if len({str(r[key]) for r in records}) != 20:
-            raise Blocked("Fixed category cast needs 20 unique " + key)
+            raise Blocked("Every category needs its own location/seed: " + key)
+    if ({r["character_id"] for r in records} != {shared["id"]}
+        or {r["hero_asset"] for r in records} != {shared["hero_asset"]}):
+        raise Blocked("Same pink-kurta woman required across all 20 categories")
     for r in records:
         if not r["fixed_character"] or not r["fixed_location_per_scene"]:
             raise Blocked("Fixed character/location rules must remain enabled")

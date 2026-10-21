@@ -8,10 +8,10 @@
   "voice_language": "hi-IN",
   "voice_gender": "FEMALE",
   "voice_status": "AWAITING_APPROVED_AUDIO",
-  "character_id": "trustfolio-washing-machines-lead-v1",
-  "canonical_image": "assets/characters/washing-machines/hero.png",
+  "character_id": "trustfolio-pink-kurta-lady-v1",
+  "canonical_image": "assets/characters/shared/pink_kurta_lady_v1.png",
   "canonical_image_sha256": "7f9ca4e47803ff9df57ff389ede1bba15eb6cb761c2fe4521edfe4036bc20ac6",
-  "canonical_image_staging_name": "washing-machines/hero.png",
+  "canonical_image_staging_name": "shared/pink_kurta_lady_v1.png",
   "video_model": {
     "name": "Wan2.2-TI2V-5B",
     "model_repository": "https://huggingface.co/Wan-AI/Wan2.2-TI2V-5B",
@@ -27,7 +27,7 @@
       "location": "sunny Indian courtyard with giant laundry pile",
       "text_hi": "अरे! इतने सारे कपड़े! अब कौन धोएगा?",
       "voice_actor": "lead",
-      "image_asset": "assets/characters/washing-machines/hero.png",
+      "image_asset": "assets/characters/shared/pink_kurta_lady_v1.png",
       "prompt_en": "Animate exact reference: young Indian 3D cartoon lady with pink kurta, hands at her head, startled blinking and slight expressive head turn at a giant pile of clothes. Original face, clothes, body and tropical courtyard unchanged. No text, no new characters, no photorealism."
     },
     {
@@ -80,5 +80,6 @@
       "account credentials and publishing ledger"
     ],
     "enabled": false
-  }
+  },
+  "shared_character_global_policy": "One approved lead image and face shared across 20 categories. Backgrounds and contexts change, character stays identical."
 }
