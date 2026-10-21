@@ -67,6 +67,58 @@ class Tests(unittest.TestCase):
         self.assertEqual(calls,[("/pods","GET"),("/pods/pod0123456","GET"),
                                 ("/pods/pod0123456","DELETE"),
                                 ("/pods/pod0123456","GET")])
+    def test_cleanup_rejects_different_pod_id(self):
+        pod={"name":c.NAME,"id":"wrongpod999",
+             "dataCenterId":c.DATACENTER,
+             "mounts":{"network":[{"volumeId":c.VOLUME,"path":"/workspace"}]}}
+        calls=[]
+        def requester(key,path,method="GET",data=None):
+            calls.append((path,method))
+            return {"pods":[pod]}
+        with self.assertRaisesRegex(c.PilotError,"POD_ID_CHANGED"):
+            c.kill_owned_pods("k",requester=requester,
+                              expected_pod_id="originalpod123")
+        self.assertEqual(calls,[("/pods","GET")])
+
+    def test_live_log_fatal_aborts_before_waiting_or_spending_more(self):
+        pod={"name":c.NAME,"id":"pod123456",
+             "dataCenterId":c.DATACENTER,
+             "mounts":{"network":[{"volumeId":c.VOLUME,"path":"/workspace"}]},
+             "status":"RUNNING"}
+        with patch.object(c,"get_object",return_value=None), \\
+             patch.object(c,"find_owned_pods",return_value=[pod]):
+            with self.assertRaisesRegex(c.PilotError,"GPU_FATAL_LOG_MISSING_DEPENDENCY"):
+                c.polling_for_mp4(object(),"k","pod123456",
+                    read_key="read",now=lambda:0,
+                    sleep=lambda _:self.fail("must abort immediately"),
+                    log_scanner=lambda key,pid:{"available":True,
+                                               "events":1,"fatal":"MISSING_DEPENDENCY"})
+
+    def test_log_visibility_timeout_aborts_if_unmonitored(self):
+        pod={"name":c.NAME,"id":"pod123456",
+             "dataCenterId":c.DATACENTER,
+             "mounts":{"network":[{"volumeId":c.VOLUME,"path":"/workspace"}]},
+             "status":"RUNNING"}
+        ticks=iter([0, 0, 100, 181, 181, 181, 181, 181])
+        with patch.object(c,"get_object",return_value=None), \\
+             patch.object(c,"find_owned_pods",return_value=[pod]):
+            with self.assertRaisesRegex(c.PilotError,"GPU_LOG_VISIBILITY_TIMEOUT_ABORT"):
+                c.polling_for_mp4(object(),"k","pod123456",
+                    read_key="read",now=lambda: next(ticks),
+                    interval=0,sleep=lambda _:None,
+                    log_scanner=lambda key,pid:{"available":False,
+                                               "events":0,"fatal":None})
+
+    def test_pod_identity_change_aborts_before_log_read(self):
+        pod={"name":c.NAME,"id":"pod_other",
+             "dataCenterId":c.DATACENTER,
+             "mounts":{"network":[{"volumeId":c.VOLUME,"path":"/workspace"}]}}
+        with patch.object(c,"get_object",return_value=None), \\
+             patch.object(c,"find_owned_pods",return_value=[pod]):
+            with self.assertRaisesRegex(c.PilotError,"GPU_POD_IDENTITY_CHANGED"):
+                c.polling_for_mp4(object(),"k","pod123456",now=lambda:0,
+                    log_scanner=lambda *a:self.fail("wrong pod must not be read"))
+
     def test_wrong_creds_no_api(self):
         with self.assertRaisesRegex(c.PilotError,"KEY_MISSING"):
             c.safe_api("","/pods")
