@@ -234,18 +234,22 @@ def check_cost_and_availability(read_key):
     gpu_by_id={x.get("id"):x for x in g.get("gpus",[]) if isinstance(x,dict)}
     options=[]
     for gpu_id in GPU_PREFERENCE:
-        if available.get(gpu_id) not in ("LOW","MEDIUM","HIGH"):
-            continue
+        # Inventory LOW is a hint, not a guaranteed allocation; the inventory
+        # may temporarily omit stock during fleet synchronization. An actual
+        # GraphQL allocation is authoritative. Never skip live price gating.
         price=gpu_by_id.get(gpu_id,{}).get("price",{})
         try:rate=Decimal(str(price.get("secure")))
         except Exception:continue
         if (rate.is_finite() and rate>0
             and rate<=MAX_ACCEPTED_RATE_USD_PER_HR
             and rate*POD_PROVIDER_TTL_MINUTES/60<Decimal("1")):
-            options.append((gpu_id,rate,available[gpu_id]))
+            stock=available.get(gpu_id,"NOT_LISTED")
+            options.append((gpu_id,rate,stock))
     if not options:
-        raise PilotError("NO_CURRENT_IN_REGION_APPROVED_24GB_GPU_STOCK")
-    gpu_id,rate,stock=options[0]
+        raise PilotError("NO_APPROVED_GPU_WITH_LIVE_PRICE_WITHIN_1_USD")
+    # Attempt provider allocation with the best in-region hint first.
+    present=[x for x in options if x[2] in ("LOW","MEDIUM","HIGH")]
+    gpu_id,rate,stock=(present or options)[0]
     return {"gpu_type":gpu_id,
             "rate_usd_per_hour":str(rate),"stock":stock,
             "max_gpu_usd_at_38m":str(round(rate*POD_PROVIDER_TTL_MINUTES/60,4))}
@@ -319,7 +323,7 @@ def run():
     try:
         cost=check_cost_and_availability(read_key)
         print("PILOT_GPU_TYPE="+cost["gpu_type"],flush=True)
-        print("PILOT_GPU_STOCK="+cost["stock"],flush=True)
+        print("PILOT_GPU_STOCK_HINT="+cost["stock"],flush=True)
         print("PILOT_GPU_QUOTE_USD_HR="+cost["rate_usd_per_hour"],flush=True)
         print("PILOT_GPU_MAX_COST_UNDER_1_USD="+cost["max_gpu_usd_at_38m"],flush=True)
         verify_hero(s3)
