@@ -35,6 +35,7 @@ IMAGE="ghcr.io/jayantjos/trustfolio-wan5-worker@sha256:24432e652fcc50c5a00d85d42
 S3_BUCKET=VOLUME
 S3_HERO="assets/characters/shared/pink_kurta_lady_v1.png"
 RECEIPT="videos/private-qa/"+JOB_ID+"/scene01.receipt.json"
+FAILURE_RECEIPT="videos/private-qa/"+JOB_ID+"/scene01.failure.json"
 MP4="videos/private-qa/"+JOB_ID+"/scene01.mp4"
 # $0.89/h initially. Even $1.50/h over 38 minutes is < $1.
 POD_PROVIDER_TTL_MINUTES=38
@@ -317,6 +318,17 @@ def polling_for_mp4(s3,write_key,pod_id,read_key=None,
             except (ValueError,TypeError):
                 raise PilotError("CORRUPTED_GPU_RECEIPT") from None
             return verify_mp4_s3(s3,receipt)
+        try:failure=get_object(s3,FAILURE_RECEIPT,8192)
+        except PilotError:failure=None
+        if failure:
+            try:bad=json.loads(failure)
+            except (ValueError,TypeError):
+                raise PilotError("GPU_WORKER_FAILURE_RECEIPT_CORRUPT") from None
+            if bad.get("status")=="FAILED_PRIVATE_WAN5" and bad.get("job_id")==JOB_ID:
+                code=str(bad.get("failure_reason","UNKNOWN"))
+                if not re.fullmatch(r"[A-Z0-9_]{1,115}",code):
+                    raise PilotError("GPU_WORKER_BAD_FAILURE_CODE")
+                raise PilotError("GPU_WORKER_FAILED_"+code)
         owned=find_owned_pods(write_key)
         if len(owned)!=1:
             raise PilotError("GPU_POD_DISAPPEARED_OR_DUPLICATED")
