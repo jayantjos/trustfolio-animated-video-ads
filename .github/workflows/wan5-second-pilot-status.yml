@@ -1,5 +1,5 @@
 name: WAN5 second video live GPU and MP4 status (READ ONLY)
-# Read-only status check during authorized 4th live GPU test; no Pod writes.
+# Read-only status check during user-authorized 5th GPU test; never creates or deletes Pods.
 # Safe for S3 receipt, runtime Pod state and recent fatal log events.
 # Final read-only fourth-pilot snapshot after controller confirmed DELETE and GET 404.
 on:
