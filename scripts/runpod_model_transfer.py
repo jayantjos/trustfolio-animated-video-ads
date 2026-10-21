@@ -52,7 +52,7 @@ def make_s3():
       aws_access_key_id=os.environ["RUNPOD_S3_ACCESS_KEY_ID"],
       aws_secret_access_key=os.environ["RUNPOD_S3_SECRET_ACCESS_KEY"],
       config=Config(signature_version="s3v4",s3={"addressing_style":"path"},
-                    connect_timeout=30,read_timeout=900,retries={"max_attempts":8,"mode":"standard"}))
+                    connect_timeout=30,read_timeout=7200,retries={"max_attempts":8,"mode":"standard"}))
 
 class HashReader:
     def __init__(self, raw):
