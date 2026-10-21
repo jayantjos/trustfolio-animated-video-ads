@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "model": "Indus-Labs/indus-pocket-tts",
+  "license": "CC-BY-4.0",
+  "human_listening_qa_passed": false,
+  "origin_workflow": "https://github.com/jayantjos/trustfolio-animated-video-ads/actions/runs/39592735082",
+  "clips": [
+    {
+      "id": "01_laundry_panic",
+      "sha256": "d0d95e885a777ccfc21b3f71d68d69d19873e8fb1fc427c1232743cfb484170b",
+      "bytes": 26301,
+      "s3_key": "assets/audio/washing-machines/hindi_neural_v1/01_laundry_panic.d0d95e885a777ccf.mp3"
+    },
+    {
+      "id": "02_machine_entrance",
+      "sha256": "0b27918e6e179f48cc20ef3ae8628102c66efe45e19f35c337442d30df92ff0b",
+      "bytes": 21933,
+      "s3_key": "assets/audio/washing-machines/hindi_neural_v1/02_machine_entrance.0b27918e6e179f48.mp3"
+    },
+    {
+      "id": "08_cta",
+      "sha256": "0a4da09f627bd8e8cd1ed1069c097b6ec4b01961c32cdbf1d2432865c11ff15e",
+      "bytes": 35061,
+      "s3_key": "assets/audio/washing-machines/hindi_neural_v1/08_cta.0a4da09f627bd8e8.mp3"
+    }
+  ]
+}

@@ -17,11 +17,8 @@ HERO_SIZE = 2484010
 BUCKET = "1bch597yrz"
 S3_ENDPOINT = "https://s3api-eu-ro-1.runpod.io"
 
-AUDIO = {
-    "01_laundry_panic.mp3": "assets/audio/washing-machines/hindi_neural_v1/01_laundry_panic.mp3",
-    "02_machine_entrance.mp3": "assets/audio/washing-machines/hindi_neural_v1/02_machine_entrance.mp3",
-    "08_cta.mp3": "assets/audio/washing-machines/hindi_neural_v1/08_cta.mp3",
-}
+AUDIO_RECEIPTS = "config/hindi_neural_verified_receipts.json"
+
 REQUIRED_SCENES = (
     "assets/locations/washing-machines/scene02.png",
     "assets/locations/washing-machines/showroom.png",
@@ -74,10 +71,17 @@ def audit(client, m, approved_qa=False):
     if not hero_uploaded: blockers.append("MASTER_CHARACTER_NOT_VERIFIED_ON_S3")
     # Support audio metadata SHA-256 from staging workflow. Read-only HEAD is not lip-sync QA.
     audios=[]
-    for name,key in AUDIO.items():
+    receipts=json.loads(Path(AUDIO_RECEIPTS).read_text(encoding="utf-8"))
+    if len(receipts["clips"])!=3 or receipts["human_listening_qa_passed"] is not False:
+        raise ValueError("NEURAL_AUDIO_RECEIPTS_INVALID")
+    for clip in receipts["clips"]:
+        name=clip["id"]
+        key=clip["s3_key"]
+        if not key.startswith("assets/audio/washing-machines/hindi_neural_v1/") or not key.endswith(clip["sha256"][:16]+".mp3"):
+            raise ValueError("AUDIO_RECEIPT_PATH_MISMATCH")
         h=head_or_none(client,key)
-        if (h is None or int(h.get("ContentLength",0)) < 3000
-            or len(h.get("Metadata",{}).get("sha256","")) != 64):
+        if (h is None or int(h.get("ContentLength",0)) != clip["bytes"]
+            or h.get("Metadata",{}).get("sha256","")!=clip["sha256"]):
             blockers.append("NEURAL_AUDIO_NOT_STAGED:"+name)
         else:
             audios.append(name)
