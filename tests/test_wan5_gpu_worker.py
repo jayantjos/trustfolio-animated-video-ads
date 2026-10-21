@@ -64,6 +64,29 @@ class WorkerTests(unittest.TestCase):
                 "format":{"duration":"1.1"}}))
             with self.assertRaisesRegex(w.RenderError,"NOT_A_REAL_FIVE_SECOND_VIDEO"):
                 w.check_video(p,fake)
+    def test_missing_tokenizer_is_hard_pre_gpu_blocker(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaisesRegex(w.RenderError,"WAN_TOKENIZER_MISSING"):
+                w.verify_tokenizer_dir(Path(tmp))
+    def test_tokenizer_json_rejected_if_invalid_and_binary_hash_mismatch(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            folder=root/"google"/"umt5-xxl";folder.mkdir(parents=True)
+            for name in w.TOKENIZER_FILES:
+                (folder/name).write_bytes(b'{"ok":true}' if name.endswith(".json") else b"fake-model")
+            with self.assertRaisesRegex(w.RenderError,"WAN_TOKENIZER_SHA256_MISMATCH"):
+                w.verify_tokenizer_dir(root)
+    def test_failure_receipt_has_only_safe_reason_not_raw_text(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            receipt=Path(tmp)/"failure.json"
+            with patch.object(w,"OUTDIR",Path(tmp)),patch.object(w,"FAILURE",receipt):
+                w.write_failure_receipt("ModuleNotFoundError: secret PASSWORD",2)
+            meta=json.loads(receipt.read_text())
+            self.assertEqual(meta["status"],"FAILED_PRIVATE_WAN5")
+            self.assertEqual(meta["return_code"],2)
+            self.assertFalse(meta["social_publishing"])
+            self.assertNotIn(":",meta["failure_reason"])
+
     def test_gpu_worker_never_uses_publishing(self):
         self.assertFalse(w.RECEIPT.name.endswith(".mp4"))
         self.assertEqual(w.JOB_ID,"wan5-laundry-first-20261021")
