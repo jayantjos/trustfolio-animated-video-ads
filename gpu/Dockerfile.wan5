@@ -19,12 +19,13 @@ RUN python -m pip install --no-cache-dir \
     "easydict" "ftfy" "dashscope" "einops>=0.7,<1" "numpy>=1.23.5,<2" \
     "Pillow>=10,<12" \
   && python -m pip check
-# The first REAL GPU attempt failed at import time: "No module named einops".
-# Fail this FREE OCI build if Wan imports or CLI fail; do not burn GPU on errors.
+# First paid GPU test failed because "einops" was absent. Verify that
+# dependency without importing Wan's package: upstream T5EncoderModel accesses
+# torch.cuda.current_device() at import time, which fails in a CPU-only Docker
+# build even though the built image runs on a GPU Pod.
 RUN cd /opt/Wan2.2 \
-  && python -c "import einops; import wan; from wan.modules.vae2_1 import Wan2_1_VAE; print('WAN_DEPENDENCY_IMPORT_SMOKE=PASS')" \
-  && python generate.py --help >/dev/null \
-  && echo "WAN_GENERATE_IMPORT_SMOKE=PASS"
+  && python -c "import ast, einops, torch, transformers, diffusers, imageio, ftfy, easydict; from pathlib import Path; ast.parse(Path('generate.py').read_text()); ast.parse(Path('wan/modules/t5.py').read_text()); assert torch.version.cuda is not None; print('WAN_CPU_SAFE_DEPENDENCY_AND_SOURCE_SMOKE=PASS')" \
+  && python -m pip check
 COPY scripts/wan5_gpu_worker.py /opt/trustfolio/wan5_gpu_worker.py
 WORKDIR /opt/Wan2.2
 ENV PYTHONUNBUFFERED=1 HF_HOME=/workspace/cache/huggingface
