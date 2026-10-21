@@ -82,10 +82,26 @@ def summarize(pods,volumes,centers):
             "charged_resources_created":False,"publishing_enabled":False}
 
 def inventory(key,reader=get_json):
-    pods=list_all(key,"/pods","pods",reader=reader)
-    volumes=list_all(key,"/network-volumes","networkVolumes",reader=reader)
-    data=reader(key,"/catalog/datacenters",{"include":"GPU_AVAILABILITY"})
-    if not isinstance(data.get("dataCenters"),list):raise Blocked("DATACENTERS_MISSING")
+    try:
+        pods=list_all(key,"/pods","pods",reader=reader)
+    except Blocked as exc:
+        raise Blocked("PODS_"+str(exc)) from None
+    try:
+        volumes=list_all(key,"/network-volumes","networkVolumes",reader=reader)
+    except Blocked as exc:
+        raise Blocked("NETWORK_VOLUMES_"+str(exc)) from None
+    try:
+        data=reader(key,"/catalog/datacenters",{"include":"GPU_AVAILABILITY"})
+        if not isinstance(data.get("dataCenters"),list):
+            raise Blocked("DATACENTERS_MISSING")
+    except Blocked as exc:
+        # Catalog may require permission unavailable to existing read-only key.
+        # Never invent candidate availability when discovery is unauthorized.
+        result=summarize(pods,volumes,[])
+        result["status"]="PARTIAL_CATALOG_UNAVAILABLE"
+        result["catalog_error"]=str(exc)
+        result["candidate_count"]=None
+        return result
     return summarize(pods,volumes,data["dataCenters"])
 
 def main():
