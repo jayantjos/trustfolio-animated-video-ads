@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "project": "TrustFolio Animated Washing Machine Pilot",
+  "repository": "Wan-AI/Wan2.2-TI2V-5B",
+  "commit": "921dbaf3f1674a56f47e83fb80a34bac8a8f203e",
+  "license": "apache-2.0",
+  "volume_id": "1bch597yrz",
+  "datacenter": "EU-RO-1",
+  "s3_prefix": "models/Wan2.2-TI2V-5B/921dbaf3f1674a56f47e83fb80a34bac8a8f203e/",
+  "phase": "small-config",
+  "filename": "config.json",
+  "enabled": true,
+  "gpu_enabled": false,
+  "social_publishing_enabled": false,
+  "full_model_uploaded": false,
+  "checkpoint_integrity_verified": false,
+  "supported_large_files": [
+    "Wan2.2_VAE.pth",
+    "diffusion_pytorch_model-00001-of-00003.safetensors",
+    "diffusion_pytorch_model-00002-of-00003.safetensors",
+    "diffusion_pytorch_model-00003-of-00003.safetensors",
+    "models_t5_umt5-xxl-enc-bf16.pth"
+  ],
+  "note": "Probe small config first. Large file transfers use separate controlled batch workflows with streaming to avoid 14GB runner disk. No claim model is ready until full manifest verified."
+}
