@@ -41,8 +41,9 @@ def get_json(key, endpoint, params=None, opener=urlopen):
 def list_all(key,endpoint,field,reader=get_json):
     results=[];cursor=None;seen=set()
     for _ in range(10):
-        args={"limit":100}
-        if cursor: args["cursor"]=cursor
+        # Use the previously verified bare GET for page one. Only append
+        # the server-supplied cursor if a further page exists.
+        args={"cursor":cursor} if cursor else None
         data=reader(key,endpoint,args)
         items=data.get(field)
         if not isinstance(items,list): raise Blocked(field+"_MISSING")
