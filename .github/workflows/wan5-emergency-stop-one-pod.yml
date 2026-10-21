@@ -19,7 +19,7 @@ jobs:
           import os,sys
           from scripts.wan5_independent_reaper import request_json, valid_target, NAME, VOLUME, DATACENTER
           key=os.environ['RUNPOD_POD_WRITE_KEY']
-          pod_id='8vwc7sykues9r9'
+          pod_id='gnn35gf7upjvmg'
           target=request_json(key,'/'+pod_id,'GET')
           if target.get('deleted'):
               print('WAN5_EMERGENCY_GPU_TERMINATED=ALREADY_GONE')
@@ -27,7 +27,7 @@ jobs:
           assert target.get('id')==pod_id and target.get('name')==NAME, 'WRONG_POD_REFUSE_DELETE'
           assert target.get('dataCenterId')==DATACENTER, 'WRONG_REGION_REFUSE_DELETE'
           assert target.get('mounts',{}).get('network')==[{'volumeId':VOLUME,'path':'/workspace'}], 'WRONG_VOLUME_REFUSE_DELETE'
-          assert target.get('createdAt')=='2026-10-21T14:52:32.698Z', 'WRONG_CREATION_TIMESTAMP_REFUSE_DELETE'
+          assert target.get('createdAt')=='2026-10-21T15:41:54.12Z', 'WRONG_CREATION_TIMESTAMP_REFUSE_DELETE'
           print('WAN5_EMERGENCY_POD_NAME_AND_VOLUME_VERIFIED=true',flush=True)
           import time
           request_json(key,'/'+pod_id,'DELETE')
