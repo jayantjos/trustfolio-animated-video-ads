@@ -30,7 +30,7 @@ from scripts.wan5_gpu_worker import IMAGE_SHA, IMAGE_BYTES, JOB_ID
 
 GRAPHQL="https://api.runpod.io/graphql"
 NAME="trustfolio-video-"+JOB_ID
-IMAGE="ghcr.io/jayantjos/trustfolio-wan5-worker@sha256:5f920321ce5cd6485e560a670b3b53f8f69cc07b2b71b10caa28723eea15cdf1"
+IMAGE="ghcr.io/jayantjos/trustfolio-wan5-worker@sha256:2d76ca523588cff463bb13113aa1c80a9b856bbe2607e12947b84bfff81f66dc"
 S3_BUCKET=VOLUME
 S3_HERO="assets/characters/shared/pink_kurta_lady_v1.png"
 RECEIPT="videos/private-qa/"+JOB_ID+"/scene01.receipt.json"

@@ -19,6 +19,14 @@ class FakeS3:
         return {"Body":DummyBody(b),"ContentLength":len(b)}
 
 class Tests(unittest.TestCase):
+    def test_paid_worker_image_matches_successful_build(self):
+        from pathlib import Path
+        expected="ghcr.io/jayantjos/trustfolio-wan5-worker@sha256:2d76ca523588cff463bb13113aa1c80a9b856bbe2607e12947b84bfff81f66dc"
+        self.assertEqual(c.IMAGE,expected)
+        workflow=Path(".github/workflows/wan5-first-paid-gpu-pilot.yml").read_text()
+        self.assertIn(expected,workflow)
+        self.assertNotIn("sha256:5f920321ce5cd6485e560a670b3b53f8f69cc07b2b71b10caa28723eea15cdf1",workflow)
+
     def test_fixed_scope_and_budget(self):
         self.assertEqual(c.POD_PROVIDER_TTL_MINUTES,38)
         self.assertLess(c.MAX_ACCEPTED_RATE_USD_PER_HR*c.POD_PROVIDER_TTL_MINUTES/60,1)
