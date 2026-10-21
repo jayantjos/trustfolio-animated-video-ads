@@ -13,7 +13,7 @@ from pathlib import Path
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
 
-from runpod_storage_discovery import get_json, list_all, Blocked
+from scripts.runpod_storage_discovery import get_json, list_all, Blocked
 
 NAME = "trustfolio-wan-models-v1"
 REGION = "EU-RO-1"
