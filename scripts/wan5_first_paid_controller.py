@@ -30,19 +30,18 @@ from scripts.wan5_gpu_worker import IMAGE_SHA, IMAGE_BYTES, JOB_ID
 
 GRAPHQL="https://api.runpod.io/graphql"
 NAME="trustfolio-video-"+JOB_ID
-IMAGE="ghcr.io/jayantjos/trustfolio-wan5-worker@sha256:2d76ca523588cff463bb13113aa1c80a9b856bbe2607e12947b84bfff81f66dc"
+IMAGE="ghcr.io/jayantjos/trustfolio-wan5-worker@sha256:0acee28aeae4d0cdd7c80fd4cf7d038f03afaa0ebe84c963b019920829d9c60a"
 S3_BUCKET=VOLUME
 S3_HERO="assets/characters/shared/pink_kurta_lady_v1.png"
 RECEIPT="videos/private-qa/"+JOB_ID+"/scene01.receipt.json"
 MP4="videos/private-qa/"+JOB_ID+"/scene01.mp4"
 # $0.89/h initially. Even $1.50/h over 38 minutes is < $1.
 POD_PROVIDER_TTL_MINUTES=38
-# Each of these models offers >=24GiB physical VRAM. Prefer 32GB, then
-# established RTX4090, and use cost-effective RTX PRO4000 if it is the only
-# EU-RO-1 stock. All are for the SAME one approved $1 pilot.
-GPU_PREFERENCE=("NVIDIA RTX PRO 4500 Blackwell",
-                "NVIDIA GeForce RTX 4090",
-                "NVIDIA RTX PRO 4000 Blackwell")
+# This image uses PyTorch 2.6 + CUDA 12.4. Blackwell sm_120 GPUs
+# require CUDA 12.8+; accepting them would waste the paid test on a CUDA
+# architecture crash. Only schedule a supported Ada RTX 4090 (24 GiB).
+# Fail closed when that GPU is unavailable rather than gambling credits.
+GPU_PREFERENCE=("NVIDIA GeForce RTX 4090",)
 OWN_POLL_MAX_MINUTES=30
 MAX_ACCEPTED_RATE_USD_PER_HR=Decimal("1.50")
 
