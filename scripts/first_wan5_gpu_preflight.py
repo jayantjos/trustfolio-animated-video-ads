@@ -113,6 +113,32 @@ def evaluate(p,model,vol,pods,catalog,hero,is_write_key_present):
       "blockers":problems,"gpu_pod_created":False,
       "mp4_rendered":False,"publishing_enabled":False}
 
+
+def verify_hero_s3_get(s3,key,expected_bytes,expected_sha):
+    """Verify exact signed S3 object content, never just metadata or HEAD."""
+    import hashlib
+    if (key!="assets/characters/shared/pink_kurta_lady_v1.png"
+        or expected_bytes!=2484010
+        or expected_sha!="7f9ca4e47803ff9df57ff389ede1bba15eb6cb761c2fe4521edfe4036bc20ac6"):
+        raise ValueError("UNAPPROVED_CHARACTER_REFERENCE")
+    r=s3.get_object(Bucket=VOLUME,Key=key)
+    body=r.get("Body")
+    if body is None:raise ValueError("S3_CHARACTER_BODY_MISSING")
+    try:
+        if int(r.get("ContentLength",-1))!=expected_bytes:
+            return False
+        digest=hashlib.sha256()
+        count=0
+        while True:
+            chunk=body.read(1024*1024)
+            if not chunk:break
+            count+=len(chunk)
+            if count>expected_bytes:return False
+            digest.update(chunk)
+        return count==expected_bytes and digest.hexdigest()==expected_sha
+    finally:
+        body.close()
+
 def main():
     try:
         p,m=read_inputs()
@@ -132,9 +158,10 @@ def main():
             region_name="eu-ro-1",aws_access_key_id=a,aws_secret_access_key=b,
             config=Config(signature_version="s3v4",s3={"addressing_style":"path"}))
         try:
-            h=s3.head_object(Bucket=VOLUME,Key=p["hero_s3_key"])
-            hero=(h.get("ContentLength")==p["hero_bytes"] and
-                  h.get("Metadata",{}).get("sha256")==p["hero_sha256"])
+            # Read the actual bytes: RunPod S3 HEAD metadata may not reflect
+            # a successfully PUT and GET verified original PNG.
+            hero=verify_hero_s3_get(s3,p["hero_s3_key"],
+                                    p["hero_bytes"],p["hero_sha256"])
         except ClientError as exc:
             if exc.response.get("Error",{}).get("Code") in ("404","NoSuchKey","NotFound"):
                 hero=False
