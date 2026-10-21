@@ -53,7 +53,7 @@ class Tests(unittest.TestCase):
             self.assertEqual(t.stage(fake)[0]["status"],"PRESENT_VERIFIED")
     def test_rejects_existing_mismatch_without_overwrite(self):
         fake=FakeS3()
-        fake.data[t.MODEL_PREFIX+"spiece.model"]=b"different"
+        fake.data[t.MODEL_PREFIX+"tokenizer.json"]=b"different"
         with patch.object(t,"download_verified",return_value=(b"approved","0"*64)):
             with self.assertRaisesRegex(RuntimeError,"REFUSE_OVERWRITE"):
                 t.stage(fake)
