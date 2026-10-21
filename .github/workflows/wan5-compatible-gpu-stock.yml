@@ -39,5 +39,8 @@ jobs:
               dollar=price.get('secure') if isinstance(price,dict) else None
               hint=str(g.get('memoryInGb',g.get('vramInGb','')))
               print('GPU_CANDIDATE='+json.dumps({'id':id,'stock':x.get('availability'),'usd_hour':dollar,'vram_hint_gb':hint},sort_keys=True))
+          from scripts.first_wan5_gpu_preflight import check_catalog
+          decision=check_catalog({'gpus':all_g},{'dataCenters':centers})
+          print('WAN5_EXISTING_CHECK_CATALOG='+json.dumps(decision,sort_keys=True))
           print('GPU_CREATED=false')
           PY
