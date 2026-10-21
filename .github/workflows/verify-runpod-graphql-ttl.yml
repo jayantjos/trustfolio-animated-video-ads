@@ -19,27 +19,45 @@ jobs:
           import os,json,urllib.request,urllib.error
           k=os.environ.get("RUNPOD_POD_WRITE_KEY","")
           if not k:raise SystemExit("GRAPHQL_WRITE_KEY_MISSING")
+          # First test ordinary authenticated READ query; introspection may be disabled.
           query='query TrustfolioReadOnlySchema { __type(name: "PodFindAndDeployOnDemandInput") { inputFields { name } } }'
+          smoke_query='query TrustfolioReadOnlyAccount { myself { id } }'
           body=json.dumps({"query":query}).encode()
-          def inspect(use_querystring):
+          def inspect(use_querystring, gql_query=query):
               from urllib.parse import quote
               u="https://api.runpod.io/graphql"
               if use_querystring:
                   u+="?api_key="+quote(k,safe="")
               h={"Content-Type":"application/json","Accept":"application/json"}
               if not use_querystring:h["Authorization"]="Bearer "+k
-              req=urllib.request.Request(u,data=body,method="POST",headers=h)
+              req=urllib.request.Request(u,data=json.dumps({"query":gql_query}).encode(),method="POST",headers=h)
               with urllib.request.urlopen(req,timeout=20) as r:
                   if r.status!=200:raise RuntimeError("GRAPHQL_HTTP_NOT_200")
                   return json.loads(r.read(100001))
           try:
               try:
-                  result=inspect(False)
-                  auth="bearer"
+                  smoke=inspect(True,smoke_query)
+                  if smoke.get("data",{}).get("myself") is None:
+                      raise SystemExit("GRAPHQL_ACCOUNT_QUERY_EMPTY")
+                  print("GRAPHQL_ACCOUNT_READ=SUCCESS_NO_GPU")
               except urllib.error.HTTPError as exc:
-                  if exc.code not in (400,401,403):raise
-                  result=inspect(True)
-                  auth="query_string"
+                  raw=exc.read(3000)
+                  print("GRAPHQL_ACCOUNT_READ_HTTP="+str(exc.code))
+                  try:
+                      payload=json.loads(raw)
+                      print("GRAPHQL_ERROR_KEYS="+",".join(sorted(payload.keys())))
+                      errors=payload.get("errors",[])
+                      if errors and isinstance(errors,list):
+                          message=str(errors[0].get("message",""))
+                          # Publish only narrow, non-sensitive diagnostic categories.
+                          markers=("Unauthorized","Forbidden","introspection",
+                                   "auth","API key","GraphQL","invalid","query")
+                          print("GRAPHQL_ERROR_CATEGORY="+
+                                next((m for m in markers if m.lower() in message.lower()),"UNCLASSIFIED"))
+                  except (ValueError,TypeError,AttributeError):pass
+                  raise
+              result=inspect(True)
+              auth="query_string"
               fields=result.get("data",{}).get("__type",{}).get("inputFields",[])
               names={x["name"] for x in fields}
               required={"terminateAfter","networkVolumeId",
