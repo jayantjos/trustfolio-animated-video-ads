@@ -7,7 +7,7 @@ JOB="washing-20261021-001"
 class DeletionTests(unittest.TestCase):
     def obj(self,name=None,volume="1bch597yrz"):
         return {"id":POD,"name":name or "trustfolio-video-"+JOB,
-                "networkVolumeId":volume}
+                "mounts":{"network":[{"volumeId":volume,"path":"/workspace"}]}}
     def test_dryrun_never_contacts_runpod(self):
         def noapi(*a):raise AssertionError("unexpected network call")
         o=cleanup(POD,JOB,"",requester=noapi)
