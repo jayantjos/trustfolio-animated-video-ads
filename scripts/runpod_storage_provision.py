@@ -70,7 +70,11 @@ def preflight(key, reader=get_json):
     return "READY", None
 
 def create(key, policy_path, confirmation, writer=None, reader=get_json):
-    check_policy(policy_path)
+    policy=check_policy(policy_path)
+    # The user already created the approved volume manually.
+    # Fail before any network call even with a write key and exact confirmation.
+    if policy.get("status")=="CREATED_MANUALLY" or policy.get("new_purchase_enabled") is False:
+        raise Blocked("EXISTING_APPROVED_VOLUME_NO_NEW_PURCHASE")
     if confirmation!=CONFIRM:
         raise Blocked("EXACT_CONFIRMATION_REQUIRED")
     if not key or "\n" in key or "\r" in key:
