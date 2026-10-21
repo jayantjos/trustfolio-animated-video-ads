@@ -1,11 +1,12 @@
 name: TrustFolio WAN5 independent stale Pod reaper (FIRST PILOT ONLY)
 on:
   schedule:
-    - cron: '*/10 * * * *'
+    - cron: '*/5 * * * *'
   push:
     branches: [main]
     paths:
       - 'scripts/wan5_independent_reaper.py'
+      - 'scripts/wan5_live_log_guard.py'
       - 'tests/test_wan5_independent_reaper.py'
       - '.github/workflows/wan5-independent-pod-reaper.yml'
   workflow_dispatch:
@@ -26,8 +27,10 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: '3.11'}
       - name: Strict ownership and stale-age safety tests
-        run: python -m unittest discover -s tests -p 'test_wan5_independent_reaper.py' -v
-      - name: Reap ONLY stale owned WAN5 pilot Pod; never touch network volume
+        run: |
+          python -m unittest discover -s tests -p 'test_wan5_independent_reaper.py' -v
+          python -m unittest discover -s tests -p 'test_wan5_live_log_guard.py' -v
+      - name: Stop ONLY fatal-log or stale exact-owned WAN5 pilot Pod; preserve network volume
         run: python -m scripts.wan5_independent_reaper
       - uses: actions/upload-artifact@v4
         if: always()
