@@ -48,6 +48,7 @@ jobs:
       - name: Validate controller safety and immutable original art
         run: |
           python -m unittest discover -s tests -p 'test_wan5_first_paid_controller.py' -v
+          python -m unittest discover -s tests -p 'test_wan5_live_log_guard.py' -v
           python -c 'from scripts.stage_canonical_character import hash_image; assert hash_image()=="7f9ca4e47803ff9df57ff389ede1bba15eb6cb761c2fe4521edfe4036bc20ac6"'
       - name: Check authenticated private GHCR image manifest without GPU charge
         env:
