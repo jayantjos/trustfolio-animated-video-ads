@@ -16,15 +16,15 @@ RUN python -m pip install --no-cache-dir \
     "tokenizers>=0.20.3" "accelerate>=1.1.1" \
     "opencv-python-headless>=4.9.0.80" "diffusers>=0.31.0" \
     "imageio[ffmpeg]" "imageio-ffmpeg" \
-    "easydict" "ftfy" "dashscope" "einops>=0.7,<1" "numpy>=1.23.5,<2" \
+    "easydict" "ftfy" "dashscope" "einops>=0.7,<1" "decord==0.6.0" "numpy>=1.23.5,<2" \
     "Pillow>=10,<12" \
   && python -m pip check
-# First paid GPU test failed because "einops" was absent. Verify that
+# First two paid GPU attempts exposed missing "einops", then "decord". Verify that
 # dependency without importing Wan's package: upstream T5EncoderModel accesses
 # torch.cuda.current_device() at import time, which fails in a CPU-only Docker
 # build even though the built image runs on a GPU Pod.
 RUN cd /opt/Wan2.2 \
-  && python -c "import ast, einops, torch, transformers, diffusers, imageio, ftfy, easydict; from pathlib import Path; ast.parse(Path('generate.py').read_text()); ast.parse(Path('wan/modules/t5.py').read_text()); assert torch.version.cuda is not None; print('WAN_CPU_SAFE_DEPENDENCY_AND_SOURCE_SMOKE=PASS')" \
+  && python -c "import ast, einops, decord, torch, transformers, diffusers, imageio, ftfy, easydict; from pathlib import Path; ast.parse(Path('generate.py').read_text()); ast.parse(Path('wan/modules/t5.py').read_text()); assert torch.version.cuda is not None; print('WAN_CPU_SAFE_DEPENDENCY_AND_SOURCE_SMOKE=PASS')" \
   && python -m pip check
 COPY scripts/wan5_gpu_worker.py /opt/trustfolio/wan5_gpu_worker.py
 WORKDIR /opt/Wan2.2
