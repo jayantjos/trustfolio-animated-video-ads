@@ -3,7 +3,8 @@
   "sha256": "8c9b9c188750260a4af8ab7e105d008d85ac8aa628859162f2ccbf26961128d5",
   "s3_key": "assets/audio/washing-machines/hindi_neural_v1/01_laundry_panic.8c9b9c188750260a.mp3",
   "seconds": 4.104,
-  "listening_qa_passed": false,
+  "listening_qa_passed": true,
   "lip_sync_claimed": false,
-  "source_run": 39698970311
+  "source_run": 39698970311,
+  "listening_qa_approval_basis": "User explicitly confirmed this Hindi voice in ChatGPT on 2026-10-23; hash, S3 key and exact dialogue unchanged"
 }
