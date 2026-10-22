@@ -211,7 +211,7 @@ def classify_inference_failure(output):
     else:
         line = str(output)[-65536:].lower()
     categories = (
-        ("CUDA_OUT_OF_MEMORY", ("cuda out of memory", "torch.outofmemoryerror", "cublas_status_alloc_failed")),
+        ("CUDA_OUT_OF_MEMORY", ("cuda out of memory", "outofmemoryerror", "cublas_status_alloc_failed")),
         ("WAN_CLI_ARGUMENT_MISMATCH", ("unrecognized arguments:", "error: argument --")),
         ("PYTHON_DEPENDENCY_MISSING", ("modulenotfounderror", "no module named")),
         ("MODEL_WEIGHT_OR_INPUT_MISSING", ("filenotfounderror", "no such file or directory")),
