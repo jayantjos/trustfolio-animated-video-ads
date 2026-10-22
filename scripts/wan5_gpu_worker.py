@@ -255,7 +255,7 @@ def sanitized_inference_evidence(output, returncode):
         data = b""
     decoded = data.decode("utf-8", "replace")
     exception_classes = re.findall(
-        r"(?m)^(?:[A-Za-z_][A-Za-z_0-9.]*\\.)?([A-Za-z_][A-Za-z_0-9]*(?:Error|Exception))\\s*:",
+        r"(?m)^(?:[A-Za-z_][A-Za-z_0-9.]*[.])?([A-Za-z_][A-Za-z_0-9]*(?:Error|Exception))[ ]*:",
         decoded,
     )
     safe_type = next(
