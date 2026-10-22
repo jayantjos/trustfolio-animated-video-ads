@@ -2,6 +2,7 @@ name: TrustFolio WAN5 independent stale Pod reaper (FIRST PILOT ONLY)
 # Fifth pilot readiness: independent error/age reaper must be recently healthy.
 # Public-repository no-GPU API readiness rerun, 2026-10-23; ownership checks unchanged.
 # In-flight Pod health guard for approved capped run 39845616705; do not touch network volume.
+# Fresh owner-approved $1 capped pilot readiness check for 23 Oct; preserve volume.
 on:
   schedule:
     - cron: '*/5 * * * *'
