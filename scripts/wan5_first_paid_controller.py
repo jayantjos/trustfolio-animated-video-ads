@@ -419,6 +419,7 @@ def run():
     # The base image bundles an obsolete silent worker. Never launch it.
     # Only the CPU-tested overlay digest is eligible for a paid attempt.
     global IMAGE
+    # Set this only to the digest recorded in the successful Docker CPU QA artifact.
     tested_image=os.environ.get("TRUSTFOLIO_TESTED_WORKER_IMAGE", "")
     if not re.fullmatch(r"ghcr[.]io/jayantjos/trustfolio-wan5-worker@sha256:[0-9a-f]{64}", tested_image):
         raise PilotError("TESTED_AUDIO_WORKER_DIGEST_REQUIRED")
