@@ -8,6 +8,7 @@ on:
     # so the paid launch can use a freshly verified image digest.
     paths:
       - 'scripts/wan5_gpu_worker.py'
+      - 'scripts/wan5_offline_wan_cli_qa.py'
       - 'config/wan5_exact_audio_candidate.json'
       - 'gpu/Dockerfile.wan5-overlay'
       - 'scripts/wan5_container_cpu_qa.py'
@@ -84,6 +85,7 @@ jobs:
         run: |
           docker pull "$IMAGE"
           docker run --rm --network none --entrypoint python -v "$PWD:/qa:ro" "$IMAGE" /qa/scripts/wan5_container_cpu_qa.py
+          docker run --rm --network none --entrypoint python -e PYTHONPATH=/qa -v "$PWD:/qa:ro" "$IMAGE" /qa/scripts/wan5_offline_wan_cli_qa.py
           # This exact pinned image already passed ffmpeg/ffprobe checks.
           # Test real S3-read MP3 bytes and synthetic invalid/overlong inputs,
           # all offline, before any billable GPU or published content.
