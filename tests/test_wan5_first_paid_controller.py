@@ -109,7 +109,7 @@ class Tests(unittest.TestCase):
              "dataCenterId":c.DATACENTER,
              "mounts":{"network":[{"volumeId":c.VOLUME,"path":"/workspace"}]},
              "status":"RUNNING"}
-        ticks=iter([0, 0, 100, 181, 181, 181, 181, 181])
+        ticks=iter([0, 0, 100, 601, 601, 601, 601, 601])
         with patch.object(c,"get_object",return_value=None), \
              patch.object(c,"find_owned_pods",return_value=[pod]):
             with self.assertRaisesRegex(c.PilotError,"GPU_LOG_VISIBILITY_TIMEOUT_ABORT"):
@@ -158,3 +158,4 @@ class Tests(unittest.TestCase):
                 c.run()
 
 if __name__=="__main__":unittest.main()
+

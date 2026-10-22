@@ -5,6 +5,7 @@ Never logs raw RunPod messages, credentials or prompts. Never creates/deletes
 Pods; the exact-owned controller performs deletion in its finally block.
 """
 import json
+import hashlib
 import re
 import socket
 import time
@@ -67,11 +68,14 @@ def scan_container_logs(api_key, pod_id, opener=urlopen, now=time.monotonic):
         with opener(req, timeout=5) as response:
             deadline = now() + 3.0
             seen = 0
-            while seen < 120 and now() < deadline:
+            digest = hashlib.sha256()
+            lines = 0
+            while lines < 240 and now() < deadline:
                 try:
                     raw = response.readline(4096)
                 except (socket.timeout, TimeoutError):
                     break
+                lines += 1
                 if not raw:
                     break
                 if not raw.startswith(b"data:"):
@@ -80,10 +84,13 @@ def scan_container_logs(api_key, pod_id, opener=urlopen, now=time.monotonic):
                 if not message.strip():
                     continue
                 seen += 1
+                digest.update(raw)
                 classification = fatal_classification(message)
                 if classification:
                     return {"available": True, "events": seen,
                             "fatal": classification}
-            return {"available": bool(seen), "events": seen, "fatal": None}
+            return {"available": bool(seen), "events": seen, "fatal": None,
+                    "fingerprint": digest.hexdigest() if seen else None}
     except (HTTPError, URLError, OSError, TimeoutError, ValueError):
         return {"available": False, "events": 0, "fatal": None}
+

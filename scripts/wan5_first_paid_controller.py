@@ -37,6 +37,7 @@ S3_HERO="assets/characters/shared/pink_kurta_lady_v1.png"
 RECEIPT="videos/private-qa/"+JOB_ID+"/scene01.receipt.json"
 FAILURE_RECEIPT="videos/private-qa/"+JOB_ID+"/scene01.failure.json"
 MP4="videos/private-qa/"+JOB_ID+"/scene01.mp4"
+PROGRESS="videos/private-qa/"+JOB_ID+"/scene01.progress.json"
 # $0.89/h initially. Even $1.50/h over 38 minutes is < $1.
 POD_PROVIDER_TTL_MINUTES=38
 # This image uses PyTorch 2.6 + CUDA 12.4. Blackwell sm_120 GPUs
@@ -45,7 +46,7 @@ POD_PROVIDER_TTL_MINUTES=38
 # Fail closed when that GPU is unavailable rather than gambling credits.
 GPU_PREFERENCE=("NVIDIA GeForce RTX 4090",)
 OWN_POLL_MAX_MINUTES=30
-LOG_UNAVAILABLE_STARTUP_SECONDS=180
+LOG_UNAVAILABLE_STARTUP_SECONDS=600
 LOG_UNAVAILABLE_AFTER_READY_SECONDS=90
 MAX_ACCEPTED_RATE_USD_PER_HR=Decimal("1.50")
 
@@ -155,8 +156,8 @@ def make_s3():
         endpoint_url="https://s3api-eu-ro-1.runpod.io",
         aws_access_key_id=a,aws_secret_access_key=b,
         config=Config(signature_version="s3v4",s3={"addressing_style":"path"},
-                      connect_timeout=25,read_timeout=180,
-                      retries={"max_attempts":3,"mode":"standard"}))
+                      connect_timeout=5,read_timeout=10,
+                      retries={"total_max_attempts":1,"mode":"standard"}))
 
 def get_object(s3,key,max_bytes):
     try:obj=s3.get_object(Bucket=S3_BUCKET,Key=key)
@@ -291,12 +292,13 @@ def make_graphql_payload(registry_id,now=None,gpu_id=None):
             "ports":"","startJupyter":False,"startSsh":False,
             "terminateAfter":deadline.isoformat().replace("+00:00","Z"),
             "env":[{"key":"TRUSTFOLIO_PRIVATE_QA","value":"yes"},
-                   {"key":"TRUSTFOLIO_GPU_JOB_ID","value":JOB_ID}]}
+                   {"key":"TRUSTFOLIO_GPU_JOB_ID","value":JOB_ID},
+                   {"key":"TRUSTFOLIO_ATTEMPT_ID","value":os.environ.get("TRUSTFOLIO_ATTEMPT_ID", "")}]}
 
 def polling_for_mp4(s3,write_key,pod_id,read_key=None,
                     deadline_seconds=OWN_POLL_MAX_MINUTES*60,
                     interval=15,sleep=time.sleep,now=time.monotonic,
-                    log_scanner=scan_container_logs):
+                    log_scanner=scan_container_logs, attempt=None, wall_now=time.time):
     """Real-time cost guard: S3 receipt + exact Pod ownership + live SSE errors.
 
     Any fatal traceback classification aborts immediately. If log visibility is
@@ -310,6 +312,8 @@ def polling_for_mp4(s3,write_key,pod_id,read_key=None,
     started=now()
     last_log_seen=started
     ever_seen_logs=False
+    last_fingerprint=None
+    last_sequence=0
     while now()-started<deadline_seconds:
         try:r=get_object(s3,RECEIPT,64000)
         except PilotError:r=None
@@ -317,6 +321,10 @@ def polling_for_mp4(s3,write_key,pod_id,read_key=None,
             try:receipt=json.loads(r)
             except (ValueError,TypeError):
                 raise PilotError("CORRUPTED_GPU_RECEIPT") from None
+            if attempt and (receipt.get("attempt_id") != attempt or
+                    receipt.get("audio_verified") is not True or
+                    receipt.get("hindi_dialogue") != "अरे बाप रे! इतने सारे कपड़े? अब कौन धोएगा?"):
+                raise PilotError("WRONG_ATTEMPT_OR_HINDI_AUDIO_UNVERIFIED")
             return verify_mp4_s3(s3,receipt)
         try:failure=get_object(s3,FAILURE_RECEIPT,8192)
         except PilotError:failure=None
@@ -324,7 +332,8 @@ def polling_for_mp4(s3,write_key,pod_id,read_key=None,
             try:bad=json.loads(failure)
             except (ValueError,TypeError):
                 raise PilotError("GPU_WORKER_FAILURE_RECEIPT_CORRUPT") from None
-            if bad.get("status")=="FAILED_PRIVATE_WAN5" and bad.get("job_id")==JOB_ID:
+            if (bad.get("status")=="FAILED_PRIVATE_WAN5" and bad.get("job_id")==JOB_ID
+                    and (not attempt or bad.get("attempt_id")==attempt)):
                 code=str(bad.get("failure_reason","UNKNOWN"))
                 if not re.fullmatch(r"[A-Z0-9_]{1,115}",code):
                     raise PilotError("GPU_WORKER_BAD_FAILURE_CODE")
@@ -337,13 +346,33 @@ def polling_for_mp4(s3,write_key,pod_id,read_key=None,
             raise PilotError("GPU_POD_IDENTITY_CHANGED")
         if pod.get("status") in ("EXITED","TERMINATED","FAILED","ERROR"):
             raise PilotError("GPU_POD_EXITED_WITHOUT_MP4")
+        # S3 progress survives a broken log endpoint. A replayed/stale heartbeat
+        # cannot keep billing alive; Pod RUNNING alone never counts as progress.
+        progress_alive=False
+        if attempt:
+            try:
+                raw=get_object(s3,PROGRESS,8192)
+                hb=json.loads(raw) if raw else {}
+                sequence=hb.get("sequence",0)
+                age=wall_now()-float(hb.get("updated_at",0))
+                progress_alive=(hb.get("job_id")==JOB_ID and
+                    hb.get("attempt_id")==attempt and isinstance(sequence,int) and
+                    sequence>last_sequence and -5<=age<=60)
+                if progress_alive:
+                    last_sequence=sequence
+            except (PilotError,ValueError,TypeError):
+                progress_alive=False
         observation=log_scanner(read_key,pod_id)
         fatal=observation.get("fatal")
         if fatal:
             # Only a constant enum is printed, never raw logs or credentials.
             print("PILOT_LIVE_LOG_FATAL="+fatal,flush=True)
             raise PilotError("GPU_FATAL_LOG_"+fatal)
-        if observation.get("available"):
+        fingerprint=observation.get("fingerprint")
+        new_logs=bool(observation.get("available") and fingerprint and fingerprint!=last_fingerprint)
+        if new_logs:
+            last_fingerprint=fingerprint
+        if progress_alive or new_logs:
             last_log_seen=now()
             ever_seen_logs=True
         else:
@@ -364,6 +393,11 @@ def run():
         raise PilotError("RUNPOD_READ_OR_WRITE_KEY_MISSING")
     if os.environ.get("TRUSTFOLIO_PAID_FIRST_TEST")!="yes":
         raise PilotError("PAID_ONE_TIME_TEST_NOT_ARMED")
+    # Historical request files are not authorization for another billed attempt.
+    attempt=os.environ.get("TRUSTFOLIO_ATTEMPT_ID", "")
+    if (not re.fullmatch(r"[A-Za-z0-9_-]{5,100}",attempt) or
+        os.environ.get("TRUSTFOLIO_NEXT_ATTEMPT_APPROVED") != attempt):
+        raise PilotError("FRESH_PAID_ATTEMPT_APPROVAL_REQUIRED")
     s3=make_s3()
     verified=None
     registry_id=None
@@ -389,7 +423,7 @@ def run():
         print("PILOT_GPU_CREATED_ID="+pod_id,flush=True)
         if pod.get("name")!=NAME or pod.get("imageName")!=IMAGE:
             raise PilotError("CREATED_GPU_POD_NAME_OR_IMAGE_MISMATCH")
-        verified=polling_for_mp4(s3,write_key,pod_id,read_key=read_key)
+        verified=polling_for_mp4(s3,write_key,pod_id,read_key=read_key,attempt=attempt)
         print("PILOT_MP4_SHA256_VERIFIED="+verified["sha256"],flush=True)
         report={**verified,"video_rendered":True,"gpu_pod_deleted":False,
                 "quote_usd_hr":cost["rate_usd_per_hour"]}
@@ -434,3 +468,4 @@ def main():
 
 if __name__=="__main__":
     sys.exit(main())
+
