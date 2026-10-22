@@ -352,6 +352,35 @@ def polling_for_mp4(s3,write_key,pod_id,read_key=None,
                 code=str(bad.get("failure_reason","UNKNOWN"))
                 if not re.fullmatch(r"[A-Z0-9_]{1,115}",code):
                     raise PilotError("GPU_WORKER_BAD_FAILURE_CODE")
+                # The RunPod live-log endpoint can be unavailable during
+                # container startup. Expose ONLY fixed-field diagnostics from
+                # the private volume receipt; never dump raw child stdout,
+                # traceback text, paths or a credentials-containing object.
+                diag=bad.get("subprocess_diagnostics")
+                if isinstance(diag,dict):
+                    safe_types={
+                        "UNKNOWN", "RuntimeError", "ValueError",
+                        "AssertionError", "TypeError", "IndexError", "KeyError",
+                        "ImportError", "ModuleNotFoundError",
+                        "FileNotFoundError", "OSError", "MemoryError",
+                        "SystemError", "EOFError", "PermissionError",
+                        "NotImplementedError", "UnicodeDecodeError",
+                        "AttributeError", "RecursionError", "SafetensorError",
+                    }
+                    kind=diag.get("python_exception_type")
+                    if kind in safe_types:
+                        print("PILOT_WORKER_PYTHON_EXCEPTION_CLASS="+kind,flush=True)
+                    count=diag.get("subprocess_output_tail_bytes")
+                    if type(count) is int and 0<=count<=32768:
+                        print("PILOT_WORKER_CAPTURED_OUTPUT_BYTES="+str(count),flush=True)
+                    fingerprint=diag.get("subprocess_output_tail_sha256")
+                    if isinstance(fingerprint,str) and re.fullmatch(r"[0-9a-f]{64}",fingerprint):
+                        print("PILOT_WORKER_OUTPUT_SHA256="+fingerprint,flush=True)
+                    signal=diag.get("process_termination_signal")
+                    if type(signal) is int and 1<=signal<=64:
+                        print("PILOT_WORKER_TERMINATION_SIGNAL="+str(signal),flush=True)
+                if type(bad.get("return_code")) is int and -255<=bad["return_code"]<=255:
+                    print("PILOT_WORKER_EXIT_CODE="+str(bad["return_code"]),flush=True)
                 raise PilotError("GPU_WORKER_FAILED_"+code)
         owned=find_owned_pods(write_key)
         if len(owned)!=1:
