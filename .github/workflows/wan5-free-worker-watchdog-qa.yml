@@ -3,10 +3,12 @@ on:
   push:
     branches:
       - fix/wan5-free-watchdog-worker-qa-20261022
+      - feat/washing-machine-character-video-pilot
     # Re-run Docker CPU packaging after safety-controller or regression changes,
     # so the paid launch can use a freshly verified image digest.
     paths:
       - 'scripts/wan5_gpu_worker.py'
+      - 'config/wan5_exact_audio_candidate.json'
       - 'gpu/Dockerfile.wan5-overlay'
       - 'scripts/wan5_container_cpu_qa.py'
       - 'scripts/wan5_readonly_qa.py'
