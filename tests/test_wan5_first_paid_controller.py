@@ -26,6 +26,8 @@ class Tests(unittest.TestCase):
         workflow=Path(".github/workflows/wan5-first-paid-gpu-pilot.yml").read_text()
         self.assertIn("TRUSTFOLIO_TESTED_WORKER_IMAGE: '"+expected+"'",workflow)
         self.assertIn('docker manifest inspect "$TRUSTFOLIO_TESTED_WORKER_IMAGE"',workflow)
+        self.assertIn("Install CPU-only MP3 preflight tools before any GPU charge",workflow)
+        self.assertIn("if ! command -v ffprobe",workflow)
         self.assertNotIn("sha256:b5dd674b52bfec2ee56ed5b6fcb54d7243041c3550b72873b330a528b72a2396",workflow)
 
     def test_refuse_arbitrary_worker_digest_before_s3_or_pod(self):
