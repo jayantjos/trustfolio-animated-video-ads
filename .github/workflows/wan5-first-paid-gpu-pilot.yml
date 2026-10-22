@@ -107,6 +107,13 @@ jobs:
           docker manifest inspect "$TRUSTFOLIO_TESTED_WORKER_IMAGE" >/dev/null
           echo 'WAN5_PINNED_PRIVATE_WORKER_PULL_AUTH=VERIFIED'
           docker logout ghcr.io >/dev/null
+      - name: Install CPU-only MP3 preflight tools before any GPU charge
+        run: |
+          if ! command -v ffprobe >/dev/null || ! command -v ffmpeg >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y ffmpeg
+          fi
+          ffprobe -version | head -1
       - name: Stage already-reviewed exact Hindi audio before any GPU creation
         run: python -m scripts.wan5_stage_approved_audio
       - name: REAL $1 MAX GPU LAUNCH, render 5s, S3 verify, destroy owned Pod
