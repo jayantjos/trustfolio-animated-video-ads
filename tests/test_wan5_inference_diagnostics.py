@@ -46,7 +46,7 @@ class StreamDiagnosticsTests(unittest.TestCase):
         import hashlib
         import json
         from unittest.mock import patch
-        raw = b"private credential=HIDE_THIS\\nRuntimeError: unexpected model error\\n"
+        raw = b"private credential=HIDE_THIS" + bytes([10]) + b"RuntimeError: unexpected model error" + bytes([10])
         details = w.sanitized_inference_evidence(raw, 1)
         self.assertEqual(details["python_exception_type"], "RuntimeError")
         self.assertEqual(details["subprocess_output_tail_bytes"], len(raw))
@@ -74,7 +74,7 @@ class StreamDiagnosticsTests(unittest.TestCase):
             b"std::bad_alloc"), "HOST_OR_DEVICE_MEMORY_EXHAUSTED")
         self.assertEqual(w.classify_inference_failure(
             b"RuntimeError: CUDA error: device-side assert triggered"),
-            "GPU_RUNTIME_FAILURE" if False else "CUDA_RUNTIME_FAILURE")
+            "CUDA_RUNTIME_FAILURE")
 
     def test_diagnostics_are_allowlisted_no_raw_traceback(self):
         examples = {
