@@ -363,6 +363,9 @@ def polling_for_mp4(s3,write_key,pod_id,read_key=None,
             except (PilotError,ValueError,TypeError):
                 progress_alive=False
         observation=log_scanner(read_key,pod_id)
+        error=observation.get("error", "")
+        if re.fullmatch(r"(?:HTTP_[0-9]{3}|NETWORK_OR_STREAM_ERROR)",error):
+            print("PILOT_LOG_SOURCE_ERROR="+error,flush=True)
         fatal=observation.get("fatal")
         if fatal:
             # Only a constant enum is printed, never raw logs or credentials.

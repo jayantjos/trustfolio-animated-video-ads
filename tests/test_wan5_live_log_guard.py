@@ -71,8 +71,9 @@ class TestLiveLogGuard(unittest.TestCase):
         def opener(*args, **kwargs):
             raise OSError("connection unavailable")
         data = lg.scan_container_logs("k","pod123456",opener=opener)
-        self.assertEqual(data, {"available": False, "events": 0, "fatal": None})
+        self.assertEqual(data, {"available": False, "events": 0, "fatal": None, "error": "NETWORK_OR_STREAM_ERROR"})
 
 
 if __name__ == "__main__":
     unittest.main()
+

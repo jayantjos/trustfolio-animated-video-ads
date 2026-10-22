@@ -243,7 +243,7 @@ def atomic_json(path, result):
     os.replace(temp, path)
 
 def render(*, image=IMAGE, model=MODEL, code=WAN_SOURCE,
-           outdir=OUTDIR, runner=subprocess.run, seconds=2400):
+           outdir=OUTDIR, runner=subprocess.run, seconds=2400, progress=None):
     if os.environ.get("TRUSTFOLIO_PRIVATE_QA") != "yes":
         raise RenderError("PRIVATE_QA_ENV_NOT_ARMED")
     if os.environ.get("TRUSTFOLIO_GPU_JOB_ID") != JOB_ID:
@@ -251,6 +251,7 @@ def render(*, image=IMAGE, model=MODEL, code=WAN_SOURCE,
     if not 60 <= seconds <= 2400:
         raise RenderError("RENDER_WALL_CLOCK_BOUND_INVALID")
     attempt_id()
+    if progress: progress.checkpoint("VERIFY_AUDIO_AND_MODEL")
     audio = verified_audio()
     ensure_approved_files(image, model, code)
     gpu_check(runner)
@@ -260,10 +261,12 @@ def render(*, image=IMAGE, model=MODEL, code=WAN_SOURCE,
     if pending.exists():
         pending.unlink()
     try:
+        if progress: progress.checkpoint("WAN_INFERENCE")
         runner(generate_command(pending, model, image, code),
                cwd=str(code), timeout=seconds, check=True,
                env={**os.environ, "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"})
         check_video(pending, runner)
+        if progress: progress.checkpoint("HINDI_MUX_AND_DECODE_QA")
         mux_hindi(pending, audio, final, runner)
         duration = check_video(final, runner)
         digest = sha256_file(final)
@@ -305,7 +308,7 @@ def main():
     try:
         with Progress(OUTDIR) as progress:
             progress.checkpoint("VALIDATE_AND_RENDER")
-            render()
+            render(progress=progress)
             progress.checkpoint("COMPLETE")
         return 0
     except subprocess.TimeoutExpired:

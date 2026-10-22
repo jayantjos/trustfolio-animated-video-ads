@@ -91,6 +91,8 @@ def scan_container_logs(api_key, pod_id, opener=urlopen, now=time.monotonic):
                             "fatal": classification}
             return {"available": bool(seen), "events": seen, "fatal": None,
                     "fingerprint": digest.hexdigest() if seen else None}
-    except (HTTPError, URLError, OSError, TimeoutError, ValueError):
-        return {"available": False, "events": 0, "fatal": None}
+    except HTTPError as exc:
+        return {"available": False, "events": 0, "fatal": None, "error": "HTTP_"+str(exc.code)}
+    except (URLError, OSError, TimeoutError, ValueError):
+        return {"available": False, "events": 0, "fatal": None, "error": "NETWORK_OR_STREAM_ERROR"}
 

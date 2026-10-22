@@ -48,7 +48,7 @@ jobs:
     timeout-minutes: 35
     permissions:
       contents: read
-      packages: read
+      packages: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
@@ -66,3 +66,16 @@ jobs:
         run: |
           docker pull "$IMAGE"
           docker run --rm --network none --entrypoint python -v "$PWD:/qa:ro" "$IMAGE" /qa/scripts/wan5_container_cpu_qa.py
+      - name: Package tested worker over the existing immutable image; no GPU
+        env:
+          TAG: ghcr.io/jayantjos/trustfolio-wan5-worker:qa-${{ github.sha }}
+        run: |
+          docker build --network none -f gpu/Dockerfile.wan5-overlay -t "$TAG" .
+          docker push "$TAG"
+          docker inspect --format '{{index .RepoDigests 0}}' "$TAG" > output/wan5-readonly/worker-image.txt
+          cat output/wan5-readonly/worker-image.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wan5-tested-worker-digest
+          path: output/wan5-readonly/worker-image.txt
+          retention-days: 14
