@@ -2,6 +2,7 @@
 import hashlib
 import json
 from pathlib import Path
+from scripts.wan5_audio_preflight import inspect_mp3_bytes
 from scripts import wan5_first_paid_controller as c
 from scripts.wan5_gpu_worker import DIALOGUE
 
@@ -13,6 +14,7 @@ def main():
     data=c.get_object(s3,meta['s3_key'],5*1024*1024)
     if not data or hashlib.sha256(data).hexdigest()!=meta['sha256']:
         raise RuntimeError('HINDI_AUDIO_READBACK_FAILED_NO_GPU')
+    inspect_mp3_bytes(data)  # decode and duration check before any S3 write or GPU
     key='assets/audio/washing-machines/wan5-exact-dialogue.json'
     body=(json.dumps(meta,ensure_ascii=False,indent=2)+'\n').encode()
     s3.put_object(Bucket=c.VOLUME,Key=key,Body=body,ContentType='application/json')
