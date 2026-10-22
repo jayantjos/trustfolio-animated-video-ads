@@ -54,6 +54,17 @@ jobs:
               print('WAN5_MP4_DURATION='+str(receipt.get('seconds','')))
           except Exception:
               print('WAN5_MP4_RECEIPT=NOT_YET_AVAILABLE')
+          # Inspect the attempt-scoped S3 progress heartbeat without writes.
+          progress_key='videos/private-qa/wan5-laundry-first-20261021/scene01.progress.json'
+          try:
+              obj=cli.get_object(Bucket='1bch597yrz',Key=progress_key)
+              heartbeat=json.loads(obj['Body'].read(16384))
+              obj['Body'].close()
+              print('WAN5_WORKER_PROGRESS_STAGE='+str(heartbeat.get('stage','unknown'))[:64])
+              print('WAN5_WORKER_PROGRESS_SEQUENCE='+str(heartbeat.get('sequence','unknown'))[:20])
+              print('WAN5_WORKER_PROGRESS_UPDATED_AT='+str(heartbeat.get('updated_at','unknown'))[:40])
+          except Exception:
+              print('WAN5_WORKER_PROGRESS=NOT_YET_READABLE')
           if len(owned)==1:
               pod_id=owned[0].get('id','')
               if re.fullmatch(r'[A-Za-z0-9_-]{5,80}',str(pod_id)):
