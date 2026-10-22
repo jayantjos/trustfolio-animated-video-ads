@@ -56,7 +56,7 @@ class TestWorkerAndWatchdogFreeQA(unittest.TestCase):
             def __enter__(self): return self
             def __exit__(self, *args): self.close()
         observation = guard.scan_container_logs("dummy", "pod123456",
-            opener=lambda *args, **kwargs: Stream(b"data: \\n"), now=lambda: 0)
+            opener=lambda *args, **kwargs: Stream(b"data: \n"), now=lambda: 0)
         # This test deliberately detects a current bug: an empty SSE data event
         # must not count as useful visibility.
         self.assertFalse(observation["available"])
