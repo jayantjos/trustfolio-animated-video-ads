@@ -15,7 +15,7 @@ concurrency:
 jobs:
   launch-first-real-video:
     if: github.event_name == 'push'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 44
     env:
       RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
@@ -127,8 +127,8 @@ jobs:
       - name: Install CPU-only MP3 preflight tools before any GPU charge
         run: |
           if ! command -v ffprobe >/dev/null || ! command -v ffmpeg >/dev/null; then
-            sudo apt-get update -qq
-            sudo apt-get install -y ffmpeg
+            timeout 120s sudo apt-get -o Acquire::Retries=1 update -qq
+            timeout 150s sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ffmpeg
           fi
           ffprobe -version | head -1
       - name: Stage already-reviewed exact Hindi audio before any GPU creation
