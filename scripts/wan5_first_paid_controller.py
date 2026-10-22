@@ -422,7 +422,7 @@ def run():
     tested_image=os.environ.get("TRUSTFOLIO_TESTED_WORKER_IMAGE", "")
     if not re.fullmatch(r"ghcr[.]io/jayantjos/trustfolio-wan5-worker@sha256:[0-9a-f]{64}", tested_image):
         raise PilotError("TESTED_AUDIO_WORKER_DIGEST_REQUIRED")
-    if tested_image==IMAGE:
+    if tested_image==IMAGE or tested_image=="ghcr.io/jayantjos/trustfolio-wan5-worker@sha256:2c1b8f960e7084bf7a3aca002c09b72956030c2305aa4c1d4992679ea92eb604":
         raise PilotError("OBSOLETE_SILENT_WORKER_IMAGE_REFUSED")
     IMAGE=tested_image
     s3=make_s3()
