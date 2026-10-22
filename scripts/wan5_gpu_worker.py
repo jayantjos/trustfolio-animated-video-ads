@@ -12,6 +12,8 @@ import os
 import re
 import subprocess
 import sys
+import threading
+import time
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
@@ -57,6 +59,93 @@ TOKENIZER_FILES = {
     "special_tokens_map.json":(30_000,None),
 }
 FAILURE = OUTDIR / "scene01.failure.json"
+DIALOGUE = "अरे बाप रे! इतने सारे कपड़े? अब कौन धोएगा?"
+AUDIO_MANIFEST = ROOT / "assets/audio/washing-machines/wan5-exact-dialogue.json"
+
+
+def attempt_id():
+    value = os.environ.get("TRUSTFOLIO_ATTEMPT_ID", "")
+    if not re.fullmatch(r"[A-Za-z0-9_-]{5,100}", value):
+        raise RenderError("ATTEMPT_ID_REQUIRED")
+    return value
+
+
+class Progress:
+    """Atomic volume heartbeat; stage deadlines still bound a hung inference."""
+    def __init__(self, outdir):
+        self.path = outdir / "scene01.progress.json"
+        self.stop = threading.Event()
+        self.lock = threading.Lock()
+        self.stage = "STARTUP"
+        self.sequence = 0
+        self.attempt = attempt_id()
+        self.thread = threading.Thread(target=self.loop, daemon=True)
+
+    def checkpoint(self, stage=None):
+        with self.lock:
+            if stage:
+                self.stage = stage
+            self.sequence += 1
+            atomic_json(self.path, {"job_id": JOB_ID, "attempt_id": self.attempt,
+                "stage": self.stage, "sequence": self.sequence,
+                "updated_at": time.time(), "worker_pid": os.getpid()})
+            print("WAN5_PROGRESS=" + self.stage + ":" + str(self.sequence), flush=True)
+
+    def loop(self):
+        while not self.stop.wait(15):
+            try:
+                self.checkpoint()
+            except OSError:
+                print("WAN5_PROGRESS_WRITE_FAILED", flush=True)
+
+    def __enter__(self):
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.checkpoint()
+        self.thread.start()
+        return self
+
+    def __exit__(self, *args):
+        self.stop.set()
+        self.thread.join(timeout=2)
+
+
+def verified_audio():
+    meta = json.loads(AUDIO_MANIFEST.read_text())
+    if meta.get("text") != DIALOGUE or meta.get("listening_qa_passed") is not True:
+        raise RenderError("EXACT_HINDI_LISTENING_QA_REQUIRED")
+    key = meta.get("s3_key", "")
+    if not key.startswith("assets/audio/washing-machines/") or ".." in key:
+        raise RenderError("AUDIO_PATH_INVALID")
+    path = ROOT / key
+    if sha256_file(path) != meta.get("sha256"):
+        raise RenderError("HINDI_AUDIO_SHA_MISMATCH")
+    return path
+
+
+def mux_hindi(video, audio, dest, runner=subprocess.run):
+    # Pad shorter speech; never truncate a spoken phrase to fit five seconds.
+    probe = runner(["ffprobe", "-v", "error", "-show_entries", "format=duration",
+        "-of", "default=nw=1:nk=1", str(audio)], capture_output=True,
+        text=True, check=True, timeout=30)
+    duration = float(probe.stdout)
+    if not 1 <= duration <= 5:
+        raise RenderError("HINDI_DIALOGUE_DOES_NOT_FIT_FIVE_SECONDS")
+    runner(["ffmpeg", "-nostdin", "-v", "error", "-y", "-i", str(video),
+        "-i", str(audio), "-f", "lavfi", "-i", "anoisesrc=color=pink:amplitude=0.008:r=48000:d=5",
+        "-filter_complex", "[0:v]scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280,setsar=1[v];[1:a]apad,atrim=0:5[voice];[2:a]lowpass=f=900[amb];[voice][amb]amix=inputs=2:duration=first:normalize=0,alimiter=limit=0.95[a]",
+        "-map", "[v]", "-map", "[a]", "-c:v", "libx264", "-pix_fmt", "yuv420p",
+        "-c:a", "aac", "-b:a", "192k", "-t", "5", "-movflags", "+faststart", str(dest)],
+        check=True, timeout=120)
+    info = runner(["ffprobe", "-v", "error", "-show_streams", "-of", "json", str(dest)],
+        capture_output=True, text=True, check=True, timeout=30)
+    streams = json.loads(info.stdout)["streams"]
+    if not any(x.get("codec_type") == "audio" for x in streams):
+        raise RenderError("FINAL_HINDI_AUDIO_MISSING")
+    if not any(x.get("codec_name") == "h264" and x.get("width") == 720 and x.get("height") == 1280 for x in streams):
+        raise RenderError("FINAL_PORTRAIT_H264_INVALID")
+    runner(["ffmpeg", "-nostdin", "-v", "error", "-xerror", "-i", str(dest),
+        "-f", "null", "-"], check=True, timeout=60)
+
 
 class RenderError(RuntimeError):
     pass
@@ -154,13 +243,16 @@ def atomic_json(path, result):
     os.replace(temp, path)
 
 def render(*, image=IMAGE, model=MODEL, code=WAN_SOURCE,
-           outdir=OUTDIR, runner=subprocess.run, seconds=2400):
+           outdir=OUTDIR, runner=subprocess.run, seconds=2400, progress=None):
     if os.environ.get("TRUSTFOLIO_PRIVATE_QA") != "yes":
         raise RenderError("PRIVATE_QA_ENV_NOT_ARMED")
     if os.environ.get("TRUSTFOLIO_GPU_JOB_ID") != JOB_ID:
         raise RenderError("UNAPPROVED_PAID_GPU_JOB_ID")
     if not 60 <= seconds <= 2400:
         raise RenderError("RENDER_WALL_CLOCK_BOUND_INVALID")
+    attempt_id()
+    if progress: progress.checkpoint("VERIFY_AUDIO_AND_MODEL")
+    audio = verified_audio()
     ensure_approved_files(image, model, code)
     gpu_check(runner)
     outdir.mkdir(parents=True, exist_ok=True)
@@ -169,14 +261,18 @@ def render(*, image=IMAGE, model=MODEL, code=WAN_SOURCE,
     if pending.exists():
         pending.unlink()
     try:
+        if progress: progress.checkpoint("WAN_INFERENCE")
         runner(generate_command(pending, model, image, code),
                cwd=str(code), timeout=seconds, check=True,
                env={**os.environ, "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"})
-        duration = check_video(pending, runner)
-        digest = sha256_file(pending)
-        os.replace(pending, final)
+        check_video(pending, runner)
+        if progress: progress.checkpoint("HINDI_MUX_AND_DECODE_QA")
+        mux_hindi(pending, audio, final, runner)
+        duration = check_video(final, runner)
+        digest = sha256_file(final)
         report = {
             "status": "VOLUME_MP4_WRITTEN_PENDING_S3_GET_VERIFICATION",
+            "attempt_id": attempt_id(), "hindi_dialogue": DIALOGUE, "audio_verified": True,
             "job_id": JOB_ID, "s3_key": str(final.relative_to(ROOT)),
             "sha256": digest, "bytes": final.stat().st_size,
             "seconds": duration, "model": "Wan2.2-TI2V-5B",
@@ -198,6 +294,7 @@ def write_failure_receipt(reason,returncode=None):
     # prompts or credentials. Controller can retrieve it via read-only S3.
     safe=re.sub(r"[^A-Z0-9_]", "_",str(reason).upper())[:115]
     result={"status":"FAILED_PRIVATE_WAN5","job_id":JOB_ID,
+            "attempt_id": os.environ.get("TRUSTFOLIO_ATTEMPT_ID", ""),
             "failure_reason":safe,"model":"Wan2.2-TI2V-5B",
             "social_publishing":False,
             "return_code":int(returncode) if isinstance(returncode,int) else None}
@@ -209,7 +306,10 @@ def write_failure_receipt(reason,returncode=None):
 
 def main():
     try:
-        render()
+        with Progress(OUTDIR) as progress:
+            progress.checkpoint("VALIDATE_AND_RENDER")
+            render(progress=progress)
+            progress.checkpoint("COMPLETE")
         return 0
     except subprocess.TimeoutExpired:
         reason="GPU_INFERENCE_TIMEOUT"
@@ -231,3 +331,4 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
+

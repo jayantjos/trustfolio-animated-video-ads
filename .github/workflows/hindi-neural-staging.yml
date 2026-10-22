@@ -1,7 +1,7 @@
 name: Hindi Neural Voice GPU-free pilot
 on:
   push:
-    branches: [feat/washing-machine-character-video-pilot]
+    branches: [feat/washing-machine-character-video-pilot, fix/wan5-free-watchdog-worker-qa-20261022]
     paths:
       - 'config/hindi_neural_clips.json'
       - 'scripts/hindi_neural_staging.py'
@@ -39,3 +39,4 @@ jobs:
           path: output/hindi-neural-pilot/
           retention-days: 30
           if-no-files-found: warn
+

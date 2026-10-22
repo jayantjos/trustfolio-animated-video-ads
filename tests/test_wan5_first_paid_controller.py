@@ -21,11 +21,26 @@ class FakeS3:
 class Tests(unittest.TestCase):
     def test_paid_worker_image_matches_successful_build(self):
         from pathlib import Path
-        expected="ghcr.io/jayantjos/trustfolio-wan5-worker@sha256:2c1b8f960e7084bf7a3aca002c09b72956030c2305aa4c1d4992679ea92eb604"
+        expected="ghcr.io/jayantjos/trustfolio-wan5-worker@sha256:9523acef9fff62a30295f1d73fe3acda88b77615062a50cf0ad934cd0baf9b14"
         self.assertEqual(c.IMAGE,expected)
         workflow=Path(".github/workflows/wan5-first-paid-gpu-pilot.yml").read_text()
-        self.assertIn(expected,workflow)
-        self.assertNotIn("sha256:5f920321ce5cd6485e560a670b3b53f8f69cc07b2b71b10caa28723eea15cdf1",workflow)
+        self.assertIn("TRUSTFOLIO_TESTED_WORKER_IMAGE: '"+expected+"'",workflow)
+        self.assertIn('docker manifest inspect "$TRUSTFOLIO_TESTED_WORKER_IMAGE"',workflow)
+        self.assertIn("Install CPU-only MP3 preflight tools before any GPU charge",workflow)
+        self.assertIn("if ! command -v ffprobe",workflow)
+        self.assertNotIn("sha256:b5dd674b52bfec2ee56ed5b6fcb54d7243041c3550b72873b330a528b72a2396",workflow)
+
+    def test_refuse_arbitrary_worker_digest_before_s3_or_pod(self):
+        env={"RUNPOD_API_KEY":"read", "RUNPOD_POD_WRITE_KEY":"write",
+             "TRUSTFOLIO_PAID_FIRST_TEST":"yes",
+             "TRUSTFOLIO_ATTEMPT_ID":"attempt123",
+             "TRUSTFOLIO_NEXT_ATTEMPT_APPROVED":"attempt123",
+             "TRUSTFOLIO_TESTED_WORKER_IMAGE":
+                 "ghcr.io/jayantjos/trustfolio-wan5-worker@sha256:"+"a"*64}
+        with patch.dict("os.environ",env,clear=True), patch.object(c,"make_s3") as s3:
+            with self.assertRaisesRegex(c.PilotError,"UNTESTED_WORKER_IMAGE_REFUSED"):
+                c.run()
+            s3.assert_not_called()
 
     def test_no_blackwell_cuda_architecture_risk(self):
         # Worker base torch 2.6 / cu124 supports Ada 4090, not sm_120.
@@ -109,7 +124,7 @@ class Tests(unittest.TestCase):
              "dataCenterId":c.DATACENTER,
              "mounts":{"network":[{"volumeId":c.VOLUME,"path":"/workspace"}]},
              "status":"RUNNING"}
-        ticks=iter([0, 0, 100, 181, 181, 181, 181, 181])
+        ticks=iter([0, 0, 100, 601, 601, 601, 601, 601])
         with patch.object(c,"get_object",return_value=None), \
              patch.object(c,"find_owned_pods",return_value=[pod]):
             with self.assertRaisesRegex(c.PilotError,"GPU_LOG_VISIBILITY_TIMEOUT_ABORT"):
@@ -158,3 +173,4 @@ class Tests(unittest.TestCase):
                 c.run()
 
 if __name__=="__main__":unittest.main()
+
