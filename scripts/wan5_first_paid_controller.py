@@ -31,7 +31,7 @@ from scripts.wan5_live_log_guard import scan_container_logs
 
 GRAPHQL="https://api.runpod.io/graphql"
 NAME="trustfolio-video-"+JOB_ID
-IMAGE="ghcr.io/jayantjos/trustfolio-wan5-worker@sha256:b5dd674b52bfec2ee56ed5b6fcb54d7243041c3550b72873b330a528b72a2396"
+IMAGE="ghcr.io/jayantjos/trustfolio-wan5-worker@sha256:9523acef9fff62a30295f1d73fe3acda88b77615062a50cf0ad934cd0baf9b14"
 S3_BUCKET=VOLUME
 S3_HERO="assets/characters/shared/pink_kurta_lady_v1.png"
 RECEIPT="videos/private-qa/"+JOB_ID+"/scene01.receipt.json"
@@ -416,16 +416,10 @@ def run():
     if (not re.fullmatch(r"[A-Za-z0-9_-]{5,100}",attempt) or
         os.environ.get("TRUSTFOLIO_NEXT_ATTEMPT_APPROVED") != attempt):
         raise PilotError("FRESH_PAID_ATTEMPT_APPROVAL_REQUIRED")
-    # The base image bundles an obsolete silent worker. Never launch it.
-    # Only the CPU-tested overlay digest is eligible for a paid attempt.
-    global IMAGE
-    # Set this only to the digest recorded in the successful Docker CPU QA artifact.
+    # Immutable, CI-tested overlay digest; never accept an arbitrary image.
     tested_image=os.environ.get("TRUSTFOLIO_TESTED_WORKER_IMAGE", "")
-    if not re.fullmatch(r"ghcr[.]io/jayantjos/trustfolio-wan5-worker@sha256:[0-9a-f]{64}", tested_image):
-        raise PilotError("TESTED_AUDIO_WORKER_DIGEST_REQUIRED")
-    if tested_image==IMAGE or tested_image=="ghcr.io/jayantjos/trustfolio-wan5-worker@sha256:2c1b8f960e7084bf7a3aca002c09b72956030c2305aa4c1d4992679ea92eb604":
-        raise PilotError("OBSOLETE_SILENT_WORKER_IMAGE_REFUSED")
-    IMAGE=tested_image
+    if tested_image != IMAGE:
+        raise PilotError("UNTESTED_WORKER_IMAGE_REFUSED")
     s3=make_s3()
     verified=None
     registry_id=None
