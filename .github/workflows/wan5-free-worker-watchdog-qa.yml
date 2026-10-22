@@ -14,6 +14,8 @@ on:
       - 'scripts/wan5_stage_approved_audio.py'
       - 'tests/test_wan5_audio_preflight.py'
       - 'scripts/wan5_first_paid_controller.py'
+      - '.github/workflows/wan5-first-paid-gpu-pilot.yml'
+      - 'tests/test_wan5_first_paid_controller.py'
       - 'tests/test_wan5_progress.py'
       - '.github/workflows/wan5-free-worker-watchdog-qa.yml'
   workflow_dispatch:
