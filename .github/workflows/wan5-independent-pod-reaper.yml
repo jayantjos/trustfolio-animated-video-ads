@@ -4,6 +4,7 @@ name: TrustFolio WAN5 independent stale Pod reaper (FIRST PILOT ONLY)
 # In-flight Pod health guard for approved capped run 39845616705; do not touch network volume.
 # Fresh owner-approved $1 capped pilot readiness check for 23 Oct; preserve volume.
 # Updated GPU preflight health at 2026-10-22T22:03:26.811Z; no RunPod config/policy changed.
+# Fresh independent $1 cap third GPU preflight audit 2026-10-22T23:23:25.682Z; policy unchanged.
 on:
   schedule:
     - cron: '*/5 * * * *'
