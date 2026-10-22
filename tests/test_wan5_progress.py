@@ -62,7 +62,8 @@ class CleanupTests(unittest.TestCase):
     def test_preexisting_pod_is_not_deleted_by_unstarted_attempt(self):
         env={"RUNPOD_API_KEY":"read", "RUNPOD_POD_WRITE_KEY":"write",
              "TRUSTFOLIO_PAID_FIRST_TEST":"yes", "TRUSTFOLIO_ATTEMPT_ID":"new-attempt",
-             "TRUSTFOLIO_NEXT_ATTEMPT_APPROVED":"new-attempt"}
+             "TRUSTFOLIO_NEXT_ATTEMPT_APPROVED":"new-attempt",
+             "TRUSTFOLIO_TESTED_WORKER_IMAGE":"ghcr.io/jayantjos/trustfolio-wan5-worker@sha256:"+("a"*64)}
         with tempfile.TemporaryDirectory() as td,patch.dict("os.environ",env),\
              patch.object(c,"make_s3"),patch.object(c,"verify_hero"),\
              patch.object(c,"check_fresh_output"),patch.object(c,"verify_hindi_inputs"),\
