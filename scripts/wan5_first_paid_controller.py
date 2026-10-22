@@ -31,7 +31,7 @@ from scripts.wan5_live_log_guard import scan_container_logs
 
 GRAPHQL="https://api.runpod.io/graphql"
 NAME="trustfolio-video-"+JOB_ID
-IMAGE="ghcr.io/jayantjos/trustfolio-wan5-worker@sha256:2c1b8f960e7084bf7a3aca002c09b72956030c2305aa4c1d4992679ea92eb604"
+IMAGE="ghcr.io/jayantjos/trustfolio-wan5-worker@sha256:b5dd674b52bfec2ee56ed5b6fcb54d7243041c3550b72873b330a528b72a2396"
 S3_BUCKET=VOLUME
 S3_HERO="assets/characters/shared/pink_kurta_lady_v1.png"
 RECEIPT="videos/private-qa/"+JOB_ID+"/scene01.receipt.json"
@@ -178,6 +178,21 @@ def verify_hero(s3):
     data=get_object(s3,S3_HERO,IMAGE_BYTES)
     if data is None or len(data)!=IMAGE_BYTES or hashlib.sha256(data).hexdigest()!=IMAGE_SHA:
         raise PilotError("ORIGINAL_CHARACTER_S3_SHA_NOT_VERIFIED")
+
+def verify_hindi_inputs(s3):
+    raw=get_object(s3,"assets/audio/washing-machines/wan5-exact-dialogue.json",8192)
+    if not raw:
+        raise PilotError("HINDI_LISTENING_APPROVAL_MANIFEST_MISSING")
+    meta=json.loads(raw)
+    from scripts.wan5_gpu_worker import DIALOGUE
+    if meta.get("text")!=DIALOGUE or meta.get("listening_qa_passed") is not True:
+        raise PilotError("EXACT_HINDI_LISTENING_QA_REQUIRED")
+    key=meta.get("s3_key", "")
+    if not re.fullmatch(r"assets/audio/washing-machines/hindi_neural_v1/[A-Za-z0-9_.-]+[.]mp3",key):
+        raise PilotError("UNAPPROVED_AUDIO_KEY")
+    data=get_object(s3,key,5*1024*1024)
+    if not data or hashlib.sha256(data).hexdigest()!=meta.get("sha256"):
+        raise PilotError("HINDI_AUDIO_READBACK_MISMATCH")
 
 def check_fresh_output(s3):
     if get_object(s3,RECEIPT,64000) is not None:
@@ -405,6 +420,7 @@ def run():
     verified=None
     registry_id=None
     pod_id=None
+    create_attempted=False
     cleanup_result="NOT_NEEDED"
     report={"status":"NOT_STARTED","video_rendered":False,"gpu_pod_deleted":False}
     try:
@@ -414,6 +430,7 @@ def run():
         print("PILOT_GPU_QUOTE_USD_HR="+cost["rate_usd_per_hour"],flush=True)
         print("PILOT_GPU_MAX_COST_UNDER_1_USD="+cost["max_gpu_usd_at_38m"],flush=True)
         verify_hero(s3)
+        verify_hindi_inputs(s3)
         check_fresh_output(s3)
         if find_owned_pods(write_key):
             raise PilotError("ALREADY_EXISTING_PILOT_POD_PREVENT_DUPLICATE")
@@ -421,11 +438,20 @@ def run():
         payload=make_graphql_payload(registry_id,gpu_id=cost["gpu_type"])
         print("PILOT_PROVIDER_TERMINATE_AFTER="+payload["terminateAfter"],flush=True)
         print("PILOT_CREATING_REAL_GPU=TRUE",flush=True)
+        create_attempted=True
         pod=graphql_create(write_key,payload)
         pod_id=str(pod["id"])
         print("PILOT_GPU_CREATED_ID="+pod_id,flush=True)
         if pod.get("name")!=NAME or pod.get("imageName")!=IMAGE:
             raise PilotError("CREATED_GPU_POD_NAME_OR_IMAGE_MISMATCH")
+        try:
+            actual_rate=Decimal(str(pod.get("costPerHr")))
+        except Exception:
+            raise PilotError("CREATED_POD_RATE_UNVERIFIED") from None
+        if (not actual_rate.is_finite() or actual_rate<=0 or
+            actual_rate>MAX_ACCEPTED_RATE_USD_PER_HR or
+            actual_rate*POD_PROVIDER_TTL_MINUTES/60>=Decimal("1")):
+            raise PilotError("CREATED_POD_RATE_OUTSIDE_BUDGET")
         verified=polling_for_mp4(s3,write_key,pod_id,read_key=read_key,attempt=attempt)
         print("PILOT_MP4_SHA256_VERIFIED="+verified["sha256"],flush=True)
         report={**verified,"video_rendered":True,"gpu_pod_deleted":False,
@@ -438,9 +464,10 @@ def run():
         # Even ambiguous create errors or failed inference MUST attempt a scoped
         # clean-up before exiting; confirmation is GET 404.
         try:
-            cleanup_result=kill_owned_pods(write_key,expected_pod_id=pod_id)
+            cleanup_result=(kill_owned_pods(write_key,expected_pod_id=pod_id)
+                            if create_attempted else "NO_CREATE_ATTEMPT")
             report["gpu_pod_deleted"]=cleanup_result in (
-                "NO_OWNED_GPU_POD","DELETE_GET_404_CONFIRMED","ALREADY_REMOVED")
+                "NO_CREATE_ATTEMPT","NO_OWNED_GPU_POD","DELETE_GET_404_CONFIRMED","ALREADY_REMOVED")
             print("PILOT_GPU_DELETE_RESULT="+cleanup_result,flush=True)
         except Exception:
             report["gpu_pod_deleted"]=False
@@ -451,6 +478,8 @@ def run():
                 print("PILOT_TEMP_GHCR_CREDENTIAL_REMOVED=true",flush=True)
             except Exception:
                 print("PILOT_TEMP_GHCR_CREDENTIAL_REMOVAL_FAILED",flush=True)
+        report["create_attempted"]=create_attempted
+        report["cleanup_result"]=cleanup_result
         Path("output").mkdir(exist_ok=True)
         Path("output/wan5-first-paid-test.json").write_text(
             json.dumps(report,indent=2)+"\n")

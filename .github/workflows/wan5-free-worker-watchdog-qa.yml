@@ -3,6 +3,13 @@ on:
   push:
     branches:
       - fix/wan5-free-watchdog-worker-qa-20261022
+    # Controller-only changes still run the full static/contract suite.
+    # Re-pull the multi-GB immutable image only when its tested inputs change.
+    paths:
+      - 'scripts/wan5_gpu_worker.py'
+      - 'gpu/Dockerfile.wan5-overlay'
+      - 'scripts/wan5_container_cpu_qa.py'
+      - 'scripts/wan5_readonly_qa.py'
   workflow_dispatch:
 permissions:
   contents: read

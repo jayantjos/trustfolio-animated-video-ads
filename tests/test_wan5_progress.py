@@ -57,3 +57,34 @@ class ProgressTests(unittest.TestCase):
             with self.subTest(value=value):
                 result=g.scan_container_logs("key","pod123456",opener=lambda *a,**k:io.BytesIO(value))
                 self.assertFalse(result["available"])
+
+class CleanupTests(unittest.TestCase):
+    def test_preexisting_pod_is_not_deleted_by_unstarted_attempt(self):
+        env={"RUNPOD_API_KEY":"read", "RUNPOD_POD_WRITE_KEY":"write",
+             "TRUSTFOLIO_PAID_FIRST_TEST":"yes", "TRUSTFOLIO_ATTEMPT_ID":"new-attempt",
+             "TRUSTFOLIO_NEXT_ATTEMPT_APPROVED":"new-attempt"}
+        with tempfile.TemporaryDirectory() as td,patch.dict("os.environ",env),\
+             patch.object(c,"make_s3"),patch.object(c,"verify_hero"),\
+             patch.object(c,"check_fresh_output"),patch.object(c,"verify_hindi_inputs"),\
+             patch.object(c,"check_cost_and_availability",return_value={"gpu_type":"test","stock":"MEDIUM","rate_usd_per_hour":"0.89","max_gpu_usd_at_38m":"0.5637"}),\
+             patch.object(c,"find_owned_pods",return_value=[{"id":"existing"}]),\
+             patch.object(c,"kill_owned_pods") as kill:
+            import os
+            previous=os.getcwd()
+            try:
+                os.chdir(td)
+                with self.assertRaisesRegex(c.PilotError,"ALREADY_EXISTING"):
+                    c.run()
+            finally:os.chdir(previous)
+            kill.assert_not_called()
+
+class AudioPreflightTests(unittest.TestCase):
+    def test_missing_audio_approval_blocks_before_gpu(self):
+        with patch.object(c,'get_object',return_value=None),self.assertRaisesRegex(c.PilotError,'MANIFEST_MISSING'):
+            c.verify_hindi_inputs(None)
+
+    def test_audio_hash_mismatch_blocks_before_gpu(self):
+        meta={'text':w.DIALOGUE,'listening_qa_passed':True,
+              's3_key':'assets/audio/washing-machines/hindi_neural_v1/clip.mp3','sha256':'0'*64}
+        with patch.object(c,'get_object',side_effect=[json.dumps(meta).encode(),b'changed audio']),self.assertRaisesRegex(c.PilotError,'READBACK_MISMATCH'):
+            c.verify_hindi_inputs(None)
