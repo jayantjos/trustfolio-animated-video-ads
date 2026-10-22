@@ -10,6 +10,7 @@ import hashlib
 import json
 import os
 import re
+import signal
 import subprocess
 import sys
 import threading
@@ -201,6 +202,68 @@ def gpu_check(runner=subprocess.run):
         raise RenderError("GPU_MIN_24GB_NOT_VERIFIED")
     return int(first)
 
+def classify_inference_failure(output):
+    """Report an allowlisted diagnostic category, never raw CUDA/Python logs."""
+    if not output:
+        return "GPU_INFERENCE_OR_TOOLS_FAILED"
+    if isinstance(output, bytes):
+        line = output[-65536:].decode("utf-8", "replace").lower()
+    else:
+        line = str(output)[-65536:].lower()
+    categories = (
+        ("CUDA_OUT_OF_MEMORY", ("cuda out of memory", "torch.outofmemoryerror", "cublas_status_alloc_failed")),
+        ("WAN_CLI_ARGUMENT_MISMATCH", ("unrecognized arguments:", "error: argument --")),
+        ("PYTHON_DEPENDENCY_MISSING", ("modulenotfounderror", "no module named")),
+        ("MODEL_WEIGHT_OR_INPUT_MISSING", ("filenotfounderror", "no such file or directory")),
+        ("CUDA_RUNTIME_FAILURE", ("cuda error:", "cuda initialization:", "no cuda gpus are available")),
+        ("MODEL_LOADING_FAILURE", ("safetensorerror", "error(s) in loading state_dict")),
+    )
+    for name, patterns in categories:
+        if any(pattern in line for pattern in patterns):
+            return name
+    return "GPU_INFERENCE_OR_TOOLS_FAILED"
+
+
+def run_inference_streamed(command, *, cwd, env, timeout):
+    """Tee child stdout/stderr live and retain a bounded error tail in memory.
+
+    Unlike capture_output=True this keeps RunPod SSE visible to the watchdog.
+    Process group is killed on timeout; no file, URL or token is sent elsewhere.
+    """
+    proc = subprocess.Popen(command, cwd=cwd, env=env, stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT, start_new_session=True)
+    tail = bytearray()
+    def pump():
+        try:
+            while True:
+                chunk = proc.stdout.read1(4096)
+                if not chunk:
+                    break
+                tail.extend(chunk)
+                if len(tail) > 32768:
+                    del tail[:-32768]
+                sys.stdout.write(chunk.decode("utf-8", "replace"))
+                sys.stdout.flush()
+        finally:
+            proc.stdout.close()
+    reader = threading.Thread(target=pump, daemon=True)
+    reader.start()
+    try:
+        return_code = proc.wait(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        try:
+            os.killpg(proc.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        proc.wait(timeout=10)
+        raise
+    finally:
+        reader.join(timeout=5)
+    if return_code != 0:
+        raise subprocess.CalledProcessError(return_code, command, output=bytes(tail))
+    return subprocess.CompletedProcess(command, return_code)
+
+
 def generate_command(dest, model=MODEL, image=IMAGE, code=WAN_SOURCE):
     if not dest.is_absolute() or dest.suffix != ".mp4":
         raise RenderError("BAD_MP4_DESTINATION")
@@ -262,9 +325,14 @@ def render(*, image=IMAGE, model=MODEL, code=WAN_SOURCE,
         pending.unlink()
     try:
         if progress: progress.checkpoint("WAN_INFERENCE")
-        runner(generate_command(pending, model, image, code),
-               cwd=str(code), timeout=seconds, check=True,
-               env={**os.environ, "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"})
+        command = generate_command(pending, model, image, code)
+        runtime_env = {**os.environ, "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"}
+        if runner is subprocess.run:
+            run_inference_streamed(command, cwd=str(code), timeout=seconds,
+                                   env=runtime_env)
+        else:
+            runner(command, cwd=str(code), timeout=seconds, check=True,
+                   env=runtime_env)
         check_video(pending, runner)
         if progress: progress.checkpoint("HINDI_MUX_AND_DECODE_QA")
         mux_hindi(pending, audio, final, runner)
@@ -316,7 +384,7 @@ def main():
         print("TRUSTFOLIO_WAN5=BLOCKED_"+reason,flush=True)
         write_failure_receipt(reason)
     except subprocess.CalledProcessError as exc:
-        reason="GPU_INFERENCE_OR_TOOLS_FAILED"
+        reason=classify_inference_failure(exc.output or exc.stderr)
         print("TRUSTFOLIO_WAN5=BLOCKED_"+reason,flush=True)
         write_failure_receipt(reason,exc.returncode)
     except (RenderError, ValueError) as exc:
