@@ -117,6 +117,38 @@ class Tests(unittest.TestCase):
             with self.assertRaisesRegex(c.PilotError,"GPU_WORKER_FAILED_WAN_TOKENIZER_MISSING"):
                 c.polling_for_mp4(object(),"k","pod123456",now=lambda:0,
                     log_scanner=lambda *a:self.fail("failure receipt should stop before log polling"))
+    def test_failure_receipt_prints_only_allowlisted_diagnostics(self):
+        import contextlib
+        import io
+        secret="PRIVATE_S3_SECRET_DO_NOT_LEAK"
+        meta={
+            "status":"FAILED_PRIVATE_WAN5","job_id":c.JOB_ID,
+            "failure_reason":"GPU_INFERENCE_OR_TOOLS_FAILED",
+            "return_code":1,
+            "subprocess_diagnostics":{
+                "python_exception_type":"RuntimeError",
+                "subprocess_output_tail_bytes":532,
+                "subprocess_output_tail_sha256":"a"*64,
+                "process_termination_signal":None,
+                "untrusted_free_text":secret,
+            },
+        }
+        def get_object(s3,key,limit):
+            return json.dumps(meta).encode() if key==c.FAILURE_RECEIPT else None
+        printed=io.StringIO()
+        with patch.object(c,"get_object",side_effect=get_object):
+            with contextlib.redirect_stdout(printed):
+                with self.assertRaisesRegex(c.PilotError,
+                                            "GPU_WORKER_FAILED_GPU_INFERENCE_OR_TOOLS_FAILED"):
+                    c.polling_for_mp4(object(),"k","pod123456",now=lambda:0,
+                        log_scanner=lambda *a:self.fail("must abort on receipt"))
+        body=printed.getvalue()
+        self.assertIn("PILOT_WORKER_PYTHON_EXCEPTION_CLASS=RuntimeError",body)
+        self.assertIn("PILOT_WORKER_CAPTURED_OUTPUT_BYTES=532",body)
+        self.assertIn("PILOT_WORKER_EXIT_CODE=1",body)
+        self.assertNotIn(secret,body)
+        self.assertNotIn("untrusted_free_text",body)
+
     def test_live_log_fatal_aborts_before_waiting_or_spending_more(self):
         pod={"name":c.NAME,"id":"pod123456",
              "dataCenterId":c.DATACENTER,
