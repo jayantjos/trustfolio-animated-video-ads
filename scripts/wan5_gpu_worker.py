@@ -217,11 +217,60 @@ def classify_inference_failure(output):
         ("MODEL_WEIGHT_OR_INPUT_MISSING", ("filenotfounderror", "no such file or directory")),
         ("CUDA_RUNTIME_FAILURE", ("cuda error:", "cuda initialization:", "no cuda gpus are available")),
         ("MODEL_LOADING_FAILURE", ("safetensorerror", "error(s) in loading state_dict")),
+        ("HOST_OR_DEVICE_MEMORY_EXHAUSTED", ("std::bad_alloc", "cannot allocate memory",
+              "defaultcpuallocator: not enough memory", "out of host memory",
+              "c10::outofmemoryerror", "allocator ran out of memory")),
+        ("GPU_DEVICE_ASSERTION", ("device-side assert triggered", "illegal memory access",
+              "misaligned address")),
+        ("WAN_INFERENCE_ASSERTION", ("assertionerror:", "assertion failed:")),
     )
     for name, patterns in categories:
         if any(pattern in line for pattern in patterns):
             return name
     return "GPU_INFERENCE_OR_TOOLS_FAILED"
+
+
+# Persist only preapproved error taxonomy and hash; raw model text and
+# potentially sensitive subprocess logs must NEVER enter a public CI artifact.
+_SAFE_EXCEPTION_CLASSES = frozenset((
+    "RuntimeError", "ValueError", "AssertionError", "TypeError", "IndexError",
+    "KeyError", "ImportError", "ModuleNotFoundError", "FileNotFoundError",
+    "OSError", "MemoryError", "SystemError", "EOFError", "PermissionError",
+    "NotImplementedError", "UnicodeDecodeError", "AttributeError",
+    "RecursionError", "SafetensorError",
+))
+
+
+def sanitized_inference_evidence(output, returncode):
+    """Diagnose otherwise-generic subprocess exit without storing raw logs.
+
+    The 32 KiB tail is only held in RAM. Persist its hash, length, a
+    predefined Python exception class and a signal number when relevant.
+    """
+    if isinstance(output, bytes):
+        data = output[-32768:]
+    elif isinstance(output, str):
+        data = output.encode("utf-8", "replace")[-32768:]
+    else:
+        data = b""
+    decoded = data.decode("utf-8", "replace")
+    exception_classes = re.findall(
+        r"(?m)^(?:[A-Za-z_][A-Za-z_0-9.]*\\.)?([A-Za-z_][A-Za-z_0-9]*(?:Error|Exception))\\s*:",
+        decoded,
+    )
+    safe_type = next(
+        (name for name in reversed(exception_classes)
+         if name in _SAFE_EXCEPTION_CLASSES), "UNKNOWN"
+    )
+    # Do not infer CUDA OOM from exit 1; SIGKILL is also not conclusive.
+    signal_number = (-returncode if isinstance(returncode, int)
+                     and -64 <= returncode < 0 else None)
+    return {
+        "python_exception_type": safe_type,
+        "subprocess_output_tail_bytes": len(data),
+        "subprocess_output_tail_sha256": hashlib.sha256(data).hexdigest(),
+        "process_termination_signal": signal_number,
+    }
 
 
 def run_inference_streamed(command, *, cwd, env, timeout):
@@ -357,7 +406,7 @@ def render(*, image=IMAGE, model=MODEL, code=WAN_SOURCE,
         if pending.exists():
             pending.unlink()
 
-def write_failure_receipt(reason,returncode=None):
+def write_failure_receipt(reason,returncode=None,diagnostics=None):
     # Diagnostic receipt lives on the EXISTING volume, never raw traceback,
     # prompts or credentials. Controller can retrieve it via read-only S3.
     safe=re.sub(r"[^A-Z0-9_]", "_",str(reason).upper())[:115]
@@ -366,6 +415,14 @@ def write_failure_receipt(reason,returncode=None):
             "failure_reason":safe,"model":"Wan2.2-TI2V-5B",
             "social_publishing":False,
             "return_code":int(returncode) if isinstance(returncode,int) else None}
+    if diagnostics is not None:
+        # Caller is limited to sanitized_inference_evidence's fixed schema.
+        result["subprocess_diagnostics"] = {
+            k: diagnostics[k] for k in (
+                "python_exception_type", "subprocess_output_tail_bytes",
+                "subprocess_output_tail_sha256", "process_termination_signal"
+            ) if k in diagnostics
+        }
     try:
         OUTDIR.mkdir(parents=True,exist_ok=True)
         atomic_json(FAILURE,result)
@@ -386,7 +443,9 @@ def main():
     except subprocess.CalledProcessError as exc:
         reason=classify_inference_failure(exc.output or exc.stderr)
         print("TRUSTFOLIO_WAN5=BLOCKED_"+reason,flush=True)
-        write_failure_receipt(reason,exc.returncode)
+        diagnostic=sanitized_inference_evidence(exc.output or exc.stderr,exc.returncode)
+        print("WAN5_INFERENCE_PYTHON_ERROR_CLASS="+diagnostic["python_exception_type"],flush=True)
+        write_failure_receipt(reason,exc.returncode,diagnostic)
     except (RenderError, ValueError) as exc:
         reason=str(exc)
         print("TRUSTFOLIO_WAN5=BLOCKED_"+reason,flush=True)
