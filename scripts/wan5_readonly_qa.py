@@ -7,7 +7,6 @@ from scripts import wan5_first_paid_controller as c
 from scripts import wan5_gpu_worker as w
 from scripts.wan_storage_readiness import check_remote
 from scripts.stage_wan5_tokenizer import TOKENIZER, MODEL_PREFIX
-from scripts.wan5_audio_preflight import inspect_mp3_bytes
 
 def main():
     out=Path('output/wan5-readonly');out.mkdir(parents=True,exist_ok=True)
@@ -28,9 +27,9 @@ def main():
     audio=c.get_object(s3,candidate['s3_key'],5*1024*1024)
     if not audio or hashlib.sha256(audio).hexdigest()!=candidate['sha256']:
         raise RuntimeError('HINDI_AUDIO_CANDIDATE_SHA256_MISMATCH_NO_GPU')
-    technical_audio=inspect_mp3_bytes(audio)
-    technical_audio['sha256_verified']=True
-    technical_audio['listening_qa_passed']=candidate.get('listening_qa_passed') is True
+    (out/'hindi_candidate_sha256_verified.mp3').write_bytes(audio)
+    technical_audio={'sha256_verified':True,'codec_decode':'CHECKED_IN_OFFLINE_DOCKER_CPU',
+                     'listening_qa_passed':candidate.get('listening_qa_passed') is True}
     quote=c.check_cost_and_availability(os.environ['RUNPOD_API_KEY'])
     pods=c.find_owned_pods(os.environ['RUNPOD_POD_WRITE_KEY'])
     if pods:raise RuntimeError('EXISTING_PILOT_POD_REQUIRES_REVIEW')
