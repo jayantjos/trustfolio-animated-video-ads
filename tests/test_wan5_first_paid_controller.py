@@ -42,6 +42,18 @@ class Tests(unittest.TestCase):
                 c.run()
             s3.assert_not_called()
 
+    def test_fresh_launch_workflow_refuses_old_request_and_reruns(self):
+        from pathlib import Path
+        workflow=Path(".github/workflows/wan5-first-paid-gpu-pilot.yml").read_text()
+        self.assertIn("pilot/wan5-fresh-launch.request.json", workflow)
+        self.assertNotIn("pilot/wan5-first-launch.request.json", workflow)
+        self.assertIn("TRUSTFOLIO_ATTEMPT_ID: 'wan5-", workflow)
+        self.assertIn("TRUSTFOLIO_NEXT_ATTEMPT_APPROVED: 'wan5-", workflow)
+        self.assertIn("REPLAYED_WORKFLOW_RUN_REFUSED", workflow)
+        self.assertIn("STALE_PAID_APPROVAL_REFUSED", workflow)
+        self.assertIn("NO_FRESH_EXPLICIT_PAID_APPROVAL", workflow)
+        self.assertIn("NON_OWNER_PAID_APPROVAL_REFUSED", workflow)
+
     def test_no_blackwell_cuda_architecture_risk(self):
         # Worker base torch 2.6 / cu124 supports Ada 4090, not sm_120.
         self.assertEqual(c.GPU_PREFERENCE,("NVIDIA GeForce RTX 4090",))
