@@ -28,7 +28,7 @@ def main():
     if not audio or hashlib.sha256(audio).hexdigest()!=candidate['sha256']:
         raise RuntimeError('HINDI_AUDIO_CANDIDATE_SHA256_MISMATCH_NO_GPU')
     (out/'hindi_candidate_sha256_verified.mp3').write_bytes(audio)
-    technical_audio={'sha256_verified':True,'codec_decode':'CHECKED_IN_OFFLINE_DOCKER_CPU',
+    technical_audio={'sha256_verified':True,'codec_decode':'PENDING_OFFLINE_DOCKER_CPU',
                      'listening_qa_passed':candidate.get('listening_qa_passed') is True}
     quote=c.check_cost_and_availability(os.environ['RUNPOD_API_KEY'])
     pods=c.find_owned_pods(os.environ['RUNPOD_POD_WRITE_KEY'])
