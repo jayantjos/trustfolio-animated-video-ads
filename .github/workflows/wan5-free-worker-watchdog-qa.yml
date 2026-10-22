@@ -15,6 +15,7 @@ on:
       - 'scripts/wan5_audio_preflight.py'
       - 'scripts/wan5_stage_approved_audio.py'
       - 'tests/test_wan5_audio_preflight.py'
+      - 'tests/test_wan5_inference_diagnostics.py'
       - 'scripts/wan5_first_paid_controller.py'
       - '.github/workflows/wan5-first-paid-gpu-pilot.yml'
       - 'tests/test_wan5_first_paid_controller.py'
