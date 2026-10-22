@@ -23,6 +23,7 @@ jobs:
       RUNPOD_S3_SECRET_ACCESS_KEY: ${{ secrets.RUNPOD_S3_SECRET_ACCESS_KEY }}
       GHCR_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       TRUSTFOLIO_PAID_FIRST_TEST: 'yes'
+      TRUSTFOLIO_TESTED_WORKER_IMAGE: 'ghcr.io/jayantjos/trustfolio-wan5-worker@sha256:9523acef9fff62a30295f1d73fe3acda88b77615062a50cf0ad934cd0baf9b14'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -103,7 +104,7 @@ jobs:
           GHCR_PASS: ${{ secrets.GITHUB_TOKEN }}
         run: |
           printf '%s' "$GHCR_PASS" | docker login ghcr.io -u "$GHCR_USER" --password-stdin >/dev/null
-          docker manifest inspect ghcr.io/jayantjos/trustfolio-wan5-worker@sha256:b5dd674b52bfec2ee56ed5b6fcb54d7243041c3550b72873b330a528b72a2396 >/dev/null
+          docker manifest inspect "$TRUSTFOLIO_TESTED_WORKER_IMAGE" >/dev/null
           echo 'WAN5_PINNED_PRIVATE_WORKER_PULL_AUTH=VERIFIED'
           docker logout ghcr.io >/dev/null
       - name: Stage already-reviewed exact Hindi audio before any GPU creation
