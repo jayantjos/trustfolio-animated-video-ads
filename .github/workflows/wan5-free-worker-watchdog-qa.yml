@@ -32,13 +32,6 @@ jobs:
           python-version: '3.11'
       - name: Install CPU-only controller dependencies
         run: python -m pip install boto3
-      - name: Install local CPU-only ffmpeg audio tools
-        run: |
-          if ! command -v ffprobe >/dev/null || ! command -v ffmpeg >/dev/null; then
-            sudo apt-get update -qq
-            sudo apt-get install -y ffmpeg
-          fi
-          ffmpeg -version | head -1
       - name: Run worker and watchdog unit tests without GPU or RunPod credentials
         env:
           TRUSTFOLIO_PAID_FIRST_TEST: 'no'
@@ -57,13 +50,6 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: '3.11'}
       - run: python -m pip install boto3
-      - name: Install local CPU-only ffmpeg audio tools
-        run: |
-          if ! command -v ffprobe >/dev/null || ! command -v ffmpeg >/dev/null; then
-            sudo apt-get update -qq
-            sudo apt-get install -y ffmpeg
-          fi
-          ffprobe -version | head -1
       - name: Read-only model, tokenizer, character, price and Pod audit
         run: python -m scripts.wan5_readonly_qa
       - uses: actions/upload-artifact@v4
@@ -95,6 +81,11 @@ jobs:
         run: |
           docker pull "$IMAGE"
           docker run --rm --network none --entrypoint python -v "$PWD:/qa:ro" "$IMAGE" /qa/scripts/wan5_container_cpu_qa.py
+          # This exact pinned image already passed ffmpeg/ffprobe checks.
+          # Test real S3-read MP3 bytes and synthetic invalid/overlong inputs,
+          # all offline, before any billable GPU or published content.
+          docker run --rm --network none --entrypoint python -e PYTHONPATH=/qa -v "$PWD:/qa:ro" "$IMAGE" -m unittest discover -s /qa/tests -p test_wan5_audio_preflight.py -v
+          docker run --rm --network none --entrypoint python -e PYTHONPATH=/qa -v "$PWD:/qa:ro" "$IMAGE" -c 'from pathlib import Path; from scripts.wan5_audio_preflight import inspect_mp3_bytes; p=Path("/qa/output/wan5-readonly/hindi_candidate_sha256_verified.mp3"); r=inspect_mp3_bytes(p.read_bytes()); assert r["technical_qa_passed"] and 1<=r["seconds"]<=5; print("REAL_HINDI_MP3_CPU_DECODE_SHA256_VERIFIED_NO_GPU=PASS")'
       - name: Package tested worker over the existing immutable image; no GPU
         env:
           TAG: ghcr.io/jayantjos/trustfolio-wan5-worker:qa-${{ github.sha }}
