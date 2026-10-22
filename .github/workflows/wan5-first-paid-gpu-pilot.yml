@@ -3,7 +3,8 @@ on:
   push:
     branches: [feat/washing-machine-character-video-pilot]
     paths:
-      - 'pilot/wan5-first-launch.request.json'
+      # Historical approval request is permanently ineligible for another paid Pod.
+      - 'pilot/wan5-fresh-launch.request.json'
 permissions:
   contents: read
   packages: read
@@ -23,6 +24,8 @@ jobs:
       RUNPOD_S3_SECRET_ACCESS_KEY: ${{ secrets.RUNPOD_S3_SECRET_ACCESS_KEY }}
       GHCR_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       TRUSTFOLIO_PAID_FIRST_TEST: 'yes'
+      TRUSTFOLIO_ATTEMPT_ID: 'wan5-${{ github.sha }}'
+      TRUSTFOLIO_NEXT_ATTEMPT_APPROVED: 'wan5-${{ github.sha }}'
       TRUSTFOLIO_TESTED_WORKER_IMAGE: 'ghcr.io/jayantjos/trustfolio-wan5-worker@sha256:9523acef9fff62a30295f1d73fe3acda88b77615062a50cf0ad934cd0baf9b14'
     steps:
       - uses: actions/checkout@v4
@@ -30,13 +33,18 @@ jobs:
         with: {python-version: '3.11'}
       - name: Install storage + preflight dependencies, no GPU
         run: python -m pip install 'boto3>=1.35,<2'
-      - name: Enforce exactly one $1 user-approved 5s pilot request
+      - name: Require newly authorized one-time $1 paid attempt (reject reruns)
+        env:
+          TRUSTFOLIO_RUN_ACTOR: ${{ github.actor }}
+          TRUSTFOLIO_RUN_ATTEMPT: ${{ github.run_attempt }}
         run: |
           python - <<'PY'
-          import json
+          import json, os, re
+          from datetime import datetime, timezone, timedelta
           from pathlib import Path
-          req=json.loads(Path('pilot/wan5-first-launch.request.json').read_text())
+          req=json.loads(Path('pilot/wan5-fresh-launch.request.json').read_text())
           expected={'launch_approved_by_user':True,
+                    'confirmation':'I_APPROVE_NEW_WAN5_GPU_TEST_MAX_1_USD',
                     'job_id':'wan5-laundry-first-20261021',
                     'gpu_usd_max':1,
                     'seconds':5,
@@ -45,7 +53,16 @@ jobs:
                     'publish':False,
                     'auto_delete_pod':True,
                     'existing_network_volume':'1bch597yrz'}
-          assert req==expected, 'UNAPPROVED_OR_MODIFIED_PAID_GPU_REQUEST'
+          assert set(req)==set(expected)|{'approved_at_utc','approval_id'}, 'INVALID_FRESH_APPROVAL_SCHEMA'
+          assert all(req.get(k)==v for k,v in expected.items()), 'NO_FRESH_EXPLICIT_PAID_APPROVAL'
+          assert os.environ.get('TRUSTFOLIO_RUN_ATTEMPT')=='1', 'REPLAYED_WORKFLOW_RUN_REFUSED'
+          assert os.environ.get('TRUSTFOLIO_RUN_ACTOR')=='jayantjos', 'NON_OWNER_PAID_APPROVAL_REFUSED'
+          assert re.fullmatch(r'[A-Za-z0-9_-]{8,64}',str(req['approval_id'])), 'INVALID_APPROVAL_ID'
+          try: approved_at=datetime.fromisoformat(req['approved_at_utc'].replace('Z','+00:00'))
+          except (ValueError,AttributeError): raise SystemExit('APPROVAL_TIMESTAMP_INVALID_NO_GPU')
+          now=datetime.now(timezone.utc)
+          assert approved_at.tzinfo is not None and timedelta(0)<=now-approved_at<=timedelta(minutes=60), 'STALE_PAID_APPROVAL_REFUSED'
+          print('FRESH_PAID_AUTHORIZATION_SCOPE_VERIFIED_NO_GPU_CREATED')
           PY
       - name: Validate controller safety and immutable original art
         run: |
