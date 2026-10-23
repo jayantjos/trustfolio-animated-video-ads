@@ -6,6 +6,9 @@ verified on RunPod. No GPU, model weight loading, RunPod API or billing.
 """
 import json
 import torch
+# Only official Wan's import-time CUDA device default is shimmed on CI CPU;
+# no GPU operations or model checkpoint loading are ever invoked.
+torch.cuda.current_device = lambda: 0
 from wan.modules.model import WanModel
 
 CONFIG = {
