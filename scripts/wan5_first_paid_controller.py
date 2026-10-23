@@ -352,6 +352,12 @@ def polling_for_mp4(s3,write_key,pod_id,read_key=None,
                 code=str(bad.get("failure_reason","UNKNOWN"))
                 if not re.fullmatch(r"[A-Z0-9_]{1,115}",code):
                     raise PilotError("GPU_WORKER_BAD_FAILURE_CODE")
+                stage=bad.get("last_worker_stage")
+                if stage in (
+                    "STARTUP", "VALIDATE_AND_RENDER", "VERIFY_AUDIO_AND_MODEL",
+                    "WAN_INFERENCE", "HINDI_MUX_AND_DECODE_QA", "COMPLETE"
+                ):
+                    print("PILOT_WORKER_LAST_STAGE="+stage,flush=True)
                 # The RunPod live-log endpoint can be unavailable during
                 # container startup. Expose ONLY fixed-field diagnostics from
                 # the private volume receipt; never dump raw child stdout,
@@ -376,6 +382,19 @@ def polling_for_mp4(s3,write_key,pod_id,read_key=None,
                     fingerprint=diag.get("subprocess_output_tail_sha256")
                     if isinstance(fingerprint,str) and re.fullmatch(r"[0-9a-f]{64}",fingerprint):
                         print("PILOT_WORKER_OUTPUT_SHA256="+fingerprint,flush=True)
+                    traceback_flag=diag.get("traceback_marker_present")
+                    if type(traceback_flag) is bool:
+                        print("PILOT_WORKER_TRACEBACK_MARKER="+str(traceback_flag).upper(),flush=True)
+                    safe_marker_names={
+                        "CUDA_OOM_TEXT", "HOST_OOM_TEXT",
+                        "TORCH_DISTRIBUTED_ERROR_TEXT", "NATIVE_CRASH_TEXT",
+                        "MODEL_SHAPE_TEXT", "TOKENIZER_ERROR_TEXT"
+                    }
+                    markers=diag.get("safe_error_markers")
+                    if isinstance(markers,list) and len(markers)<=6:
+                        for m in markers:
+                            if isinstance(m,str) and m in safe_marker_names:
+                                print("PILOT_WORKER_SAFE_ERROR_MARKER="+m,flush=True)
                     signal=diag.get("process_termination_signal")
                     if type(signal) is int and 1<=signal<=64:
                         print("PILOT_WORKER_TERMINATION_SIGNAL="+str(signal),flush=True)
