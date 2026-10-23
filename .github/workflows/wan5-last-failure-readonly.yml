@@ -41,6 +41,10 @@ jobs:
                   print('WAN5_THIRD_FINAL_PROGRESS_STAGE='+stage, flush=True)
                   seq = obj.get('sequence')
                   if type(seq) is int and 0 < seq < 10000000: print('WAN5_THIRD_HEARTBEAT_SEQUENCE='+str(seq),flush=True)
+                  when=obj.get('updated_at')
+                  if type(when) in (int,float) and 1792700000 < when < 1792900000:
+                      from datetime import datetime, timezone
+                      print('WAN5_THIRD_LAST_PROGRESS_AT='+datetime.fromtimestamp(when, timezone.utc).isoformat(),flush=True)
               elif label == 'failure':
                   reason = obj.get('failure_reason','')
                   assert isinstance(reason,str) and re.fullmatch(r'[A-Z0-9_]{1,115}',reason), 'BAD_REASON'
