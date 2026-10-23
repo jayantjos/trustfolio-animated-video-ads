@@ -1,4 +1,4 @@
-# Follow-up independent live stock sample 2026-10-23T12:17:22.244Z; read-only, NO GPU launch.
+# User-requested fresh RunPod stock preflight at 2026-10-23T13:53:29.784Z; read-only; no Pod creation.
 name: RunPod EU-RO-1 GPU stock alternatives and quote (NO GPU)
 on:
   push:
