@@ -1,4 +1,4 @@
-# Read-only post-GraphQL-refusal investigation 2026-10-23; no paid launch.
+# User-requested live safety and owned-pod recheck at 2026-10-23T12:16:06.432Z; NO GPU launch.
 name: WAN5 full storage, pricing and watchdog prelaunch check (NO GPU)
 on:
   push:
