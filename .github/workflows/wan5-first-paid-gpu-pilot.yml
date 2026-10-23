@@ -26,7 +26,7 @@ jobs:
       TRUSTFOLIO_PAID_FIRST_TEST: 'yes'
       TRUSTFOLIO_ATTEMPT_ID: 'wan5-${{ github.sha }}'
       TRUSTFOLIO_NEXT_ATTEMPT_APPROVED: 'wan5-${{ github.sha }}'
-      TRUSTFOLIO_TESTED_WORKER_IMAGE: 'ghcr.io/jayantjos/trustfolio-wan5-worker@sha256:e61e0af966c3bfe1d861198315fbc081f0d5b58b738b0cbffcb63edd5a68fd35'
+      TRUSTFOLIO_TESTED_WORKER_IMAGE: 'ghcr.io/jayantjos/trustfolio-wan5-worker@sha256:c4cc54231aa5d9fb8f98c3a0267dbaf3156ebf13865dfc42d8b25c599af4d793'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
