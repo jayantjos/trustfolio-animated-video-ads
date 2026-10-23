@@ -202,6 +202,33 @@ def gpu_check(runner=subprocess.run):
         raise RenderError("GPU_MIN_24GB_NOT_VERIFIED")
     return int(first)
 
+
+def verify_torch_cuda_kernel(runner=subprocess.run):
+    """Verify real CUDA allocation + math before loading 34 GB of checkpoints.
+
+    nvidia-smi alone only proves that the device exists; it does not prove
+    the CUDA/PyTorch runtime and GPU architecture are mutually compatible.
+    Execute in a bounded *child* process to avoid contaminating the memory
+    state of the real Wan model subprocess. Never persist raw stderr.
+    """
+    probe = (
+        "import torch; "
+        "assert torch.cuda.is_available(), 'CUDA_UNAVAILABLE'; "
+        "x=torch.ones((16,16),device='cuda',dtype=torch.float32); "
+        "y=x@x; torch.cuda.synchronize(); "
+        "assert float(y[0,0].cpu())==16.0, 'CUDA_COMPUTE_INVALID'"
+    )
+    try:
+        result = runner([sys.executable, "-c", probe], capture_output=True,
+                        timeout=45, check=True)
+        if getattr(result, "returncode", 0) != 0:
+            raise RenderError("CUDA_KERNEL_PROBE_FAILED")
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, OSError) as exc:
+        raise RenderError("CUDA_KERNEL_PROBE_FAILED") from None
+    print("WAN5_REAL_TORCH_CUDA_KERNEL_PROBE=PASS", flush=True)
+    return True
+
+
 def classify_inference_failure(output):
     """Report an allowlisted diagnostic category, never raw CUDA/Python logs."""
     if not output:
@@ -384,6 +411,11 @@ def render(*, image=IMAGE, model=MODEL, code=WAN_SOURCE,
     audio = verified_audio()
     ensure_approved_files(image, model, code)
     gpu_check(runner)
+    # No GPU expenditure in CPU-only QA; the real GPU worker runs the
+    # finite CUDA compute probe before launching model loading/inference.
+    if runner is subprocess.run:
+        if progress: progress.checkpoint("CUDA_RUNTIME_PROBE")
+        verify_torch_cuda_kernel()
     outdir.mkdir(parents=True, exist_ok=True)
     final = outdir / "scene01.mp4"
     pending = outdir / "scene01.pending.mp4"
@@ -433,7 +465,7 @@ def write_failure_receipt(reason,returncode=None,diagnostics=None,stage=None):
             "social_publishing":False,
             "return_code":int(returncode) if isinstance(returncode,int) else None}
     if stage in ("STARTUP", "VALIDATE_AND_RENDER", "VERIFY_AUDIO_AND_MODEL",
-                 "WAN_INFERENCE", "HINDI_MUX_AND_DECODE_QA", "COMPLETE"):
+                 "CUDA_RUNTIME_PROBE", "WAN_INFERENCE", "HINDI_MUX_AND_DECODE_QA", "COMPLETE"):
         result["last_worker_stage"] = stage
     if diagnostics is not None:
         # Only fixed, preapproved metadata. Do NOT include the traceback.
