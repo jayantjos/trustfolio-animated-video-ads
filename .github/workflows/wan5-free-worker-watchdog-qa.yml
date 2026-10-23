@@ -12,6 +12,7 @@ on:
       - 'config/wan5_exact_audio_candidate.json'
       - 'gpu/Dockerfile.wan5-overlay'
       - 'scripts/wan5_container_cpu_qa.py'
+      - 'scripts/wan5_model_config_cpu_smoke.py'
       - 'scripts/wan5_readonly_qa.py'
       - 'scripts/wan5_audio_preflight.py'
       - 'scripts/wan5_stage_approved_audio.py'
@@ -86,6 +87,10 @@ jobs:
           docker pull "$IMAGE"
           docker run --rm --network none --entrypoint python -v "$PWD:/qa:ro" "$IMAGE" /qa/scripts/wan5_container_cpu_qa.py
           docker run --rm --network none --entrypoint python -e PYTHONPATH=/qa -v "$PWD:/qa:ro" "$IMAGE" /qa/scripts/wan5_offline_wan_cli_qa.py
+          # Full upstream 5B architecture object, META tensors only.
+          # This exercises the actually installed diffusers version/model
+          # config at zero GPU cost, not merely argument parsing.
+          timeout 150s docker run --rm --network none --entrypoint python -e PYTHONPATH=/qa:/opt/Wan2.2 -v "$PWD:/qa:ro" "$IMAGE" /qa/scripts/wan5_model_config_cpu_smoke.py
           # This exact pinned image already passed ffmpeg/ffprobe checks.
           # Test real S3-read MP3 bytes and synthetic invalid/overlong inputs,
           # all offline, before any billable GPU or published content.
