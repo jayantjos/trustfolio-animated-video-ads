@@ -13,6 +13,11 @@ torch.cuda.current_device = lambda: 0
 
 sys.path.insert(0, "/opt/Wan2.2")
 import generate
+from wan.modules import attention as wan_attention
+print("WAN_ATTENTION_FA2_AVAILABLE="+str(wan_attention.FLASH_ATTN_2_AVAILABLE),flush=True)
+print("WAN_ATTENTION_FA3_AVAILABLE="+str(wan_attention.FLASH_ATTN_3_AVAILABLE),flush=True)
+print("WAN_ATTENTION_DIRECT_FLASH_REQUIRES_PACKAGE="+str(
+    not wan_attention.FLASH_ATTN_2_AVAILABLE and not wan_attention.FLASH_ATTN_3_AVAILABLE),flush=True)
 from scripts.wan5_gpu_worker import generate_command, MODEL, IMAGE, WAN_SOURCE
 
 output = Path("/tmp/trustfolio_wan5_cli_parser_smoke_only.mp4")
