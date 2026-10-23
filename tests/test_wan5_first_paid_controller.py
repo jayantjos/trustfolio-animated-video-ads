@@ -163,6 +163,7 @@ class Tests(unittest.TestCase):
                 "traceback_marker_present":False,
                 "safe_error_markers":["MODEL_SHAPE_TEXT","PASSWORD=NEVER_PRINT"],
                 "subprocess_output_tail_bytes":6489,
+                "upstream_last_safe_frame":"wan/textimage2video.py:474",
             },
         }
         def get_object(s3,key,limit):
@@ -178,6 +179,7 @@ class Tests(unittest.TestCase):
         self.assertIn("PILOT_WORKER_LAST_STAGE=WAN_INFERENCE",output)
         self.assertIn("PILOT_WORKER_TRACEBACK_MARKER=FALSE",output)
         self.assertIn("PILOT_WORKER_SAFE_ERROR_MARKER=MODEL_SHAPE_TEXT",output)
+        self.assertIn("PILOT_WORKER_LAST_UPSTREAM_FRAME=wan/textimage2video.py:474",output)
         self.assertNotIn("PASSWORD=NEVER_PRINT",output)
 
     def test_live_log_fatal_aborts_before_waiting_or_spending_more(self):
