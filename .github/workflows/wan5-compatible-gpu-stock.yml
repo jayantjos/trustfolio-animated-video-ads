@@ -1,4 +1,4 @@
-# Read-only post-GraphQL-refusal investigation 2026-10-23; no paid launch.
+# Recheck user-requested live EU-RO-1 GPU stock on 2026-10-23T12:15:12.520Z; NO GPU launch.
 name: RunPod EU-RO-1 GPU stock alternatives and quote (NO GPU)
 on:
   push:
