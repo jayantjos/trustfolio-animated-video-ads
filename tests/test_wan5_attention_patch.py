@@ -4,7 +4,7 @@ from gpu.patch_wan_attention import patched_source
 
 class AttnPatchTests(unittest.TestCase):
     def test_only_exact_upstream_anchor_is_accepted(self):
-        original = "import torch\n\ndef flash_attention(\n    q):\n    else:\n        assert FLASH_ATTN_2_AVAILABLE\n"
+        original = "import torch\n\ndef flash_attention(\n    q):\n    if True:\n        pass\n    else:\n        assert FLASH_ATTN_2_AVAILABLE\n"
         modified = patched_source(original)
         self.assertIn("def _trustfolio_fused_sdpa_fallback(", modified)
         self.assertIn("SDPBackend.FLASH_ATTENTION", modified)
