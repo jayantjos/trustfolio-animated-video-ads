@@ -21,7 +21,7 @@ class FakeS3:
 class Tests(unittest.TestCase):
     def test_paid_worker_image_matches_successful_build(self):
         from pathlib import Path
-        expected="ghcr.io/jayantjos/trustfolio-wan5-worker@sha256:bdb4cede9986a34850240c9139990efb6730c49e03d1095a60edeecf8d5a58a5"
+        expected="ghcr.io/jayantjos/trustfolio-wan5-worker@sha256:77ad3c7235ccf9ea6fedbf32c7ad2198388f2004b66b6ed6768fd7acaa3f431f"
         self.assertEqual(c.IMAGE,expected)
         workflow=Path(".github/workflows/wan5-first-paid-gpu-pilot.yml").read_text()
         self.assertIn("TRUSTFOLIO_TESTED_WORKER_IMAGE: '"+expected+"'",workflow)
