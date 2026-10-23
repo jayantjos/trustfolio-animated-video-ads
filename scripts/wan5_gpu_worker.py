@@ -258,10 +258,10 @@ def sanitized_inference_evidence(output, returncode):
     decoded = data.decode("utf-8", "replace")
     # Remove ANSI formatting, normalize carriage-return progress redraws,
     # and recognize rank-tagged tracebacks without copying any raw text.
-    normalized = re.sub(r"\\x1b\\[[0-9;]*[ -/]*[@-~]", "", decoded).replace("\\r", "\\n")
+    normalized = re.sub(r"\x1b\[[0-9;]*[ -/]*[@-~]", "", decoded).replace("\r", "\n")
     exception_classes = re.findall(
-        r"(?m)^(?:\\[rank[0-9]+\\]:\\s*)?(?:[A-Za-z_][A-Za-z_0-9]*[.])*"
-        r"([A-Za-z_][A-Za-z_0-9]*(?:Error|Exception))\\s*(?::|$)",
+        r"(?m)^(?:\[rank[0-9]+\]:\s*)?(?:[A-Za-z_][A-Za-z_0-9]*[.])*"
+        r"([A-Za-z_][A-Za-z_0-9]*(?:Error|Exception))\s*(?::|$)",
         normalized,
     )
     safe_type = next(
