@@ -76,6 +76,53 @@ class StreamDiagnosticsTests(unittest.TestCase):
             b"RuntimeError: CUDA error: device-side assert triggered"),
             "CUDA_RUNTIME_FAILURE")
 
+    def test_ansi_rank_tagged_traceback_is_detected_without_raw_text(self):
+        import json
+        from unittest.mock import patch
+        raw = (b"private=DO_NOT_PRINT\\n"
+               + bytes([27]) + b"[31m[rank0]: RuntimeError: secret token hidden"
+               + bytes([27]) + b"[0m\\n"
+               + b"Traceback (most recent call last):\\n")
+        # Re-normalize the fixture's literal slash-n markers.
+        raw = raw.replace(bytes([92, 110]), bytes([10]))
+        details = w.sanitized_inference_evidence(raw, 1)
+        self.assertEqual(details["python_exception_type"], "RuntimeError")
+        self.assertTrue(details["traceback_marker_present"])
+        with tempfile.TemporaryDirectory() as directory:
+            failure = Path(directory) / "scene01.failure.json"
+            with patch.object(w, "OUTDIR", Path(directory)), patch.object(w, "FAILURE", failure):
+                w.write_failure_receipt("GPU_INFERENCE_OR_TOOLS_FAILED", 1,
+                                        details, stage="WAN_INFERENCE")
+            data = json.loads(failure.read_text())
+            self.assertEqual(data["last_worker_stage"], "WAN_INFERENCE")
+            self.assertEqual(data["subprocess_diagnostics"]["python_exception_type"],
+                             "RuntimeError")
+            self.assertNotIn("secret", failure.read_text().lower())
+            self.assertNotIn("DO_NOT_PRINT", failure.read_text())
+
+    def test_missing_colon_assertion_and_untrusted_stage_are_safely_handled(self):
+        result = w.sanitized_inference_evidence(
+            b"[rank2]: AssertionError" + bytes([10]), 1)
+        self.assertEqual(result["python_exception_type"], "AssertionError")
+        with tempfile.TemporaryDirectory() as directory:
+            from unittest.mock import patch
+            failure = Path(directory) / "scene01.failure.json"
+            with patch.object(w, "OUTDIR", Path(directory)), patch.object(w, "FAILURE", failure):
+                w.write_failure_receipt("UNEXPECTED_ERROR", stage="stage=PRIVATE_TOKEN")
+            self.assertNotIn("stage=PRIVATE_TOKEN", failure.read_text())
+
+    def test_all_safe_markers_are_from_fixed_allowlist(self):
+        raw = (b"credential=NOT_LOGGED" + bytes([10])
+               + b"std::bad_alloc; torch.distributed.elastic; segmentation fault;"
+               + b" size mismatch for layer" + bytes([10]))
+        report = w.sanitized_inference_evidence(raw, 1)
+        self.assertEqual(report["safe_error_markers"], [
+            "HOST_OOM_TEXT", "TORCH_DISTRIBUTED_ERROR_TEXT",
+            "NATIVE_CRASH_TEXT", "MODEL_SHAPE_TEXT"
+        ])
+        self.assertNotIn("credential", repr(report))
+        self.assertNotIn("NOT_LOGGED", repr(report))
+
     def test_diagnostics_are_allowlisted_no_raw_traceback(self):
         examples = {
             b"ModuleNotFoundError: No module named 'flash_attn'": "PYTHON_DEPENDENCY_MISSING",
