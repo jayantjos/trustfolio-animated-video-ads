@@ -268,9 +268,13 @@ def check_cost_and_availability(read_key):
             options.append((gpu_id,rate,stock))
     if not options:
         raise PilotError("NO_APPROVED_GPU_WITH_LIVE_PRICE_WITHIN_1_USD")
-    # Attempt provider allocation with the best in-region hint first.
+    # Never attempt provider create when the only supported Ada GPU is not
+    # advertised in this volume's datacenter. The catalogue price alone does
+    # not establish availability; GraphQL otherwise refuses the allocation.
     present=[x for x in options if x[2] in ("LOW","MEDIUM","HIGH")]
-    gpu_id,rate,stock=(present or options)[0]
+    if not present:
+        raise PilotError("SUPPORTED_ADA_GPU_NOT_ADVERTISED_NO_POD_CREATE")
+    gpu_id,rate,stock=present[0]
     return {"gpu_type":gpu_id,
             "rate_usd_per_hour":str(rate),"stock":stock,
             "max_gpu_usd_at_38m":str(round(rate*POD_PROVIDER_TTL_MINUTES/60,4))}
