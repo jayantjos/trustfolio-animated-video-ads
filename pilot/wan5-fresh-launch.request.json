@@ -9,6 +9,6 @@
   "publish": false,
   "auto_delete_pod": true,
   "existing_network_volume": "1bch597yrz",
-  "approved_at_utc": "2026-10-23T01:45:57.080Z",
-  "approval_id": "wan5_owner_new_cuda_probe_oct23_once"
+  "approved_at_utc": "2026-10-23T10:49:24.438Z",
+  "approval_id": "wan5_oct23_assertion_diagnostic_one_pod"
 }
