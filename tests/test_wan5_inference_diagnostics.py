@@ -123,6 +123,36 @@ class StreamDiagnosticsTests(unittest.TestCase):
         self.assertNotIn("credential", repr(report))
         self.assertNotIn("NOT_LOGGED", repr(report))
 
+    def test_real_cuda_kernel_probe_uses_actual_torch_compute_and_is_bounded(self):
+        from unittest.mock import Mock
+        fake = Mock(return_value=subprocess.CompletedProcess([], 0))
+        stdout=io.StringIO()
+        with contextlib.redirect_stdout(stdout):
+            self.assertTrue(w.verify_torch_cuda_kernel(runner=fake))
+        args, kwargs = fake.call_args
+        self.assertEqual(args[0][0], sys.executable)
+        self.assertIn("torch.cuda.is_available()", args[0][2])
+        self.assertIn("x@x", args[0][2])
+        self.assertEqual(kwargs["timeout"],45)
+        self.assertTrue(kwargs["capture_output"])
+        self.assertTrue(kwargs["check"])
+        self.assertIn("CUDA_KERNEL_PROBE=PASS",stdout.getvalue())
+
+    def test_cuda_kernel_probe_is_fail_closed_without_leaking_errors(self):
+        from unittest.mock import Mock
+        from unittest.mock import patch
+        private="PRIVATE_GPU_CREDENTIAL_SHOULD_NOT_PRINT"
+        fail=Mock(side_effect=subprocess.CalledProcessError(
+            1, "cuda-smoke", output=private.encode(), stderr=private.encode()))
+        stdout=io.StringIO()
+        with contextlib.redirect_stdout(stdout):
+            with self.assertRaisesRegex(w.RenderError,"CUDA_KERNEL_PROBE_FAILED"):
+                w.verify_torch_cuda_kernel(runner=fail)
+        self.assertNotIn(private,stdout.getvalue())
+        hang=Mock(side_effect=subprocess.TimeoutExpired("cuda-smoke", 45))
+        with self.assertRaisesRegex(w.RenderError,"CUDA_KERNEL_PROBE_FAILED"):
+            w.verify_torch_cuda_kernel(runner=hang)
+
     def test_diagnostics_are_allowlisted_no_raw_traceback(self):
         examples = {
             b"ModuleNotFoundError: No module named 'flash_attn'": "PYTHON_DEPENDENCY_MISSING",
