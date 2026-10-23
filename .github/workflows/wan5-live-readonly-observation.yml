@@ -23,7 +23,7 @@ jobs:
           python - <<'PY'
           import json
           from scripts import wan5_first_paid_controller as c
-          expected='wan5-3fff64827543b3dbb89b6a4bad0996e1059ae879'
+          expected='wan5-bd7cff72ef38ef4046e780cf83e8cbcb2e7423a7'
           s3=c.make_s3()
           for label,key in [('PROGRESS',c.PROGRESS),('FAILURE',c.FAILURE_RECEIPT),('SUCCESS',c.RECEIPT)]:
               raw=c.get_object(s3,key,8192)
@@ -48,6 +48,16 @@ jobs:
                                 'CUDA_OUT_OF_MEMORY','PYTHON_DEPENDENCY_MISSING','GPU_INFERENCE_TIMEOUT',
                                 'HOST_OR_DEVICE_MEMORY_EXHAUSTED'}:
                       print('WAN5_LIVE_FAILURE_CATEGORY='+reason,flush=True)
+                  evidence=obj.get('subprocess_diagnostics')
+                  if isinstance(evidence,dict):
+                      safe_frame=evidence.get('upstream_last_safe_frame')
+                      allowed=('generate.py','wan/textimage2video.py','wan/modules/model.py',
+                               'wan/modules/t5.py','wan/modules/vae2_2.py','wan/utils/utils.py',
+                               'wan/utils/fm_solvers.py','wan/utils/fm_solvers_unipc.py')
+                      if isinstance(safe_frame,str):
+                          filename,sep,lineno=safe_frame.rpartition(':')
+                          if sep and filename in allowed and lineno.isdecimal() and 1<=int(lineno)<=2500:
+                              print('WAN5_LIVE_SAFE_UPSTREAM_FRAME='+safe_frame,flush=True)
                   print('WAN5_LIVE_FAILURE_RECEIPT=YES',flush=True)
               else:
                   print('WAN5_LIVE_SUCCESS_RECEIPT=YES',flush=True)
