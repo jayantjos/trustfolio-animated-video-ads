@@ -242,10 +242,12 @@ _SAFE_EXCEPTION_CLASSES = frozenset((
 
 
 def sanitized_inference_evidence(output, returncode):
-    """Diagnose otherwise-generic subprocess exit without storing raw logs.
+    """Produce safe, finite-value evidence; never persist raw subprocess text.
 
-    The 32 KiB tail is only held in RAM. Persist its hash, length, a
-    predefined Python exception class and a signal number when relevant.
+    Official Wan/PyTorch may prefix errors with distributed-rank labels or
+    terminal escapes. The third paid run had a bounded stdout tail, yet its
+    previous line-anchored parser called the exception UNKNOWN. Extract only
+    named Python error types from the last 32 KiB; do not emit error messages.
     """
     if isinstance(output, bytes):
         data = output[-32768:]
@@ -254,15 +256,29 @@ def sanitized_inference_evidence(output, returncode):
     else:
         data = b""
     decoded = data.decode("utf-8", "replace")
+    # Remove ANSI formatting, normalize carriage-return progress redraws,
+    # and recognize rank-tagged tracebacks without copying any raw text.
+    normalized = re.sub(r"\\x1b\\[[0-9;]*[ -/]*[@-~]", "", decoded).replace("\\r", "\\n")
     exception_classes = re.findall(
-        r"(?m)^(?:[A-Za-z_][A-Za-z_0-9.]*[.])?([A-Za-z_][A-Za-z_0-9]*(?:Error|Exception))[ ]*:",
-        decoded,
+        r"(?m)^(?:\\[rank[0-9]+\\]:\\s*)?(?:[A-Za-z_][A-Za-z_0-9]*[.])*"
+        r"([A-Za-z_][A-Za-z_0-9]*(?:Error|Exception))\\s*(?::|$)",
+        normalized,
     )
     safe_type = next(
         (name for name in reversed(exception_classes)
          if name in _SAFE_EXCEPTION_CLASSES), "UNKNOWN"
     )
-    # Do not infer CUDA OOM from exit 1; SIGKILL is also not conclusive.
+    low = normalized.lower()
+    # Fixed enums from observable tokens, not claimed root causes.
+    marker_checks = (
+        ("CUDA_OOM_TEXT", ("cuda out of memory", "cublas_status_alloc_failed")),
+        ("HOST_OOM_TEXT", ("std::bad_alloc", "cannot allocate memory", "out of host memory")),
+        ("TORCH_DISTRIBUTED_ERROR_TEXT", ("torch.distributed.elastic", "childfailederror")),
+        ("NATIVE_CRASH_TEXT", ("segmentation fault", "illegal instruction", "aborted (core dumped)")),
+        ("MODEL_SHAPE_TEXT", ("size mismatch for", "shape mismatch", "unexpected key(s) in state_dict")),
+        ("TOKENIZER_ERROR_TEXT", ("sentencepiece", "tokenizer load failed", "failed to load tokenizer")),
+    )
+    seen_markers = [name for name, hints in marker_checks if any(h in low for h in hints)]
     signal_number = (-returncode if isinstance(returncode, int)
                      and -64 <= returncode < 0 else None)
     return {
@@ -270,8 +286,9 @@ def sanitized_inference_evidence(output, returncode):
         "subprocess_output_tail_bytes": len(data),
         "subprocess_output_tail_sha256": hashlib.sha256(data).hexdigest(),
         "process_termination_signal": signal_number,
+        "traceback_marker_present": "traceback (most recent call last)" in low,
+        "safe_error_markers": seen_markers,
     }
-
 
 def run_inference_streamed(command, *, cwd, env, timeout):
     """Tee child stdout/stderr live and retain a bounded error tail in memory.
@@ -406,7 +423,7 @@ def render(*, image=IMAGE, model=MODEL, code=WAN_SOURCE,
         if pending.exists():
             pending.unlink()
 
-def write_failure_receipt(reason,returncode=None,diagnostics=None):
+def write_failure_receipt(reason,returncode=None,diagnostics=None,stage=None):
     # Diagnostic receipt lives on the EXISTING volume, never raw traceback,
     # prompts or credentials. Controller can retrieve it via read-only S3.
     safe=re.sub(r"[^A-Z0-9_]", "_",str(reason).upper())[:115]
@@ -415,12 +432,16 @@ def write_failure_receipt(reason,returncode=None,diagnostics=None):
             "failure_reason":safe,"model":"Wan2.2-TI2V-5B",
             "social_publishing":False,
             "return_code":int(returncode) if isinstance(returncode,int) else None}
+    if stage in ("STARTUP", "VALIDATE_AND_RENDER", "VERIFY_AUDIO_AND_MODEL",
+                 "WAN_INFERENCE", "HINDI_MUX_AND_DECODE_QA", "COMPLETE"):
+        result["last_worker_stage"] = stage
     if diagnostics is not None:
-        # Caller is limited to sanitized_inference_evidence's fixed schema.
+        # Only fixed, preapproved metadata. Do NOT include the traceback.
         result["subprocess_diagnostics"] = {
             k: diagnostics[k] for k in (
                 "python_exception_type", "subprocess_output_tail_bytes",
-                "subprocess_output_tail_sha256", "process_termination_signal"
+                "subprocess_output_tail_sha256", "process_termination_signal",
+                "traceback_marker_present", "safe_error_markers"
             ) if k in diagnostics
         }
     try:
@@ -430,6 +451,7 @@ def write_failure_receipt(reason,returncode=None,diagnostics=None):
         print("WAN5_FAILURE_RECEIPT=UNAVAILABLE",flush=True)
 
 def main():
+    progress = None
     try:
         with Progress(OUTDIR) as progress:
             progress.checkpoint("VALIDATE_AND_RENDER")
@@ -439,21 +461,21 @@ def main():
     except subprocess.TimeoutExpired:
         reason="GPU_INFERENCE_TIMEOUT"
         print("TRUSTFOLIO_WAN5=BLOCKED_"+reason,flush=True)
-        write_failure_receipt(reason)
+        write_failure_receipt(reason,stage=progress.stage if progress else None)
     except subprocess.CalledProcessError as exc:
         reason=classify_inference_failure(exc.output or exc.stderr)
         print("TRUSTFOLIO_WAN5=BLOCKED_"+reason,flush=True)
         diagnostic=sanitized_inference_evidence(exc.output or exc.stderr,exc.returncode)
         print("WAN5_INFERENCE_PYTHON_ERROR_CLASS="+diagnostic["python_exception_type"],flush=True)
-        write_failure_receipt(reason,exc.returncode,diagnostic)
+        write_failure_receipt(reason,exc.returncode,diagnostic,stage=progress.stage if progress else None)
     except (RenderError, ValueError) as exc:
         reason=str(exc)
         print("TRUSTFOLIO_WAN5=BLOCKED_"+reason,flush=True)
-        write_failure_receipt(reason)
+        write_failure_receipt(reason,stage=progress.stage if progress else None)
     except Exception:
         reason="UNEXPECTED_ERROR"
         print("TRUSTFOLIO_WAN5=BLOCKED_"+reason,flush=True)
-        write_failure_receipt(reason)
+        write_failure_receipt(reason,stage=progress.stage if progress else None)
     return 1
 
 if __name__ == "__main__":
