@@ -153,6 +153,34 @@ class StreamDiagnosticsTests(unittest.TestCase):
         with self.assertRaisesRegex(w.RenderError,"CUDA_KERNEL_PROBE_FAILED"):
             w.verify_torch_cuda_kernel(runner=hang)
 
+    def test_assertion_traceback_origin_exposes_only_approved_wan_source_line(self):
+        import json
+        from unittest.mock import patch
+        raw = (b'Traceback (most recent call last):' + bytes([10]) +
+               b'  File "/opt/Wan2.2/wan/textimage2video.py", line 474, in generate' +
+               bytes([10]) + b'  assert img.width == ow and img.height == oh' +
+               bytes([10]) + b'AssertionError: secret_do_not_print' + bytes([10]))
+        diagnostics = w.sanitized_inference_evidence(raw, 1)
+        self.assertEqual(diagnostics["python_exception_type"], "AssertionError")
+        self.assertEqual(diagnostics["upstream_last_safe_frame"],
+                         "wan/textimage2video.py:474")
+        with tempfile.TemporaryDirectory() as d:
+            failure = Path(d) / "scene01.failure.json"
+            with patch.object(w,"OUTDIR",Path(d)),patch.object(w,"FAILURE",failure):
+                w.write_failure_receipt("GPU_INFERENCE_OR_TOOLS_FAILED", 1,
+                                        diagnostics, stage="WAN_INFERENCE")
+            content=failure.read_text()
+            self.assertIn('"wan/textimage2video.py:474"', content)
+            self.assertNotIn("secret_do_not_print", content)
+            self.assertNotIn("assert img.width", content)
+
+    def test_outside_project_paths_cannot_appear_in_safe_assertion_evidence(self):
+        raw = (b'File "/tmp/customerPRIVATE/token.py", line 11, in startup' +
+               bytes([10]) + b'File "/opt/Wan2.2/wan/not_approved.py", line 200, in run' +
+               bytes([10]) + b'AssertionError' + bytes([10]))
+        info=w.sanitized_inference_evidence(raw,1)
+        self.assertIsNone(info["upstream_last_safe_frame"])
+        self.assertNotIn("customerPRIVATE",repr(info))
     def test_diagnostics_are_allowlisted_no_raw_traceback(self):
         examples = {
             b"ModuleNotFoundError: No module named 'flash_attn'": "PYTHON_DEPENDENCY_MISSING",
