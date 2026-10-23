@@ -295,6 +295,22 @@ def sanitized_inference_evidence(output, returncode):
         (name for name in reversed(exception_classes)
          if name in _SAFE_EXCEPTION_CLASSES), "UNKNOWN"
     )
+    # Keep only the last ALLOWLISTED upstream frame. Source path and line
+    # are source-code references, not the raw Python traceback or user input.
+    _official_files = frozenset((
+        "generate.py", "wan/textimage2video.py", "wan/modules/model.py",
+        "wan/modules/t5.py", "wan/modules/vae2_2.py", "wan/utils/utils.py",
+        "wan/utils/fm_solvers.py", "wan/utils/fm_solvers_unipc.py",
+    ))
+    upstream_frames = re.findall(
+        r'File "/opt/Wan2[.]2/([A-Za-z0-9_/.]+[.]py)", line ([0-9]+)',
+        normalized,
+    )
+    last_official_frame = None
+    for source, number in reversed(upstream_frames):
+        if source in _official_files and 1 <= int(number) <= 2500:
+            last_official_frame = source + ":" + number
+            break
     low = normalized.lower()
     # Fixed enums from observable tokens, not claimed root causes.
     marker_checks = (
@@ -315,6 +331,7 @@ def sanitized_inference_evidence(output, returncode):
         "process_termination_signal": signal_number,
         "traceback_marker_present": "traceback (most recent call last)" in low,
         "safe_error_markers": seen_markers,
+        "upstream_last_safe_frame": last_official_frame,
     }
 
 def run_inference_streamed(command, *, cwd, env, timeout):
@@ -473,7 +490,8 @@ def write_failure_receipt(reason,returncode=None,diagnostics=None,stage=None):
             k: diagnostics[k] for k in (
                 "python_exception_type", "subprocess_output_tail_bytes",
                 "subprocess_output_tail_sha256", "process_termination_signal",
-                "traceback_marker_present", "safe_error_markers"
+                "traceback_marker_present", "safe_error_markers",
+                "upstream_last_safe_frame"
             ) if k in diagnostics
         }
     try:
