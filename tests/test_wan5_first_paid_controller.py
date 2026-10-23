@@ -149,6 +149,37 @@ class Tests(unittest.TestCase):
         self.assertNotIn(secret,body)
         self.assertNotIn("untrusted_free_text",body)
 
+    def test_worker_failure_stage_and_safe_markers_are_allowlisted(self):
+        import contextlib
+        import io
+        meta={
+            "status":"FAILED_PRIVATE_WAN5",
+            "job_id":c.JOB_ID,
+            "failure_reason":"GPU_INFERENCE_OR_TOOLS_FAILED",
+            "last_worker_stage":"WAN_INFERENCE",
+            "return_code":1,
+            "subprocess_diagnostics":{
+                "python_exception_type":"UNKNOWN",
+                "traceback_marker_present":False,
+                "safe_error_markers":["MODEL_SHAPE_TEXT","PASSWORD=NEVER_PRINT"],
+                "subprocess_output_tail_bytes":6489,
+            },
+        }
+        def get_object(s3,key,limit):
+            return json.dumps(meta).encode() if key==c.FAILURE_RECEIPT else None
+        printed=io.StringIO()
+        with patch.object(c,"get_object",side_effect=get_object):
+            with contextlib.redirect_stdout(printed):
+                with self.assertRaisesRegex(c.PilotError,
+                        "GPU_WORKER_FAILED_GPU_INFERENCE_OR_TOOLS_FAILED"):
+                    c.polling_for_mp4(object(),"k","pod123456",now=lambda:0,
+                        log_scanner=lambda *a:self.fail("failure receipt must abort"))
+        output=printed.getvalue()
+        self.assertIn("PILOT_WORKER_LAST_STAGE=WAN_INFERENCE",output)
+        self.assertIn("PILOT_WORKER_TRACEBACK_MARKER=FALSE",output)
+        self.assertIn("PILOT_WORKER_SAFE_ERROR_MARKER=MODEL_SHAPE_TEXT",output)
+        self.assertNotIn("PASSWORD=NEVER_PRINT",output)
+
     def test_live_log_fatal_aborts_before_waiting_or_spending_more(self):
         pod={"name":c.NAME,"id":"pod123456",
              "dataCenterId":c.DATACENTER,
