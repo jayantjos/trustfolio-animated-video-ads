@@ -15,7 +15,7 @@ class AttnPatchTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             patched_source("def flash_attention(\n    pass\n")
         with self.assertRaises(ValueError):
-            patched_source(patched_source("def flash_attention(\n    pass\n        assert FLASH_ATTN_2_AVAILABLE\n"))
+            patched_source(patched_source("def flash_attention(\n    q):\n    if True:\n        pass\n    else:\n        assert FLASH_ATTN_2_AVAILABLE\n"))
     def test_refuse_ambiguous_upstream_mutation(self):
         with self.assertRaises(ValueError):
             patched_source("def flash_attention(\n        assert FLASH_ATTN_2_AVAILABLE\n        assert FLASH_ATTN_2_AVAILABLE\n")
