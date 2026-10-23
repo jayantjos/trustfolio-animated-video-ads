@@ -355,7 +355,7 @@ def polling_for_mp4(s3,write_key,pod_id,read_key=None,
                 stage=bad.get("last_worker_stage")
                 if stage in (
                     "STARTUP", "VALIDATE_AND_RENDER", "VERIFY_AUDIO_AND_MODEL",
-                    "WAN_INFERENCE", "HINDI_MUX_AND_DECODE_QA", "COMPLETE"
+                    "CUDA_RUNTIME_PROBE", "WAN_INFERENCE", "HINDI_MUX_AND_DECODE_QA", "COMPLETE"
                 ):
                     print("PILOT_WORKER_LAST_STAGE="+stage,flush=True)
                 # The RunPod live-log endpoint can be unavailable during
