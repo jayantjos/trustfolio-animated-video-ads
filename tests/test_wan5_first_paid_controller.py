@@ -58,6 +58,43 @@ class Tests(unittest.TestCase):
         # Worker base torch 2.6 / cu124 supports Ada 4090, not sm_120.
         self.assertEqual(c.GPU_PREFERENCE,("NVIDIA GeForce RTX 4090",))
 
+    def test_no_supported_datacenter_stock_blocks_before_paid_create(self):
+        # Live EU-RO-1 catalogue can price Ada 4090 even while its inventory
+        # lists only Blackwell devices incompatible with the tested cu124 image.
+        def fake_api(key, url):
+            if url.endswith("/network-volumes/"+c.VOLUME):
+                return {"id":c.VOLUME,"size":100,"dataCenter":c.DATACENTER}
+            if url.endswith("/catalog/gpus"):
+                return {"gpus":[{"id":"NVIDIA GeForce RTX 4090",
+                                 "price":{"secure":0.89}}]}
+            return {"dataCenters":[{"id":c.DATACENTER,
+                "gpuAvailability":[{"id":"NVIDIA GeForce RTX 5090",
+                                    "availability":"LOW"}]}]}
+        with patch.object(c, "read_inputs", return_value=(
+                {"gpu_usd_spend_approved":1,"clip_duration_seconds":5}, {})):
+            with patch.object(c, "api_read", side_effect=fake_api):
+                with self.assertRaisesRegex(
+                        c.PilotError,
+                        "SUPPORTED_ADA_GPU_NOT_ADVERTISED_NO_POD_CREATE"):
+                    c.check_cost_and_availability("read_only_key")
+
+    def test_supported_advertised_4090_remains_eligible(self):
+        def fake_api(key, url):
+            if url.endswith("/network-volumes/"+c.VOLUME):
+                return {"id":c.VOLUME,"size":100,"dataCenter":c.DATACENTER}
+            if url.endswith("/catalog/gpus"):
+                return {"gpus":[{"id":"NVIDIA GeForce RTX 4090",
+                                 "price":{"secure":0.89}}]}
+            return {"dataCenters":[{"id":c.DATACENTER,
+                "gpuAvailability":[{"id":"NVIDIA GeForce RTX 4090",
+                                    "availability":"LOW"}]}]}
+        with patch.object(c, "read_inputs", return_value=(
+                {"gpu_usd_spend_approved":1,"clip_duration_seconds":5}, {})):
+            with patch.object(c, "api_read", side_effect=fake_api):
+                quote=c.check_cost_and_availability("read_only_key")
+        self.assertEqual(quote["gpu_type"],"NVIDIA GeForce RTX 4090")
+        self.assertEqual(quote["stock"],"LOW")
+
     def test_fixed_scope_and_budget(self):
         self.assertEqual(c.POD_PROVIDER_TTL_MINUTES,38)
         self.assertLess(c.MAX_ACCEPTED_RATE_USD_PER_HR*c.POD_PROVIDER_TTL_MINUTES/60,1)
