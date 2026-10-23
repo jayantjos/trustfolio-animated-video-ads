@@ -395,6 +395,18 @@ def polling_for_mp4(s3,write_key,pod_id,read_key=None,
                         for m in markers:
                             if isinstance(m,str) and m in safe_marker_names:
                                 print("PILOT_WORKER_SAFE_ERROR_MARKER="+m,flush=True)
+                    last_safe_frame=diag.get("upstream_last_safe_frame")
+                    _official_frames=(
+                        "generate.py", "wan/textimage2video.py", "wan/modules/model.py",
+                        "wan/modules/t5.py", "wan/modules/vae2_2.py", "wan/utils/utils.py",
+                        "wan/utils/fm_solvers.py", "wan/utils/fm_solvers_unipc.py",
+                    )
+                    if isinstance(last_safe_frame,str):
+                        frame_file, sep, frame_line=last_safe_frame.rpartition(":")
+                        if (sep and frame_file in _official_frames and
+                                frame_line.isdecimal() and
+                                1<=int(frame_line)<=2500 and len(frame_line)<=4):
+                            print("PILOT_WORKER_LAST_UPSTREAM_FRAME="+last_safe_frame,flush=True)
                     signal=diag.get("process_termination_signal")
                     if type(signal) is int and 1<=signal<=64:
                         print("PILOT_WORKER_TERMINATION_SIGNAL="+str(signal),flush=True)
