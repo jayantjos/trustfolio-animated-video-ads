@@ -7,6 +7,7 @@ name: TrustFolio WAN5 independent stale Pod reaper (FIRST PILOT ONLY)
 # Updated GPU preflight health at 2026-10-22T22:03:26.811Z; no RunPod config/policy changed.
 # Fresh independent $1 cap third GPU preflight audit 2026-10-22T23:23:25.682Z; policy unchanged.
 # Refresh scheduled-reaper health for owner-approved Wan5 follow-up: 2026-10-23 11:36 UTC (no policy change).
+# Fresh independent safety-reaper verification for approved retry at 2026-10-23T13:53:29.784Z; volume preserved.
 on:
   schedule:
     - cron: '*/5 * * * *'
