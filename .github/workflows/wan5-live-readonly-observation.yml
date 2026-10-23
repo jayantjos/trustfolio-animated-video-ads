@@ -22,45 +22,59 @@ jobs:
       - name: Read only current attempt's fixed-schema progress and receipt (no Pod API)
         run: |
           python - <<'PY'
-          import json
+          import json, re, time
           from scripts import wan5_first_paid_controller as c
           expected='wan5-bd7cff72ef38ef4046e780cf83e8cbcb2e7423a7'
           s3=c.make_s3()
-          for label,key in [('PROGRESS',c.PROGRESS),('FAILURE',c.FAILURE_RECEIPT),('SUCCESS',c.RECEIPT)]:
-              raw=c.get_object(s3,key,8192)
-              if not raw:
-                  print('WAN5_LIVE_'+label+'=NOT_YET_PRESENT',flush=True)
-                  continue
-              obj=json.loads(raw)
-              if not isinstance(obj,dict) or obj.get('attempt_id')!=expected or obj.get('job_id')!=c.JOB_ID:
-                  print('WAN5_LIVE_'+label+'=DIFFERENT_OR_OLD_ATTEMPT',flush=True)
-                  continue
-              if label=='PROGRESS':
-                  stage=obj.get('stage')
-                  if stage in {'STARTUP','VALIDATE_AND_RENDER','VERIFY_AUDIO_AND_MODEL',
-                               'CUDA_RUNTIME_PROBE','WAN_INFERENCE','HINDI_MUX_AND_DECODE_QA','COMPLETE'}:
-                      print('WAN5_LIVE_CURRENT_STAGE='+stage,flush=True)
-                  seq=obj.get('sequence')
-                  if type(seq) is int and 0<=seq<100000:
-                      print('WAN5_LIVE_HEARTBEAT_SEQ='+str(seq),flush=True)
-              elif label=='FAILURE':
-                  reason=obj.get('failure_reason')
-                  if reason in {'CUDA_KERNEL_PROBE_FAILED','GPU_INFERENCE_OR_TOOLS_FAILED',
-                                'CUDA_OUT_OF_MEMORY','PYTHON_DEPENDENCY_MISSING','GPU_INFERENCE_TIMEOUT',
-                                'HOST_OR_DEVICE_MEMORY_EXHAUSTED'}:
-                      print('WAN5_LIVE_FAILURE_CATEGORY='+reason,flush=True)
-                  evidence=obj.get('subprocess_diagnostics')
-                  if isinstance(evidence,dict):
-                      safe_frame=evidence.get('upstream_last_safe_frame')
-                      allowed=('generate.py','wan/textimage2video.py','wan/modules/model.py',
-                               'wan/modules/t5.py','wan/modules/vae2_2.py','wan/utils/utils.py',
-                               'wan/utils/fm_solvers.py','wan/utils/fm_solvers_unipc.py')
-                      if isinstance(safe_frame,str):
-                          filename,sep,lineno=safe_frame.rpartition(':')
-                          if sep and filename in allowed and lineno.isdecimal() and 1<=int(lineno)<=2500:
-                              print('WAN5_LIVE_SAFE_UPSTREAM_FRAME='+safe_frame,flush=True)
-                  print('WAN5_LIVE_FAILURE_RECEIPT=YES',flush=True)
-              else:
-                  print('WAN5_LIVE_SUCCESS_RECEIPT=YES',flush=True)
+          allowed_files=('generate.py','wan/textimage2video.py','wan/modules/model.py',
+                         'wan/modules/t5.py','wan/modules/vae2_2.py','wan/utils/utils.py',
+                         'wan/utils/fm_solvers.py','wan/utils/fm_solvers_unipc.py')
+          allowed_stages={'STARTUP','VALIDATE_AND_RENDER','VERIFY_AUDIO_AND_MODEL',
+                          'CUDA_RUNTIME_PROBE','WAN_INFERENCE','HINDI_MUX_AND_DECODE_QA','COMPLETE'}
+          done=False
+          for poll in range(1,9):
+              print('WAN5_SAFE_OBSERVER_POLL='+str(poll),flush=True)
+              for label,key in [('PROGRESS',c.PROGRESS),('FAILURE',c.FAILURE_RECEIPT),('SUCCESS',c.RECEIPT)]:
+                  try: raw=c.get_object(s3,key,8192)
+                  except c.PilotError:
+                      print('WAN5_LIVE_'+label+'=UNAVAILABLE',flush=True)
+                      continue
+                  if not raw:
+                      print('WAN5_LIVE_'+label+'=NOT_YET_PRESENT',flush=True)
+                      continue
+                  try: obj=json.loads(raw)
+                  except (ValueError,TypeError):
+                      print('WAN5_LIVE_'+label+'=CORRUPT',flush=True)
+                      continue
+                  if not isinstance(obj,dict) or obj.get('attempt_id')!=expected or obj.get('job_id')!=c.JOB_ID:
+                      print('WAN5_LIVE_'+label+'=DIFFERENT_OR_OLD_ATTEMPT',flush=True)
+                      continue
+                  if label=='PROGRESS':
+                      stage=obj.get('stage')
+                      if stage in allowed_stages: print('WAN5_LIVE_CURRENT_STAGE='+stage,flush=True)
+                      seq=obj.get('sequence')
+                      if type(seq) is int and 0<=seq<100000:
+                          print('WAN5_LIVE_HEARTBEAT_SEQ='+str(seq),flush=True)
+                  elif label=='FAILURE':
+                      reason=obj.get('failure_reason')
+                      if isinstance(reason,str) and re.fullmatch(r'[A-Z_]{1,115}',reason):
+                          print('WAN5_LIVE_FAILURE_CATEGORY='+reason,flush=True)
+                      diagnostics=obj.get('subprocess_diagnostics')
+                      if isinstance(diagnostics,dict):
+                          kind=diagnostics.get('python_exception_type')
+                          if kind in ('AssertionError','RuntimeError','ValueError','UNKNOWN'):
+                              print('WAN5_LIVE_EXCEPTION_TYPE='+kind,flush=True)
+                          frame=diagnostics.get('upstream_last_safe_frame')
+                          if isinstance(frame,str):
+                              filename,sep,lineno=frame.rpartition(':')
+                              if sep and filename in allowed_files and lineno.isdecimal() and 1<=int(lineno)<=2500:
+                                  print('WAN5_LIVE_SAFE_UPSTREAM_FRAME='+frame,flush=True)
+                      print('WAN5_LIVE_FAILURE_RECEIPT=YES',flush=True)
+                      done=True
+                  else:
+                      print('WAN5_LIVE_SUCCESS_RECEIPT=YES',flush=True)
+                      done=True
+              if done: break
+              if poll<8: time.sleep(15)
           print('WAN5_LIVE_AUDIT=READ_ONLY_NO_POD_CREATE_NO_CHARGE',flush=True)
           PY
