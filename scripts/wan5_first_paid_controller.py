@@ -31,7 +31,7 @@ from scripts.wan5_live_log_guard import scan_container_logs
 
 GRAPHQL="https://api.runpod.io/graphql"
 NAME="trustfolio-video-"+JOB_ID
-IMAGE="ghcr.io/jayantjos/trustfolio-wan5-worker@sha256:331361d515b8af6dba541f531b8c628de52cc1d6baaea0fa48c2ebd03020cfd7"
+IMAGE="ghcr.io/jayantjos/trustfolio-wan5-worker@sha256:b93f263e6013a38a493ff6e2657cc22bbf839f46f325379616e4e9ee6222f0b6"
 S3_BUCKET=VOLUME
 S3_HERO="assets/characters/shared/pink_kurta_lady_v1.png"
 RECEIPT="videos/private-qa/"+JOB_ID+"/scene01.receipt.json"
