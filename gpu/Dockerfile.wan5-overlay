@@ -1,4 +1,6 @@
 # Reuse every tested dependency and the exact pinned upstream source.
 FROM ghcr.io/jayantjos/trustfolio-wan5-worker@sha256:2c1b8f960e7084bf7a3aca002c09b72956030c2305aa4c1d4992679ea92eb604
+COPY gpu/patch_wan_attention.py /opt/trustfolio/patch_wan_attention.py
+RUN python /opt/trustfolio/patch_wan_attention.py
 COPY scripts/wan5_gpu_worker.py /opt/trustfolio/wan5_gpu_worker.py
 ENTRYPOINT ["python", "/opt/trustfolio/wan5_gpu_worker.py"]
