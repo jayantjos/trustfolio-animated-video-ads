@@ -98,29 +98,53 @@ class TestNineGPUWorkerSafety(unittest.TestCase):
                 checkpoint=self.root/"invalid.json",sid="scene01",
                 attempt="attempt_unique_cpu_test",job_hash="a"*64)
 
+    def test_qa_render_policy_is_explicitly_not_native_121_frames(self):
+        self.assertEqual(49,w.NATIVE_QA_FRAMES)
+        self.assertEqual(8,w.NATIVE_QA_STEPS)
+        self.assertEqual(5,w.PRESENTATION_SECONDS)
+        # Frame policy must remain four-n-plus-one (49 = 4*12+1).
+        self.assertEqual(1,w.NATIVE_QA_FRAMES%4)
+
+    def test_native_source_file_required_to_make_five_second_clip(self):
+        with self.assertRaisesRegex(w.RenderError,"QA_RAW_MP4_MISSING"):
+            w.retime_native_wan_to_five_seconds(
+                self.root/"never-created.mp4",self.root/"final.mp4")
+
     def test_worker_uses_one_source_per_scene_and_never_publishes(self):
         manifest=self.root/"jobs/washing-9scene-v1/gpu-input.json"
         manifest.parent.mkdir(parents=True,exist_ok=True)
         manifest.write_text(json.dumps(self.data))
         dest=self.root/"videos/private-qa/washing-9scene-v1"
+        commands=[]
         def fake_run(command,*,cwd,env,timeout):
+            commands.append(command)
             p=Path(command[command.index("--save_file")+1])
-            p.write_bytes(b"real inference not called in CPU unit fixture"*800)
+            p.write_bytes(b"CPU fixture only, never genuine motion"*800)
         with patch.dict(os.environ,{"TRUSTFOLIO_PRIVATE_QA":"yes",
                                     "TRUSTFOLIO_WAN9_RENDER":"yes",
                                     "TRUSTFOLIO_ATTEMPT_ID":"wan9_unit_20261024"},clear=True),\
              patch.object(w,"check_video",return_value=5.0),\
+             patch.object(w,"retime_native_wan_to_five_seconds",side_effect=
+               lambda src,dest: (dest.write_bytes(src.read_bytes()) or {
+                 "native_model_frames":49,"native_sampling_steps":8,
+                 "retimed_to_five_seconds":True,"is_original_native_121_frame_quality":False})),\
              patch.object(w,"MODEL",self.root/"fake-model"),\
              patch.object(w,"WAN_SOURCE",self.root/"fake-source"):
             result=w.run(input_path=manifest,root=self.root,outdir=dest,
                          model_check=lambda:None,runner=fake_run)
         self.assertEqual(9,result["count"])
         self.assertFalse(result["published"])
+        self.assertEqual(9,len(commands))
+        for command in commands:
+            self.assertEqual("49",command[command.index("--frame_num")+1])
+            self.assertEqual("8",command[command.index("--sample_steps")+1])
         for i in range(1,10):
             rec=json.loads((dest/f"scene{i:02d}.motion.receipt.json").read_text())
             self.assertEqual("GPU_MOTION_WRITTEN_AWAITING_S3_CONTROLLER_VERIFICATION",rec["status"])
             self.assertFalse(rec["s3_get_sha256_verified"])
             self.assertFalse(rec["pod_deleted_get_404"])
             self.assertTrue(rec["private_qa"])
+            self.assertTrue(rec["retimed_to_five_seconds"])
+            self.assertFalse(rec["is_original_native_121_frame_quality"])
 
 if __name__=="__main__":unittest.main()
