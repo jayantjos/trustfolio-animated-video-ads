@@ -26,7 +26,7 @@ ALLOWED_SPEC_KEYS = (
 def safe_label(value, *, limit=95):
     if not isinstance(value, (str,int,float)) or isinstance(value, bool):
         return ""
-    text = re.sub(r"\\s+", " ", str(value)).strip()
+    text = re.sub(r"\s+", " ", str(value)).strip()
     if any(ord(c)<32 for c in text) or len(text)>limit:
         return ""
     return text
@@ -132,6 +132,7 @@ def build30(approved, *, references=None, blueprint=None):
             scene["fixed_dialogue"]="अपने बजट की वॉशिंग मशीन TrustFolio पर तुलना करो!"
             scene["url"]="https://www.trustfolio.in"
             scene["emotion"]="happy_smiling_pointing_phone"
+        scenes.append(scene)
     assert sum(x["seconds"] for x in scenes)==30
     snapshot_identity=hashlib.sha256(json.dumps({"campaign":campaign,"source":approved["source_sha256"],
         "assets":[r["sha256"] for r in references]},sort_keys=True,ensure_ascii=False).encode()).hexdigest()
