@@ -9,7 +9,7 @@ from pathlib import Path
 from PIL import Image,ImageDraw,ImageFont,ImageOps
 
 from trustfolio_video.contract import Blocked
-from .final_motion_gate import verify_final_motion_inputs
+from trustfolio_video.final_motion_gate import verify_final_motion_inputs
 from scripts.washing30_compose_preview import photo
 
 W,H=1080,1920
