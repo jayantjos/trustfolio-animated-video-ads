@@ -79,6 +79,21 @@ jobs:
             output/washing30-frames/scene09.png
           if-no-files-found: error
           retention-days: 1
+      - name: Install Hindi neural speech (no GPU)
+        run: python -m pip install -q 'edge-tts>=6,<8'
+      - name: Compose Hindi 30-second narrated motion storyboard and audio QA
+        run: |
+          python -m scripts.washing30_voice_motion_qa --story output/washing30-live/storyboard30.json --silent output/washing30-preview/TrustFolio-Washing-30s-STORYBOARD-ONLY.mp4 --output output/washing30-hindi/TrustFolio-Washing-30s-Hindi-Motion-QA.mp4
+      - name: Upload 30-second Hindi motion storyboard for review ONLY
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: washing30-hindi-voice-motion-preview-NO-GPU-NO-LIPSYNC
+          path: |
+            output/washing30-hindi/TrustFolio-Washing-30s-Hindi-Motion-QA.mp4
+            output/washing30-hindi/hindi_motion_qa.json
+          retention-days: 1
+          if-no-files-found: error
       - name: Upload evidence + approved dynamic scene manifest
         if: always()
         uses: actions/upload-artifact@v4
