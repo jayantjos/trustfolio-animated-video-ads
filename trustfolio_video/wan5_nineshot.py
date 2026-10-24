@@ -89,7 +89,15 @@ def verified_plan(story, *, photo_mode="separate_unaltered", skip_reused_hook=Fa
         if kind=="cta" and scene.get("url")!="https://www.trustfolio.in":
             raise Blocked("Required CTA not present")
         shots.append(shot)
-    digest=hashlib.sha256(json.dumps(shots,sort_keys=True,ensure_ascii=False).encode()).hexdigest()
+    # Motion is intentionally DATA-INDEPENDENT: scene personas and expressions
+    # can be reused when budget, brand, actual product ID or prices change.
+    # Never make GPU re-render a story because a seller changed a price.
+    visual_core=[{key:shot[key] for key in ("scene_id","start","end","seconds",
+                   "generated_base_seconds","source_storyboard_sha256",
+                   "motion_prompt","image_source_policy","post_render_overlay_policy")}
+                 for shot in shots]
+    digest=hashlib.sha256(json.dumps({"model":"Wan2.2-TI2V-5B",
+        "visual_core":visual_core},sort_keys=True,ensure_ascii=False).encode()).hexdigest()
     return {"version":1,"kind":"RUNPOD_GPU_RENDER_PLAN_ONLY",
             "campaign_id":story["campaign_id"],
             "source_sha256":story["source_sha256"],
