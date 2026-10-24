@@ -9,6 +9,6 @@
   "publish": false,
   "auto_delete_pod": true,
   "existing_network_volume": "1bch597yrz",
-  "approved_at_utc": "2026-10-23T11:35:54.989Z",
-  "approval_id": "wan5_oct23_fa2_fused_gpu_retest_1usd"
+  "approved_at_utc": "2026-10-24T01:38:59.276Z",
+  "approval_id": "wan5_oct24_retry_stock_low_one_pod"
 }
