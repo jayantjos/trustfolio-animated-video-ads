@@ -9,6 +9,6 @@
   "publish": false,
   "auto_delete_pod": true,
   "existing_network_volume": "1bch597yrz",
-  "approved_at_utc": "2026-10-24T01:38:59.276Z",
-  "approval_id": "wan5_oct24_retry_stock_low_one_pod"
+  "approved_at_utc": "2026-10-24T01:40:59.749Z",
+  "approval_id": "wan5_oct24_retry_s3_verified_safe"
 }
