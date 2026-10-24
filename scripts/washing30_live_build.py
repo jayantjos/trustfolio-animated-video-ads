@@ -27,11 +27,9 @@ def main(argv=None):
         refs=verify_reference_images()
         approved=build_verified_two_api(spec)
         story=build30(approved,references=refs)
-        (dest/"storyboard30.json").write_text(json.dumps(story,ensure_ascii=False,indent=2)+"
-",encoding="utf-8")
+        (dest/"storyboard30.json").write_text(json.dumps(story,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
         # Save the validated snapshot for auditable render inputs; private QA only.
-        (dest/"live-top5-snapshot.json").write_text(json.dumps(approved,ensure_ascii=False,indent=2)+"
-",encoding="utf-8")
+        (dest/"live-top5-snapshot.json").write_text(json.dumps(approved,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
         report.update(status="VERIFIED_LIVE_STORYBOARD_READY",scenes=9,
                       approved_snapshot_sha256=approved["source_sha256"],
                       live_price_count=approved["live_price_count"],
@@ -39,8 +37,7 @@ def main(argv=None):
                       video_rendered=False,voice_rendered=False)
     except (Blocked,ValueError,TypeError,KeyError,OSError) as exc:
         report.update(status="BLOCKED_NO_FAKE_DATA",reason=str(exc),video_rendered=False)
-    (dest/"validation30.json").write_text(json.dumps(report,ensure_ascii=False,indent=2)+"
-",encoding="utf-8")
+    (dest/"validation30.json").write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
     print(json.dumps(report,ensure_ascii=False))
     return 0 if report["status"]=="VERIFIED_LIVE_STORYBOARD_READY" else 2
 
