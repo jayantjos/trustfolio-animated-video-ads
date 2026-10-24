@@ -1,0 +1,51 @@
+name: WAN5 nine-scene washing ad live data QA (NO GPU)
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths:
+      - '.github/workflows/washing30-dynamic-data-qa.yml'
+  workflow_dispatch:
+    inputs:
+      budget:
+        description: Washing machine budget (INR)
+        type: number
+        default: 40000
+        required: true
+      mode:
+        description: Campaign mode
+        type: choice
+        options: [budget, brand_budget, comparison]
+        default: budget
+        required: true
+      brand:
+        description: Exact brand, only for brand_budget
+        type: string
+        default: ''
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unit-test all 9 storyboard assets and live binding
+        run: |
+          python -m unittest discover -s tests -p 'test_washing30_dynamic.py' -v
+          python -m unittest discover -s tests -p 'test_pipeline.py' -v
+      - name: Fetch authoritative live Top5 from existing TrustFolio VPS backend
+        id: snapshot
+        env:
+          TF_BUDGET: ${{ github.event.inputs.budget || '40000' }}
+          TF_MODE: ${{ github.event.inputs.mode || 'budget' }}
+          TF_BRAND: ${{ github.event.inputs.brand || '' }}
+        run: |
+          python -m scripts.washing30_live_build --budget "$TF_BUDGET" --mode "$TF_MODE" --brand "$TF_BRAND" --output output/washing30-live
+      - name: Upload evidence + approved dynamic scene manifest
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: washing30-live-snapshot-and-story-manifest
+          path: output/washing30-live/*.json
+          if-no-files-found: warn
+          retention-days: 1
