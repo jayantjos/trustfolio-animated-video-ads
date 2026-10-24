@@ -1,0 +1,57 @@
+name: WAN9 cap controller free syntax, private plate readiness and live quote (NO GPU)
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths: ['.github/workflows/wan9-capped-controller-free-qa.yml']
+  workflow_dispatch:
+permissions: {contents: read, actions: read}
+jobs:
+  readiness:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+      RUNPOD_S3_ACCESS_KEY_ID: ${{ secrets.RUNPOD_S3_ACCESS_KEY_ID }}
+      RUNPOD_S3_SECRET_ACCESS_KEY: ${{ secrets.RUNPOD_S3_SECRET_ACCESS_KEY }}
+      GHCR_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - name: Install only CPU Python dependencies
+        run: python -m pip install -q 'boto3>=1.35,<2'
+      - name: Compile controller and run no GPU security tests
+        run: |
+          python -m py_compile scripts/wan9_capped_controller.py
+          python -m unittest discover -s tests -p 'test_wan9_dollar1_budget.py' -v
+          python -m unittest discover -s tests -p 'test_wan5_nine_scene_gpu_worker.py' -v
+          python -m unittest discover -s tests -p 'test_wan9_source_handoff.py' -v
+      - name: Recheck independent cleanup + current GPU quote + create NINE private technical inputs
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from scripts.wan9_capped_controller import require_independent_reaper,check_quote,s3_client,stage_technical_candidates
+          import os
+          require_independent_reaper()
+          quote,stock=check_quote(os.environ["RUNPOD_API_KEY"])
+          sha=stage_technical_candidates(s3_client())
+          report={"status":"WAN9_NINE_TECHNICAL_S3_INPUTS_PREPARED_NO_PAID_POD",
+                  "image_visual_qa_approved":False,"publish":False,
+                  "input_manifest_sha256":sha,"live_gpu_quote":quote,
+                  "gpu_stock":stock,"gpu_created":False}
+          Path("output").mkdir(exist_ok=True)
+          Path("output/wan9-capped-free-qa.json").write_text(json.dumps(report,indent=2))
+          print("WAN9_FREE_CAPPED_PREFLIGHT=PASS")
+          print("WAN9_INPUT_MANIFEST_SHA="+sha)
+          print("WAN9_RATE_PER_HOUR="+quote["live_rate_usd_per_hour"])
+          print("WAN9_GPU_STOCK="+stock)
+          print("WAN9_PAID_PODS_CREATED=false")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wan9-prelaunch-free-qa-NO-GPU
+          path: output/wan9-capped-free-qa.json
+          if-no-files-found: warn
+          retention-days: 5
