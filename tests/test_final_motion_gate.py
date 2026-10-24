@@ -50,18 +50,18 @@ class FinalGuardTest(unittest.TestCase):
                 all_nine_motion_consistency_approved=True,
                 cta_readable_and_final_two_seconds=True,
                 no_fake_claims_or_baked_sample_prices=True)
-            result=verify_final_motion_inputs(story,recs,files,qa)
+            result=verify_final_motion_inputs(story,recs,files,qa,media_probe=lambda p: True)
             self.assertEqual("FINAL_RENDER_MEDIA_INPUTS_VERIFIED_PRIVATE_QA",result["status"])
             self.assertFalse(result["publish_allowed"])
             recs[2]["s3_get_sha256_verified"]=False
             self.assertIn("scene03_MISSING_REMOTE_VERIFY_OR_CLEANUP",
-                          verify_final_motion_inputs(story,recs,files,qa)["missing_requirements"])
+                          verify_final_motion_inputs(story,recs,files,qa,media_probe=lambda p: True)["missing_requirements"])
             recs[2]["s3_get_sha256_verified"]=True
             Path(files["scene04"]).write_bytes(b"tampered")
             self.assertIn("scene04_LENGTH_MISMATCH",
-                          verify_final_motion_inputs(story,recs,files,qa)["missing_requirements"])
+                          verify_final_motion_inputs(story,recs,files,qa,media_probe=lambda p: True)["missing_requirements"])
             recs[4]["model"]="fake"
             self.assertIn("scene05_UNTRUSTED_GPU_PROVENANCE",
-                          verify_final_motion_inputs(story,recs,files,qa)["missing_requirements"])
+                          verify_final_motion_inputs(story,recs,files,qa,media_probe=lambda p: True)["missing_requirements"])
 
 if __name__=="__main__":unittest.main()
