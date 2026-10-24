@@ -1,5 +1,5 @@
 """Unit contracts for the real nine-Wan worker (never GPU provision)."""
-import copy,hashlib,json,os,tempfile,unittest
+import copy,hashlib,json,os,tempfile,unittest,time
 from pathlib import Path
 from unittest.mock import patch
 
@@ -64,6 +64,40 @@ class TestNineGPUWorkerSafety(unittest.TestCase):
         with patch.dict(os.environ,{},clear=True):
             with self.assertRaisesRegex(w.RenderError,"PRIVATE_QA_ENV_NOT_ARMED"):
                 w.run(input_path=manifest,root=self.root,model_check=lambda: self.fail("model touched"))
+    def test_long_inference_pulses_without_claiming_completed_frames(self):
+        checkpoint=self.root/"worker-progress.json"
+        def active_runner(_command,*,cwd,env,timeout):
+            time.sleep(0.075)
+            return True
+        w.infer_with_bounded_heartbeat(active_runner,["fake"],cwd=".",
+            env={},timeout=60,checkpoint=checkpoint,
+            sid="scene01",attempt="attempt_unique_cpu_test",
+            job_hash="a"*64,heartbeat_seconds=0.01)
+        proof=json.loads(checkpoint.read_text())
+        self.assertEqual("WAN_INFERENCE",proof["stage"])
+        self.assertGreaterEqual(proof["sequence"],1)
+        self.assertEqual("attempt_unique_cpu_test",proof["attempt_id"])
+        self.assertFalse(proof["completed_frames_claimed"])
+        self.assertLess(time.time()-proof["time"],2)
+
+    def test_inference_exception_is_not_hidden_by_heartbeat(self):
+        checkpoint=self.root/"worker-error-progress.json"
+        def fail_runner(_command,*,cwd,env,timeout):
+            time.sleep(0.03)
+            raise RuntimeError("GPU_TEST_FAILURE")
+        with self.assertRaisesRegex(RuntimeError,"GPU_TEST_FAILURE"):
+            w.infer_with_bounded_heartbeat(fail_runner,["fake"],cwd=".",
+                env={},timeout=60,checkpoint=checkpoint,sid="scene01",
+                attempt="attempt_unique_cpu_test",
+                job_hash="a"*64,heartbeat_seconds=0.01)
+
+    def test_scene_timeout_remains_bounded(self):
+        with self.assertRaisesRegex(w.RenderError,"INFERENCE_TIMEOUT"):
+            w.infer_with_bounded_heartbeat(lambda *a,**k:None,["fake"],
+                cwd=".",env={},timeout=w.MAX_SCENE_SECONDS+1,
+                checkpoint=self.root/"invalid.json",sid="scene01",
+                attempt="attempt_unique_cpu_test",job_hash="a"*64)
+
     def test_worker_uses_one_source_per_scene_and_never_publishes(self):
         manifest=self.root/"jobs/washing-9scene-v1/gpu-input.json"
         manifest.parent.mkdir(parents=True,exist_ok=True)
