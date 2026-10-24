@@ -63,14 +63,34 @@ def clean_one(source,number):
         draw=ImageDraw.Draw(source)
         for left,top,right,bottom in LOGOS[number]:
             draw.rounded_rectangle((left,top,right,bottom),radius=10,fill=(245,244,242))
-    if number==9:
-        draw=ImageDraw.Draw(source)
-        draw.polygon([(527,400),(704,429),(685,790),(507,766)],fill=(250,250,248))
     bg=ImageOps.fit(source,(720,1280),Image.Resampling.LANCZOS)
     bg=bg.filter(ImageFilter.GaussianBlur(46))
     actor=source.crop(CROPS[number])
     actor.thumbnail((720,760 if number in (2,8) else 1100),Image.Resampling.LANCZOS)
     bg.paste(actor,((720-actor.width)//2,(1280-actor.height)//2))
+    # Control panel lettering is reference-specific; blur it without erasing
+    # the machine's eyes, body, hands, sunglasses or superhero outfit.
+    bands={3:(172,332,609,402),4:(200,319,648,398),
+           5:(198,320,643,391),6:(180,322,637,408),7:(195,330,581,405)}
+    if number in bands:
+        left,top,right,bottom=bands[number]
+        pixels=np.array(bg)
+        roi=pixels[top:bottom,left:right]
+        softened=cv2.GaussianBlur(roi,(0,0),12)
+        height,width=roi.shape[:2]
+        alpha=np.ones((height,width),dtype=np.float32)
+        for edge in range(min(13,height//2,width//2)):
+            alpha[edge,:]*=edge/13
+            alpha[-edge-1,:]*=edge/13
+            alpha[:,edge]*=edge/13
+            alpha[:,-edge-1]*=edge/13
+        pixels[top:bottom,left:right]=(roi*(1-alpha[:,:,None])+softened*alpha[:,:,None]).astype(np.uint8)
+        bg=Image.fromarray(pixels)
+    if number==9:
+        # Clean *the entire phone screen* for real current product cards
+        # rendered as an independently editable late-stage overlay.
+        ImageDraw.Draw(bg).polygon([(424,448),(595,477),(580,781),(397,745)],
+                                   fill=(251,250,247))
     return bg
 
 def main(root="output/wan9-text-masked-candidate"):
