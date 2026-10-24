@@ -17,6 +17,7 @@ import os
 from pathlib import Path
 import re
 import sys
+import subprocess
 import time
 
 try:
@@ -40,6 +41,12 @@ ROOT=Path("/workspace")
 INPUT_DIR=ROOT/"jobs"/"washing-9scene-v1"
 OUTPUT_DIR=ROOT/"videos"/"private-qa"/"washing-9scene-v1"
 MANIFEST=INPUT_DIR/"gpu-input.json"
+# PRIVATE speed-recovery QA only: 49 native Wan frames at 8 solver steps.
+# Frames are retimed to a 5-second MP4; NOT native 121-frame 30-step quality.
+NATIVE_QA_FRAMES=49
+NATIVE_QA_STEPS=8
+PRESENTATION_SECONDS=5
+NATIVE_WAN_FPS=24
 MAX_BATCH_SECONDS=22*60
 MAX_SCENE_SECONDS=9*60
 SCENES=[f"scene{i:02d}" for i in range(1,10)]
@@ -157,6 +164,58 @@ def infer_with_bounded_heartbeat(runner, command, *, cwd, env, timeout,
                       " SEQ=" + str(sequence), flush=True)
 
 
+def retime_native_wan_to_five_seconds(source, destination, *, 
+                                      command_runner=subprocess.run):
+    """Validate real 49-frame Wan MP4; safely retime to 5s for private QA.
+
+    Never label this output native 121-frame/30-step animation. The retimed
+    clip is genuine model motion, but it is a lower-motion-fidelity pilot.
+    """
+    if source.resolve()==destination.resolve() or not source.is_file():
+        raise RenderError("QA_RAW_MP4_MISSING_OR_OVERLAPS_FINAL")
+    if source.stat().st_size < 10240:
+        raise RenderError("QA_NATIVE_MP4_TOO_SMALL")
+    probe=command_runner(["ffprobe","-v","error","-of","json",
+        "-show_entries","format=duration:stream=codec_type,width,height,nb_frames,r_frame_rate",
+        str(source)],capture_output=True,text=True,check=True,timeout=25)
+    info=json.loads(probe.stdout)
+    video=next((x for x in info.get("streams",[]) if x.get("codec_type")=="video"),None)
+    if not video:
+        raise RenderError("QA_NATIVE_MP4_VIDEO_MISSING")
+    duration=float(info.get("format",{}).get("duration",0))
+    frames=video.get("nb_frames")
+    if (not 1.8<=duration<=2.35 or (frames not in (None,"N/A")
+        and int(frames)!=NATIVE_QA_FRAMES) or
+        int(video.get("height",0))<=int(video.get("width",0))):
+        raise RenderError("QA_NATIVE_WAN_GEOMETRY_DURATION_OR_FRAMES_WRONG")
+    raw_sha=_sha(source)
+    staged=destination.with_name(destination.stem+".retime.pending.mp4")
+    try:
+        if staged.exists(): staged.unlink()
+        # The 49 model-generated frames span 48 intervals and are stretched
+        # over 120 intervals. Repeated frames are an explicitly disclosed
+        # low-cost test, NOT full-rate independent model-generated frames.
+        ratio=(PRESENTATION_SECONDS*NATIVE_WAN_FPS)/(NATIVE_QA_FRAMES-1)
+        command_runner(["ffmpeg","-hide_banner","-loglevel","error","-nostdin",
+            "-y","-i",str(source),"-an",
+            "-vf",f"setpts={ratio}*(PTS-STARTPTS),fps={NATIVE_WAN_FPS},format=yuv420p",
+            "-c:v","libx264","-preset","veryfast","-crf","22",
+            "-movflags","+faststart",str(staged)],
+            capture_output=True,text=True,check=True,timeout=100)
+        check_video(staged)
+        staged.replace(destination)
+        return {"native_model_frames":NATIVE_QA_FRAMES,
+            "native_sampling_steps":NATIVE_QA_STEPS,
+            "native_duration_seconds":round(duration,3),
+            "retimed_output_seconds":PRESENTATION_SECONDS,
+            "native_wan_sha256":raw_sha,
+            "retimed_to_five_seconds":True,
+            "is_original_native_121_frame_quality":False,
+            "artificial_frames_used":True}
+    finally:
+        if staged.exists(): staged.unlink()
+
+
 def run(*, input_path=MANIFEST, root=ROOT, outdir=OUTPUT_DIR,
         wall_seconds=MAX_BATCH_SECONDS, runner=run_inference_streamed,
         model_check=check_model):
@@ -201,6 +260,11 @@ def run(*, input_path=MANIFEST, root=ROOT, outdir=OUTPUT_DIR,
         if pending.exists():
             pending.unlink()
         command=generate_command(pending,model=MODEL,image=image,code=WAN_SOURCE)
+        command[command.index("--frame_num")+1]=str(NATIVE_QA_FRAMES)
+        command[command.index("--sample_steps")+1]=str(NATIVE_QA_STEPS)
+        print("WAN9_REAL_LOW_COST_NATIVE_FRAMES="+str(NATIVE_QA_FRAMES)+
+              " SAMPLING_STEPS="+str(NATIVE_QA_STEPS)+
+              " LOW_FIDELITY_PRIVATE_QA=true",flush=True)
         marker=command.index("--prompt")
         command[marker+1]=prompt
         command[command.index("--base_seed")+1]=str(20261024+index)
@@ -216,9 +280,10 @@ def run(*, input_path=MANIFEST, root=ROOT, outdir=OUTPUT_DIR,
                 env={**os.environ,"PYTORCH_CUDA_ALLOC_CONF":"expandable_segments:True"},
                 timeout=min(MAX_SCENE_SECONDS,int(remaining)),checkpoint=checkpoint,
                 sid=sid,attempt=attempt,job_hash=meta["motion_job_hash"])
-            check_video(pending)
-            pending.replace(final)
+            retiming=retime_native_wan_to_five_seconds(pending,final)
+            check_video(final)
             receipt={
+                **retiming,
                 "status":"GPU_MOTION_WRITTEN_AWAITING_S3_CONTROLLER_VERIFICATION",
                 "scene_id":sid,"model":"Wan2.2-TI2V-5B",
                 "motion_job_hash":meta["motion_job_hash"],
