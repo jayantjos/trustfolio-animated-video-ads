@@ -1,3 +1,4 @@
+# Actual WAN9 heartbeat-worker GPU scene and receipt inventory checkpoint; read-only S3.
 # Read-only WAN9 first real clip + scene progress checkpoint during user-requested GPU run.
 # Live read-only checkpoint during capped WAN9 render; check real MP4 objects only.
 name: Verify actual nine WAN GPU motion clips on RunPod volume (READ ONLY)
