@@ -3,13 +3,30 @@
 No payment, pod operations, editing or social publication here.
 """
 from datetime import datetime,timezone
-import hashlib,json,re
+import hashlib,json,re,subprocess
 from pathlib import Path
 
 from .contract import Blocked
 from .wan5_nineshot import verified_plan
 
-def verify_final_motion_inputs(story, receipts, files, qa):
+def actual_media_probe(path):
+    """Run ffprobe on the bytes that passed SHA-256; never trust receipt-only video metadata."""
+    try:
+        raw=subprocess.check_output(["ffprobe","-v","error",
+            "-show_entries","format=duration:stream=codec_type,codec_name,width,height",
+            "-of","json",str(path)],timeout=15)
+        result=json.loads(raw)
+        vids=[v for v in result.get("streams",[]) if v.get("codec_type")=="video"]
+        if len(vids)!=1:
+            return False
+        v=vids[0]
+        return (v.get("codec_name") in ("h264","hevc")
+                and (v.get("width"),v.get("height")) in ((720,1280),(1080,1920))
+                and 4.8<=float(result.get("format",{}).get("duration",0))<=5.3)
+    except (OSError,subprocess.SubprocessError,ValueError,TypeError,KeyError):
+        return False
+
+def verify_final_motion_inputs(story, receipts, files, qa, *, media_probe=None):
     """Validate all 9 genuine GPU clips before any final-render designation.
 
     receipts: list of scene-scoped S3 readback verified metadata
@@ -17,6 +34,7 @@ def verify_final_motion_inputs(story, receipts, files, qa):
     qa: separately signed-off audio/lipsync visual-review result
     """
     planned=verified_plan(story)
+    media_probe=media_probe or actual_media_probe
     errors=[]
     if not isinstance(receipts,list) or len(receipts)!=9:
         errors.append("REQUIRE_NINE_GPU_RECEIPTS")
@@ -73,6 +91,9 @@ def verify_final_motion_inputs(story, receipts, files, qa):
                 hasher.update(chunk)
         if hasher.hexdigest()!=expected_sha:
             errors.append(sid+"_CONTENT_HASH_MISMATCH")
+            continue
+        if not media_probe(f):
+            errors.append(sid+"_INVALID_VIDEO_STREAM_OR_DURATION")
     if set(by_id)!=set(names):
         errors.append("SCENE_ID_SET_MISMATCH")
     if not isinstance(qa,dict):
