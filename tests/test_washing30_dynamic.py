@@ -21,7 +21,7 @@ def verified_topfive():
             "specifications":{"capacity":f"{rank+5} kg","promotional_claim":"Cures allergies"},
         })
     return {"campaign":{"category":"washing-machines","budget":40000,"brand":"","mode":"budget"},
-            "products":products,"source_sha256":"a"*64,"observed_at":now}
+            "products":products,"source_sha256":"a"*64,"observed_at":now,\n            "live_price_refresh_completed":True,"live_price_count":5,"catalog_fallback_count":0}
 
 class NineSceneDynamicStoryTest(unittest.TestCase):
     @classmethod
