@@ -169,6 +169,12 @@ def stage_technical_candidates(s3):
     shots=handoff.get("shots",[])
     if len(shots)!=9 or handoff.get("content_is_reference_only") is not True:
         raise Wan9Blocked("UNEXPECTED_STORY_HANDOFF_SCHEMA")
+    stage_raw,_=load(s3,JOB+"visual-review-candidates/s3-stage-manifest.json",100000)
+    stage=json.loads(stage_raw)
+    if (stage.get("status")!="NINE_CANDIDATES_PRIVATE_S3_STAGED_NEED_VISUAL_QA"
+        or stage.get("count")!=9 or stage.get("gpu_ready") is not False
+        or len(stage.get("images",[]))!=9):
+        raise Wan9Blocked("NOT_SAFELY_STAGED_NINE_TECHNICAL_CANDIDATES")
     out=[]
     for n,src in enumerate(shots,1):
         sid=EXPECTED[n-1]
@@ -176,11 +182,19 @@ def stage_technical_candidates(s3):
             raise Wan9Blocked("SHOT_ORDER_WRONG_"+sid)
         src_key=JOB+"visual-review-candidates/"+sid+".png"
         art,metadata=load(s3,src_key,8500000)
-        if metadata.get("visuallyapproved")!="false":
-            raise Wan9Blocked("CANDIDATE_VISUAL_STATE_AMBIGUOUS_"+sid)
+        expected_stage=stage["images"][n-1]
+        if (expected_stage.get("scene_id")!=sid
+            or expected_stage.get("visual_qa_approved") is not False):
+            raise Wan9Blocked("S3_CANDIDATE_MANIFEST_NOT_TECHNICAL_"+sid)
         sha=hashlib.sha256(art).hexdigest()
-        if sha!=metadata.get("sha256") or len(art)<50000:
+        if sha!=expected_stage.get("sha256") or len(art)<50000:
             raise Wan9Blocked("CANDIDATE_REMOTE_SHA_INVALID_"+sid)
+        # RunPod S3 may omit custom per-object metadata on GET. The separate
+        # staged receipt was verified against bytes during the CPU upload.
+        if metadata.get("sha256") not in (None,sha):
+            raise Wan9Blocked("CANDIDATE_METADATA_HASH_CONTRADICTS_MANIFEST_"+sid)
+        if metadata.get("visuallyapproved") not in (None,"false"):
+            raise Wan9Blocked("CANDIDATE_VISUAL_METADATA_CONTRADICTS_MANIFEST_"+sid)
         # The manifest path is deliberately different from original text-bearing references.
         target="assets/candidates/washing-machines/"+sid+".png"
         save_sha_verified(s3,target,art,kind="image/png")
