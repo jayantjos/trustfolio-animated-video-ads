@@ -1,3 +1,4 @@
+# Second read-only observation for same existing approved GPU attempt at 2026-10-24T01:44:36.897Z; NEVER creates a pod.
 # Evidence-only second checkpoint; the observer does not create or delete Pods.
 name: Wan5 LIVE third-party read-only Pod progress observation (NO GPU)
 on:
