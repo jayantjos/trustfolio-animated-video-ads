@@ -1,0 +1,55 @@
+name: WAN9 ONE DOLLAR hard budget + live RunPod quote READ-ONLY
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths: ['.github/workflows/wan9-usd1-readonly-qa.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  quote:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prove under USD1 provider TTL and scene worker guards
+        run: |
+          python -m unittest discover -s tests -p 'test_wan9_dollar1_budget.py' -v
+          python -m unittest discover -s tests -p 'test_wan5_nine_scene_gpu_worker.py' -v
+      - name: Read current RTX4090 price and reject quote above dollar cap
+        run: |
+          python - <<'PY'
+          from scripts.first_wan5_gpu_preflight import api_read, BASE, GPU, DATACENTER
+          from trustfolio_video.wan9_dollar1_budget import quote_guard,BudgetBlocked
+          from pathlib import Path
+          import os,json
+          g=api_read(os.environ.get("RUNPOD_API_KEY",""),BASE+"/catalog/gpus")
+          d=api_read(os.environ.get("RUNPOD_API_KEY",""),BASE+"/catalog/datacenters?include=GPU_AVAILABILITY")
+          obj=next((x for x in g.get("gpus",[]) if x.get("id")==GPU),None)
+          center=next((x for x in d.get("dataCenters",[]) if x.get("id")==DATACENTER),None)
+          if not obj or not center:raise SystemExit("RTX4090_OR_REGION_MISSING_NO_GPU")
+          price=obj.get("price",{}).get("secure")
+          stock=next((x.get("availability") for x in center.get("gpuAvailability",[]) if x.get("id")==GPU),"UNKNOWN")
+          allowed=quote_guard(price)
+          out={"status":"READONLY_PRICE_UNDER_ONE_DOLLAR_LIMIT_NO_GPU_CREATED",
+               "gpu":GPU,"stock":stock,"provider_rate_usd_hour":str(price),
+               "budget_guard":allowed,
+               "clean_nine_original_reference_plates_human_qa":False,
+               "render_authorized":False,"gpu_created":False,
+               "is_final_30second_video":False}
+          Path("output").mkdir(exist_ok=True)
+          Path("output/wan9-usd1-readonly-price.json").write_text(json.dumps(out,indent=2))
+          print("WAN9_LIVE_GPU_RATE_USD_HOUR="+str(price))
+          print("WAN9_30MIN_ESTIMATED_UPPER_GPU_COST_USD="+allowed["predicted_upper_gpu_cost_usd"])
+          print("WAN9_LIVE_GPU_STOCK="+str(stock))
+          print("WAN9_PAID_RENDER=BLOCKED_UNTIL_CLEAN_ART_AND_INDEPENDENT_REAPER_APPROVED")
+          print("GPU_CREATED=false")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wan9-one-dollar-live-rate-READONLY-NO-GPU
+          path: output/wan9-usd1-readonly-price.json
+          retention-days: 2
+          if-no-files-found: warn
