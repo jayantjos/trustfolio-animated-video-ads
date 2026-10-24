@@ -7,6 +7,7 @@ on:
       - 'gpu/Dockerfile.wan9'
       - 'scripts/wan5_nine_scene_gpu_worker.py'
       - 'tests/test_wan5_nine_scene_gpu_worker.py'
+      - 'tests/test_wan9_retime_cpu.py'
   workflow_dispatch:
 permissions:
   contents: read
