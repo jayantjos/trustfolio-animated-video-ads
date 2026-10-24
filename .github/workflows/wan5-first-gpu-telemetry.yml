@@ -1,0 +1,82 @@
+name: WAN5 first live GPU utilization + runtime telemetry (READ ONLY)
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths: ['.github/workflows/wan5-first-gpu-telemetry.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+    steps:
+      - name: Real GPU utilization from authenticated provider GraphQL; NO mutations
+        run: |
+          python - <<'PY'
+          import os,json,urllib.request,urllib.parse,urllib.error
+          key=os.environ['RUNPOD_API_KEY']
+          query='query Wan5PodRuntime { pod(input: {podId:"8vwc7sykues9r9"}) { id name desiredStatus runtime { uptimeInSeconds gpus { gpuUtilPercent memoryUtilPercent } } } }'
+          req=urllib.request.Request('https://api.runpod.io/graphql?'+urllib.parse.urlencode({'api_key':key}),
+             data=json.dumps({'query':query}).encode(),method='POST',
+             headers={'Content-Type':'application/json','Accept':'application/json'})
+          try:
+              with urllib.request.urlopen(req,timeout=20) as resp:
+                  data=json.load(resp)
+              if data.get('errors'):
+                  print('WAN5_GPU_GRAPHQL_TELEMETRY=NOT_AVAILABLE')
+                  raise SystemExit(0)
+              pod=data.get('data',{}).get('pod')
+              if not isinstance(pod,dict):
+                  print('WAN5_GPU_POD=NO_LONGER_EXISTS')
+                  raise SystemExit(0)
+              if pod.get('name')!='trustfolio-video-wan5-laundry-first-20261021':
+                  raise SystemExit('UNEXPECTED_TARGET_POD')
+              print('WAN5_POD_GRAPHQL_STATUS='+str(pod.get('desiredStatus')))
+              runtime=pod.get('runtime') or {}
+              print('WAN5_REAL_GPU_UPTIME_SECONDS='+str(runtime.get('uptimeInSeconds')))
+              for g in runtime.get('gpus') or []:
+                  print('WAN5_GPU_UTIL_PERCENT='+str(g.get('gpuUtilPercent')))
+                  print('WAN5_GPU_MEMORY_UTIL_PERCENT='+str(g.get('memoryUtilPercent')))
+              print('WAN5_READ_ONLY=true')
+          except urllib.error.HTTPError as exc:
+              print('WAN5_GPU_GRAPHQL_HTTP='+str(exc.code))
+          PY
+      - name: Snapshot RunPod system/container startup events, bounded read-only
+        env:
+          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+        run: |
+          python - <<'PY'
+          import urllib.request,urllib.error,os,re,time
+          from urllib.parse import urlencode
+          pod='8vwc7sykues9r9'
+          u='https://api.runpod.io/v2/pods/'+pod+'/logs?'+urlencode({'tail':70,'source':'container'})
+          req=urllib.request.Request(u,headers={'Authorization':'Bearer '+os.environ['RUNPOD_API_KEY'],
+                    'Accept':'text/event-stream'})
+          try:
+              with urllib.request.urlopen(req,timeout=13) as r:
+                  lines=[]
+                  stop=time.monotonic()+6
+                  while time.monotonic()<stop and len(lines)<140:
+                      line=r.readline(1024)
+                      if not line:break
+                      s=line.decode('utf-8','replace')
+                      if s.startswith('data:'):
+                          lines.append(s[5:].strip()[:300])
+              print('RUNPOD_POD_LOG_EVENTS='+str(len(lines)))
+              unique=list(dict.fromkeys(lines))
+              print('RUNPOD_POD_UNIQUE_SYSTEM_EVENTS='+str(len(unique)))
+              for line in unique[-30:]:
+                  low=line.lower()
+                  if any(secret in low for secret in ['token','secret','password','authorization','api_key','bearer']):
+                      print('RUNPOD_POD_LOG=REDACTED_SENSITIVE_EVENT')
+                  else:
+                      safe=re.sub(r'[^ -~]', '?',line)[:300]
+                      print('RUNPOD_POD_CONTAINER_EVENT='+safe)
+          except urllib.error.HTTPError as ex:
+              print('RUNPOD_POD_LOG_HTTP='+str(ex.code))
+          except Exception:
+              print('RUNPOD_POD_LOG=NO_EVENT_BEFORE_TIMEOUT')
+          PY

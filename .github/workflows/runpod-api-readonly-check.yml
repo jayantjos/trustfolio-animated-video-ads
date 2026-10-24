@@ -1,0 +1,35 @@
+name: RunPod API read-only connection check
+on:
+  push:
+    branches:
+      - feat/washing-machine-character-video-pilot
+    paths:
+      - '.github/workflows/runpod-api-readonly-check.yml'
+      - 'scripts/runpod_api_readonly_check.py'
+      - 'tests/test_runpod_api_readonly_check.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  connection:
+    name: Read-only RunPod credentials check — no GPU
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Local unit tests (no RunPod connection)
+        run: python -m unittest discover -s tests -p 'test_runpod_api_readonly_check.py' -v
+      - name: RunPod read-only API request, if key configured
+        shell: bash
+        run: |
+          if [ -z "${RUNPOD_API_KEY}" ]; then
+            echo "::notice::RUNPOD_API_KEY is not configured — account is NOT connected yet."
+            echo "RUNPOD_CONNECTION=NOT_CONFIGURED" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          python scripts/runpod_api_readonly_check.py

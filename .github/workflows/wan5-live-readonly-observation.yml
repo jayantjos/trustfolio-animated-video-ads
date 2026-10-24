@@ -1,0 +1,82 @@
+# Final read-only status snapshot 2026-10-24T01:47:59.987Z for user question about video success; never creates GPU.
+# Second read-only observation for same existing approved GPU attempt at 2026-10-24T01:44:36.897Z; NEVER creates a pod.
+# Evidence-only second checkpoint; the observer does not create or delete Pods.
+name: Wan5 LIVE third-party read-only Pod progress observation (NO GPU)
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths: ['.github/workflows/wan5-live-readonly-observation.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  observe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    env:
+      RUNPOD_S3_ACCESS_KEY_ID: ${{ secrets.RUNPOD_S3_ACCESS_KEY_ID }}
+      RUNPOD_S3_SECRET_ACCESS_KEY: ${{ secrets.RUNPOD_S3_SECRET_ACCESS_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: python -m pip install -q boto3
+      - name: Read only current attempt's fixed-schema progress and receipt (no Pod API)
+        run: |
+          python - <<'PY'
+          import json, re, time
+          from scripts import wan5_first_paid_controller as c
+          expected='wan5-00f4044705a8818298281a45d36de280fda9fd79'
+          s3=c.make_s3()
+          allowed_files=('generate.py','wan/textimage2video.py','wan/modules/model.py',
+                         'wan/modules/t5.py','wan/modules/vae2_2.py','wan/utils/utils.py',
+                         'wan/utils/fm_solvers.py','wan/utils/fm_solvers_unipc.py')
+          allowed_stages={'STARTUP','VALIDATE_AND_RENDER','VERIFY_AUDIO_AND_MODEL',
+                          'CUDA_RUNTIME_PROBE','WAN_INFERENCE','HINDI_MUX_AND_DECODE_QA','COMPLETE'}
+          done=False
+          for poll in range(1,9):
+              print('WAN5_SAFE_OBSERVER_POLL='+str(poll),flush=True)
+              for label,key in [('PROGRESS',c.PROGRESS),('FAILURE',c.FAILURE_RECEIPT),('SUCCESS',c.RECEIPT)]:
+                  try: raw=c.get_object(s3,key,8192)
+                  except c.PilotError:
+                      print('WAN5_LIVE_'+label+'=UNAVAILABLE',flush=True)
+                      continue
+                  if not raw:
+                      print('WAN5_LIVE_'+label+'=NOT_YET_PRESENT',flush=True)
+                      continue
+                  try: obj=json.loads(raw)
+                  except (ValueError,TypeError):
+                      print('WAN5_LIVE_'+label+'=CORRUPT',flush=True)
+                      continue
+                  if not isinstance(obj,dict) or obj.get('attempt_id')!=expected or obj.get('job_id')!=c.JOB_ID:
+                      print('WAN5_LIVE_'+label+'=DIFFERENT_OR_OLD_ATTEMPT',flush=True)
+                      continue
+                  if label=='PROGRESS':
+                      stage=obj.get('stage')
+                      if stage in allowed_stages: print('WAN5_LIVE_CURRENT_STAGE='+stage,flush=True)
+                      seq=obj.get('sequence')
+                      if type(seq) is int and 0<=seq<100000:
+                          print('WAN5_LIVE_HEARTBEAT_SEQ='+str(seq),flush=True)
+                  elif label=='FAILURE':
+                      reason=obj.get('failure_reason')
+                      if isinstance(reason,str) and re.fullmatch(r'[A-Z_]{1,115}',reason):
+                          print('WAN5_LIVE_FAILURE_CATEGORY='+reason,flush=True)
+                      diagnostics=obj.get('subprocess_diagnostics')
+                      if isinstance(diagnostics,dict):
+                          kind=diagnostics.get('python_exception_type')
+                          if kind in ('AssertionError','RuntimeError','ValueError','UNKNOWN'):
+                              print('WAN5_LIVE_EXCEPTION_TYPE='+kind,flush=True)
+                          frame=diagnostics.get('upstream_last_safe_frame')
+                          if isinstance(frame,str):
+                              filename,sep,lineno=frame.rpartition(':')
+                              if sep and filename in allowed_files and lineno.isdecimal() and 1<=int(lineno)<=2500:
+                                  print('WAN5_LIVE_SAFE_UPSTREAM_FRAME='+frame,flush=True)
+                      print('WAN5_LIVE_FAILURE_RECEIPT=YES',flush=True)
+                      done=True
+                  else:
+                      print('WAN5_LIVE_SUCCESS_RECEIPT=YES',flush=True)
+                      done=True
+              if done: break
+              if poll<8: time.sleep(15)
+          print('WAN5_LIVE_AUDIT=READ_ONLY_NO_POD_CREATE_NO_CHARGE',flush=True)
+          PY

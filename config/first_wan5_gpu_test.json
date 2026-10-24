@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "test": "wan2.2-first-5s-lady-only",
+  "clip_duration_seconds": 5,
+  "gpu_usd_spend_approved": 1,
+  "max_concurrent_gpu_pods": 1,
+  "requires_real_inference": true,
+  "requires_hindi_lipsync": false,
+  "model_repository": "Wan-AI/Wan2.2-TI2V-5B",
+  "model_revision": "921dbaf3f1674a56f47e83fb80a34bac8a8f203e",
+  "network_volume_id": "1bch597yrz",
+  "datacenter": "EU-RO-1",
+  "gpu_type": "NVIDIA GeForce RTX 4090",
+  "cloud": "SECURE",
+  "hero_s3_key": "assets/characters/shared/pink_kurta_lady_v1.png",
+  "hero_sha256": "7f9ca4e47803ff9df57ff389ede1bba15eb6cb761c2fe4521edfe4036bc20ac6",
+  "hero_bytes": 2484010,
+  "approved_private_mp4_prefix": "videos/private-qa/",
+  "social_publishing": false,
+  "video_status": "PREPARED_NOT_RENDERED"
+}

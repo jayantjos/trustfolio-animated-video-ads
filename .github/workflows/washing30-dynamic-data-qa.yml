@@ -1,0 +1,105 @@
+# Concurrent NON-GPU Hindi dynamic-voice QA while WAN9 private motion runs; never publish.
+# Recheck source title/retailer rank diagnostics before staging to S3; 2026-10-24T03:02:18.125Z
+# Confirm safe live Top5 + POST parity after CLI syntax repair; 2026-10-24T02:56:06.050Z
+# Recheck fixed Python syntax and exact website GET/POST price parity on 2026-10-24T02:54:03.967Z
+# Retry on corrected nine-scene append + labels; approved CPU-only audit 2026-10-24T02:47:07.061Z
+name: WAN5 nine-scene washing ad live data QA (NO GPU)
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths:
+      - '.github/workflows/washing30-dynamic-data-qa.yml'
+  workflow_dispatch:
+    inputs:
+      budget:
+        description: Washing machine budget (INR)
+        type: number
+        default: 40000
+        required: true
+      mode:
+        description: Campaign mode
+        type: choice
+        options: [budget, brand_budget, comparison]
+        default: budget
+        required: true
+      brand:
+        description: Exact brand, only for brand_budget
+        type: string
+        default: ''
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unit-test all 9 storyboard assets and live binding
+        run: |
+          python -m unittest discover -s tests -p 'test_washing30*.py' -v
+          python -m unittest discover -s tests -p 'test_pipeline.py' -v
+      - name: Fetch authoritative live Top5 from existing TrustFolio VPS backend
+        id: snapshot
+        env:
+          TF_BUDGET: ${{ github.event.inputs.budget || '40000' }}
+          TF_MODE: ${{ github.event.inputs.mode || 'budget' }}
+          TF_BRAND: ${{ github.event.inputs.brand || '' }}
+        run: |
+          python -m scripts.washing30_live_build --budget "$TF_BUDGET" --mode "$TF_MODE" --brand "$TF_BRAND" --output output/washing30-live
+      - name: Install bounded RunPod S3 client (NO GPU)
+        run: python -m pip install -q 'boto3>=1.35,<2'
+      - name: Stage nine verified visual references and live manifest to RunPod volume
+        env:
+          TRUSTFOLIO_STORYBOARD_S3_STAGE: 'yes'
+          RUNPOD_S3_ACCESS_KEY_ID: ${{ secrets.RUNPOD_S3_ACCESS_KEY_ID }}
+          RUNPOD_S3_SECRET_ACCESS_KEY: ${{ secrets.RUNPOD_S3_SECRET_ACCESS_KEY }}
+        run: |
+          python -m scripts.stage_washing30_s3 --story output/washing30-live/storyboard30.json --output output/washing30-live/s3-stage-receipt.json
+      - name: Install Pillow for truthful per-rank poster compositing (NO GPU)
+        run: python -m pip install -q 'Pillow>=10,<13'
+      - name: Render nine vertical scenes with actual source product photos and prices
+        run: |
+          python -m scripts.washing30_compose_preview --story output/washing30-live/storyboard30.json --output output/washing30-frames
+      - name: Install ffmpeg and ffprobe (CPU-only, no GPU)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+      - name: Compose and QA 30-second silent preview, no Hindi-voice or real Wan claims
+        run: |
+          command -v ffmpeg
+          command -v ffprobe
+          python -m scripts.washing30_build_preview_mp4 --frames output/washing30-frames --output output/washing30-preview/TrustFolio-Washing-30s-STORYBOARD-ONLY.mp4
+      - name: Upload preview for visual review (not for publication)
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: washing30-visual-preview-NO-GPU-NO-VOICE
+          path: |
+            output/washing30-preview/*.mp4
+            output/washing30-preview/video_qa.json
+            output/washing30-frames/scene09.png
+          if-no-files-found: error
+          retention-days: 1
+      - name: Install Hindi neural speech (no GPU)
+        run: python -m pip install -q 'edge-tts>=6,<8'
+      - name: Compose Hindi 30-second narrated motion storyboard and audio QA
+        run: |
+          python -m scripts.washing30_voice_motion_qa --story output/washing30-live/storyboard30.json --silent output/washing30-preview/TrustFolio-Washing-30s-STORYBOARD-ONLY.mp4 --output output/washing30-hindi/TrustFolio-Washing-30s-Hindi-Motion-QA.mp4
+      - name: Upload 30-second Hindi motion storyboard for review ONLY
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: washing30-hindi-voice-motion-preview-NO-GPU-NO-LIPSYNC
+          path: |
+            output/washing30-hindi/TrustFolio-Washing-30s-Hindi-Motion-QA.mp4
+            output/washing30-hindi/hindi_motion_qa.json
+          retention-days: 1
+          if-no-files-found: error
+      - name: Upload evidence + approved dynamic scene manifest
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: washing30-live-snapshot-and-story-manifest
+          path: output/washing30-live/*.json
+          if-no-files-found: warn
+          retention-days: 1

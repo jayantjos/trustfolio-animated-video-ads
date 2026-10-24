@@ -1,0 +1,42 @@
+name: Wan2.2 -> RunPod S3 (SMALL CONFIG TEST ONLY)
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths:
+      - 'scripts/runpod_model_transfer.py'
+      - 'tests/test_runpod_model_transfer.py'
+      - 'config/wan_model_transfer.json'
+      - '.github/workflows/wan-model-upload-test.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: trustfolio-wan-model-s3-test
+  cancel-in-progress: false
+jobs:
+  small-config:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      RUNPOD_S3_ACCESS_KEY_ID: ${{ secrets.RUNPOD_S3_ACCESS_KEY_ID }}
+      RUNPOD_S3_SECRET_ACCESS_KEY: ${{ secrets.RUNPOD_S3_SECRET_ACCESS_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - name: Install streaming transfer dependencies
+        run: python -m pip install 'boto3>=1.35,<2' 'requests>=2.32,<3' 'huggingface_hub>=0.32,<2'
+      - name: Streaming transfer unit tests
+        run: python -m unittest discover -s tests -p 'test_runpod_model_transfer.py' -v
+      - name: Confirm S3 upload is explicitly limited to tiny config.json
+        run: |
+          python -c 'import json; x=json.load(open("config/wan_model_transfer.json")); assert x["enabled"] is True and x["phase"]=="small-config" and x["filename"]=="config.json" and x["gpu_enabled"] is False'
+      - name: Upload + download-check model config via S3; no GPU Pod
+        run: python -m scripts.runpod_model_transfer --file config.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wan-model-small-config-transfer-receipt
+          path: output/model-transfers/
+          if-no-files-found: ignore
+          retention-days: 14

@@ -1,0 +1,32 @@
+name: Washing machine GPU input preflight (CPU ONLY)
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths:
+      - 'scripts/package_gpu_job.py'
+      - 'tests/test_gpu_job_package.py'
+      - '.github/workflows/washing-gpu-input-preflight.yml'
+      - 'config/pilots/washing-machines.json'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  dry-run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: CPU-only packing unit tests
+        run: python -m unittest discover -s tests -p 'test_gpu_job_package.py' -v
+      - name: Make status manifest without any GPU
+        run: python scripts/package_gpu_job.py --plan-only --output output/washing-gpu-plan.json
+      - name: Store job-plan artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: washing-gpu-input-preflight
+          path: output/washing-gpu-plan.json
+          if-no-files-found: error
+          retention-days: 7

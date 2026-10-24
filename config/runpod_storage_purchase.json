@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "category": "washing-machines",
+  "approval": "MONTHLY_STORAGE_COST_ONLY",
+  "name": "trustfolio-wan-models-v1",
+  "data_center": "EU-RO-1",
+  "network_volume_type": "STANDARD",
+  "volume_size_gb": 100,
+  "standard_public_price_usd_gb_month": 0.07,
+  "max_estimated_usd_month": 7,
+  "gpu_instance_creation_enabled": false,
+  "video_publishing_enabled": false,
+  "status": "CREATED_MANUALLY",
+  "volume_id": "1bch597yrz",
+  "new_purchase_enabled": false,
+  "confirmation_requires_account_write_key": true,
+  "priced_storage_is_not_free": true,
+  "caution": "Never create another volume. Manual UI purchase already performed and seen in RunPod screenshot. Confirmed by GitHub read-only GET."
+}

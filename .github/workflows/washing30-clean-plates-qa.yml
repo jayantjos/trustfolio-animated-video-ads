@@ -1,0 +1,50 @@
+# Final strict nine-scene clean-plate test after Python fixture syntax normalization.
+# Retry strict clean plate test after import syntax repair; no paid GPU.
+# Rerun end-to-end strict decodable PNG clean-plate QA; GPU paid provisioning disabled.
+name: Build nine cartoon motion plate candidates (NO GPU)
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths: ['.github/workflows/washing30-clean-plates-qa.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build-qa:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Pillow CPU-only
+        run: python -m pip install -q 'Pillow>=10,<13'
+      - name: Test exact clean image approval gate (no GPU)
+        run: python -m unittest discover -s tests -p 'test_clean_gpu_gate.py' -v
+      - name: Build separate 9 storyboard character plate candidates
+        run: |
+          python -m scripts.washing30_clean_plate_prep --output output/clean-plates
+      - name: Verify asset size, artwork lineage and unapproved safe state
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json,hashlib
+          from PIL import Image
+          root=Path("output/clean-plates")
+          s=json.loads((root/"plate-manifest.json").read_text())
+          assert s["num_scenes"]==9 and s["pipeline_stage"]=="CREATIVE_REVIEW_NOT_GPU_APPROVED"
+          assert s["new_gpu_authorized"] is False and s["gpu_pods_created"]==0
+          for i,art in enumerate(s["scenes"],1):
+              p=root/f"scene{i:02d}.plate-candidate.png"
+              assert p.exists() and p.stat().st_size>35000
+              assert Image.open(p).size==(720,1280)
+              assert hashlib.sha256(p.read_bytes()).hexdigest()==art["visual_sha256"]
+              assert art["expression_visual_qa_approved"] is False
+              assert art["contains_no_baked_brand_guaranteed"] is False
+          print("CLEAN_NINE_I2V_PLATE_QA_CANDIDATES=PASS")
+          print("WAN_GPU_LAUNCH_FROM_THIS_JOB=DISABLED")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: washing30-nine-character-plate-candidates-NO-GPU
+          path: output/clean-plates/
+          if-no-files-found: error
+          retention-days: 2

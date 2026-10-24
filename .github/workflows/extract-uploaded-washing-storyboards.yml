@@ -1,0 +1,61 @@
+name: Extract nine uploaded storyboard reference frames (no GPU)
+on:
+  push:
+    branches:
+      - feat/washing-machine-character-video-pilot
+    paths:
+      - .github/workflows/extract-uploaded-washing-storyboards.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Verify and unpack precisely nine PNG images
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import zipfile, struct, hashlib, json
+          root=Path("assets/storyboards/washing-machines")
+          archive=root/"trustfolio_washing_machine_9_scenes.zip"
+          expected={f"scene{i:02d}.png" for i in range(1,10)}
+          assert archive.is_file() and archive.stat().st_size <= 24_000_000, "ZIP_MISSING_OR_TOO_LARGE"
+          records=[]
+          with zipfile.ZipFile(archive) as bundle:
+              members=bundle.infolist()
+              assert len(members)==9 and {m.filename for m in members}==expected, "REQUIRE_EXACT_NINE_FLAT_SCENES"
+              for member in members:
+                  assert 500_000 <= member.file_size <= 6_000_000 and not member.is_dir(), "SCENE_SIZE_INVALID"
+                  assert (member.external_attr >> 16) & 0o170000 in (0,0o100000), "NON_REGULAR_FILE"
+                  value=bundle.read(member)
+                  assert len(value)==member.file_size, "TRUNCATED_PNG"
+                  assert value[:8]==b"\x89PNG\r\n\x1a\n" and value[12:16]==b"IHDR", "INVALID_PNG"
+                  width,height=struct.unpack(">II", value[16:24])
+                  assert 600<=width<=2500 and 600<=height<=2500, "BAD_FRAME_GEOMETRY"
+                  target=root/member.filename
+                  target.write_bytes(value)
+                  records.append({"name":member.filename,"bytes":len(value),"width":width,"height":height,"sha256":hashlib.sha256(value).hexdigest()})
+                  print("STORYBOARD_IMAGE_VERIFIED="+member.filename)
+          assert {p.name for p in root.glob("scene*.png")}==expected
+          print("NINE_STORYBOARD_IMAGES=VERIFIED_NO_GPU")
+          PY
+      - name: Commit exact nine images to same feature branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/storyboards/washing-machines/scene??.png
+          if git diff --cached --quiet; then
+            echo "ALL_NINE_SCENES_ALREADY_COMMITTED=true"
+          else
+            git commit -m "assets: unpack 9 fixed washing-machine story reference images from approved upload"
+            git push
+          fi
+      - name: Confirm expected filenames exist
+        run: |
+          test "$(find assets/storyboards/washing-machines -maxdepth 1 -type f -name 'scene??.png' | wc -l)" -eq 9
+          echo "STORYBOARD_EXTRACT_COMPLETE=true"

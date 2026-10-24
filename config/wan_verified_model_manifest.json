@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "model": "Wan-AI/Wan2.2-TI2V-5B",
+  "revision": "921dbaf3f1674a56f47e83fb80a34bac8a8f203e",
+  "storage": {
+    "bucket": "1bch597yrz",
+    "region": "EU-RO-1",
+    "endpoint": "https://s3api-eu-ro-1.runpod.io",
+    "prefix": "models/Wan2.2-TI2V-5B/921dbaf3f1674a56f47e83fb80a34bac8a8f203e/"
+  },
+  "verified_transfer_receipts": true,
+  "receipt_origin": "GitHub Actions successful shard jobs 39581292113,39581561749,39581885860,39581102422",
+  "model_inference_completed": false,
+  "expected_total_bytes": 34180083066,
+  "objects": [
+    {
+      "name": "config.json",
+      "bytes": 251,
+      "sha256": "d1fea36899d00c2501b836c13ad65af56e2f9529ba622e50886d3f5c3e6c02bc"
+    },
+    {
+      "name": "Wan2.2_VAE.pth",
+      "bytes": 2818839170,
+      "sha256": "20eb789667fa5e60e7516bf509512f6cb61f01b0aa0695eadaea930c13892b36"
+    },
+    {
+      "name": "diffusion_pytorch_model-00001-of-00003.safetensors",
+      "bytes": 9825014472,
+      "sha256": "720b06c4ade5e87c1246bba8ac95b664c638749cd9b102cf84d823bb44c026a1"
+    },
+    {
+      "name": "diffusion_pytorch_model-00002-of-00003.safetensors",
+      "bytes": 9995661736,
+      "sha256": "09ec5ef720d8396f6cfa51fbdcbdb2327e37722afd6e89fd38f1e7e5e782c283"
+    },
+    {
+      "name": "diffusion_pytorch_model-00003-of-00003.safetensors",
+      "bytes": 178558176,
+      "sha256": "6306f7894c345de9093ad588771c2abfaeb668a81f7a6d9a918bd26ba3568e49"
+    },
+    {
+      "name": "models_t5_umt5-xxl-enc-bf16.pth",
+      "bytes": 11361920418,
+      "sha256": "7cace0da2b446bbbbc57d031ab6cf163a3d59b366da94e5afe36745b746fd81d"
+    },
+    {
+      "name": "diffusion_pytorch_model.safetensors.index.json",
+      "bytes": 72865,
+      "sha256": "bfa2337f1163e195d24151a72298daf34a620543898109be47e414c8daa5b3fe"
+    },
+    {
+      "name": "configuration.json",
+      "bytes": 43,
+      "sha256": "a6b66993e9da0feaba8d42d06b21ad9cfaf7d8b591f32fd639ae35b7f5d2d859"
+    },
+    {
+      "name": "README.md",
+      "bytes": 15935,
+      "sha256": "e357cb3ac077f8739755b0fb38fe8424c76534b19b4a84f6138856abb00abf69"
+    }
+  ]
+}

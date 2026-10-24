@@ -1,0 +1,36 @@
+name: Wan2.2 first 5s genuine GPU worker CPU validation (NO GPU)
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths:
+      - 'scripts/wan5_gpu_worker.py'
+      - 'tests/test_wan5_gpu_worker.py'
+      - 'gpu/Dockerfile.wan5'
+      - '.github/workflows/wan5-gpu-worker-check.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - name: Verify genuine 5s worker safeguards and CPU mocks
+        run: python -m unittest discover -s tests -p 'test_wan5_gpu_worker.py' -v
+      - name: Verify registered original character still SHA approved
+        run: python -c 'from scripts.stage_canonical_character import hash_image; print("APPROVED_CHARACTER_SHA256="+hash_image())'
+      - name: Confirm CUDA image source is pinned and publishing disabled
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          docker=Path("gpu/Dockerfile.wan5").read_text()
+          assert "git checkout --detach 1ea34ff48f87168174e12956e200b1d908b1c5ff" in docker
+          assert "ENTRYPOINT" in docker
+          text=Path("scripts/wan5_gpu_worker.py").read_text()
+          assert "TRUSTFOLIO_PRIVATE_QA" in text
+          assert "VOLUME_MP4_WRITTEN_PENDING_S3_GET_VERIFICATION" in text
+          print("WAN5_WORKER_STATIC_VALIDATED_NO_GPU")
+          PY

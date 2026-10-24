@@ -1,0 +1,29 @@
+name: WAN5 approved character source export (NO GPU, NO PUBLISHING)
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths: ['.github/workflows/export-wan5-approved-character-no-gpu.yml']
+permissions:
+  contents: read
+jobs:
+  approved-art-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify exact approved hero SHA and size without any secrets or GPU
+        run: |
+          python - <<'PY'
+          import hashlib
+          from pathlib import Path
+          p=Path('assets/characters/shared/pink_kurta_lady_v1.png')
+          assert p.stat().st_size==2484010
+          assert hashlib.sha256(p.read_bytes()).hexdigest()=='7f9ca4e47803ff9df57ff389ede1bba15eb6cb761c2fe4521edfe4036bc20ac6'
+          print('APPROVED_HERO_PNG_SHA256=VERIFIED_NO_GPU')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wan5-approved-original-character-source
+          path: assets/characters/shared/pink_kurta_lady_v1.png
+          retention-days: 1
+          if-no-files-found: error

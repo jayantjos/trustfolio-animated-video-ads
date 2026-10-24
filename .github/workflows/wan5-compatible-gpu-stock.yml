@@ -1,0 +1,57 @@
+# Exact-owned RunPod GPU Pod status read-only at WAN9 heartbeat attempt.
+# User-requested WAN9 safe-stock alternatives preflight; GPU CREATE forbidden.
+# Read-only fresh RTX4090 stock/quote audit for 9-scene video 2026-10-24; no GPU start.\n# Wan5 stock-only RTX4090 check; checked 2026-10-24T01:38:18.848Z; no policy changes.
+# 2026-10-23 fresh user-requested no-charge stock/pod readiness check 2026-10-23T13:54:31.894Z
+name: RunPod EU-RO-1 GPU stock alternatives and quote (NO GPU)
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths: ['.github/workflows/wan5-compatible-gpu-stock.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  stock-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read live GPU availability and price, never POST
+        run: |
+          python - <<'PY'
+          import json,os,urllib.request
+          k=os.environ['RUNPOD_API_KEY']
+          def get(path):
+              req=urllib.request.Request('https://api.runpod.io/v2'+path,
+                headers={'Authorization':'Bearer '+k,'Accept':'application/json'})
+              with urllib.request.urlopen(req,timeout=25) as r:
+                  assert r.status==200
+                  return json.loads(r.read(1500000))
+          all_g=get('/catalog/gpus').get('gpus',[])
+          centers=get('/catalog/datacenters?include=GPU_AVAILABILITY').get('dataCenters',[])
+          dc=next(x for x in centers if x.get('id')=='EU-RO-1')
+          avail=dc.get('gpuAvailability',[])
+          print('EU_RO_1_AVAILABLE_GPU_COUNT='+str(len(avail)))
+          print('EU_RO_1_ALL_STOCK='+','.join(str(x.get('id'))+':'+str(x.get('availability')) for x in avail))
+          by_id={x.get('id'):x for x in all_g}
+          for x in avail:
+              g=by_id.get(x.get('id'),{})
+              id=str(x.get('id',''))
+              price=g.get('price',{})
+              dollar=price.get('secure') if isinstance(price,dict) else None
+              hint=str(g.get('memoryInGb',g.get('vramInGb','')))
+              print('GPU_CANDIDATE='+json.dumps({'id':id,'stock':x.get('availability'),'usd_hour':dollar,'vram_hint_gb':hint},sort_keys=True))
+          from scripts.first_wan5_gpu_preflight import check_catalog
+          decision=check_catalog({'gpus':all_g},{'dataCenters':centers})
+          print('WAN5_EXISTING_CHECK_CATALOG='+json.dumps(decision,sort_keys=True))
+          print('GPU_CREATED=false')
+          pods=get('/pods').get('pods',[])
+          name='trustfolio-video-wan9-multiscene-private-qa-20261024'
+          target=[p for p in pods if isinstance(p,dict) and p.get('name')==name]
+          print('WAN9_RUNTIME_OWNED_PODS='+str(len(target)))
+          if len(target)==1:
+              print('WAN9_RUNTIME_POD_STATUS='+str(target[0].get('status','UNKNOWN')))
+              print('WAN9_RUNTIME_GPU='+str(target[0].get('gpuTypeId','UNREPORTED')))
+          PY

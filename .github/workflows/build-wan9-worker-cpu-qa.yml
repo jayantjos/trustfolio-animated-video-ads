@@ -1,0 +1,85 @@
+name: Build nine-scene Wan2.2 GPU worker — CPU QA only, no GPU Pod
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths:
+      - '.github/workflows/build-wan9-worker-cpu-qa.yml'
+      - 'gpu/Dockerfile.wan9'
+      - 'scripts/wan5_nine_scene_gpu_worker.py'
+      - 'tests/test_wan5_nine_scene_gpu_worker.py'
+      - 'tests/test_wan9_retime_cpu.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+  packages: write
+concurrency:
+  group: trustfolio-wan9-worker-build-single
+  cancel-in-progress: false
+jobs:
+  qa:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - name: Install ffmpeg for CPU-only genuine 49-frame retime smoke
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+      - name: Test real ffmpeg 49-frame synthetic conversion WITHOUT GPU
+        run: |
+          python -m unittest discover -s tests -p 'test_wan9_retime_cpu.py' -v
+      - name: Verify no GPU allocation and all nine worker runtime gates
+        run: |
+          python -m unittest discover -s tests -p 'test_wan5_nine_scene_gpu_worker.py' -v
+          python -m unittest discover -s tests -p 'test_wan5_nineshot.py' -v
+          python -m unittest discover -s tests -p 'test_final_motion_gate.py' -v
+          echo 'RUNPOD_GPU_PODS_CREATED=false'
+  build:
+    runs-on: ubuntu-24.04
+    needs: qa
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        id: image
+        with:
+          context: .
+          file: gpu/Dockerfile.wan9
+          push: true
+          tags: ghcr.io/jayantjos/trustfolio-wan9-worker:cpu-qa-${{ github.sha }}
+          labels: |
+            trustfolio.publishing_enabled=false
+            trustfolio.gpu_run_approved=false
+      - name: Record pinned image digest, never claim GPU-tested
+        env:
+          IMAGE_DIGEST: ${{ steps.image.outputs.digest }}
+          GIT_SHA: ${{ github.sha }}
+        run: |
+          python - <<'PY'
+          import os,json,re
+          from pathlib import Path
+          d=os.environ["IMAGE_DIGEST"]
+          assert re.fullmatch("sha256:[a-f0-9]{64}",d)
+          out={"status":"WAN9_IMAGE_BUILT_CPU_TESTED_NOT_GPU_RENDERED",
+               "image":"ghcr.io/jayantjos/trustfolio-wan9-worker@"+d,
+               "git_sha":os.environ["GIT_SHA"],
+               "paid_gpu_pods_created":0,"publishing_enabled":False,
+               "clean_visual_qa_pending":True}
+          Path("output").mkdir(exist_ok=True)
+          Path("output/wan9-worker-image-receipt.json").write_text(json.dumps(out,indent=2))
+          print("WAN9_GPU_IMAGE_DIGEST="+d)
+          print("WAN9_GPU_RENDER_STATUS=NOT_STARTED")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wan9-worker-image-candidate-NO-GPU
+          path: output/wan9-worker-image-receipt.json
+          retention-days: 7

@@ -1,0 +1,44 @@
+# Unproven GPU inference image candidate. Never deploy a paid Pod until an
+# immutable GHCR digest, provider auto-terminate and independent reaper are live.
+# Base image tag is frozen into the GHCR image digest after build.
+FROM pytorch/pytorch:2.6.0-cuda12.4-cudnn9-runtime
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends git ffmpeg ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+WORKDIR /opt
+# Official source is pinned; no mutable main branch in the container.
+RUN git clone --filter=blob:none https://github.com/Wan-Video/Wan2.2.git /opt/Wan2.2 \
+  && cd /opt/Wan2.2 && git checkout --detach 1ea34ff48f87168174e12956e200b1d908b1c5ff
+# The official Wan SelfAttention calls flash_attention directly, and has no
+# automatic SDPA fallback if flash-attn2/3 are missing. The strict, pinned-source
+# patch uses PyTorch's FUSED CUDA FLASH SDPA and refuses unsafe math fallback.
+COPY gpu/patch_wan_attention.py /opt/trustfolio/patch_wan_attention.py
+RUN python /opt/trustfolio/patch_wan_attention.py
+# GPU efficiency is UNVERIFIED until the first budget-capped inference.
+RUN python -m pip install --no-cache-dir \
+    "transformers>=4.49.0,<=4.51.3" \
+    "tokenizers>=0.20.3" "accelerate>=1.1.1" \
+    "opencv-python-headless>=4.9.0.80" "diffusers>=0.31.0" \
+    "imageio[ffmpeg]" "imageio-ffmpeg" \
+    "easydict" "ftfy" "dashscope" "einops>=0.7,<1" "decord==0.6.0" "numpy>=1.23.5,<2" \
+    "librosa>=0.10.2,<0.12" "peft>=0.15,<0.20" "Pillow>=10,<12" \
+  && python -c "import subprocess,sys; p=subprocess.run([sys.executable,'-m','pip','check'],capture_output=True,text=True); lines=[x.strip() for x in p.stdout.splitlines()+p.stderr.splitlines() if x.strip()]; allowed='decord 0.6.0 is not supported on this platform'; unexpected=[x for x in lines if x not in (allowed,'No broken requirements found.')]; assert not unexpected and p.returncode in (0,1) and (p.returncode==0 or allowed in lines),(p.returncode,unexpected,lines); print('WAN_DEPENDENCY_CHECK=PASS_KNOWN_DECORD_WHEEL_METADATA_ONLY' if p.returncode else 'WAN_DEPENDENCY_CHECK=PASS')"
+# Upstream decord 0.6.0 wheel has an incorrect platform tag in its WHEEL
+# metadata (dmlc/decord#356/#366). pip check reports a platform mismatch
+# even when its native runtime works. Permit ONLY that exact message, reject
+# any other pip check failure, and require real CPU FFmpeg video decode below.
+# In earlier paid tests, generate.py failed before any GPU inference due to
+# missing einops, decord, then librosa. Wan imports S2V + Animate even for
+# TI2V-5B; check the complete pinned upstream import graph on the FREE CPU
+# runner. Work around ONLY T5EncoderModel's import-time default argument
+# torch.cuda.current_device() (no CUDA device exists in buildx). Never modify
+# production GPU behavior: this monkeypatch exists in this one test process.
+RUN cd /opt/Wan2.2 \
+  && python -c "import ast, einops, decord, torch, transformers, diffusers, imageio, ftfy, easydict, librosa, peft; from pathlib import Path; ast.parse(Path('generate.py').read_text()); assert torch.version.cuda is not None; torch.cuda.current_device=lambda:0; import wan; import generate; from wan.textimage2video import WanTI2V; print('WAN_FULL_SOURCE_IMPORT_WITH_CPU_CUDA_DEFAULT_SHIM=PASS')" \
+  && ffmpeg -nostdin -hide_banner -loglevel error -f lavfi -i color=black:s=64x64:r=2 -frames:v 4 -c:v mpeg4 -y /tmp/wan-decord-smoke.mp4 \
+  && python -c "import decord; vr=decord.VideoReader('/tmp/wan-decord-smoke.mp4',ctx=decord.cpu(0)); assert len(vr)==4,len(vr); assert tuple(vr[0].shape)==(64,64,3),vr[0].shape; print('WAN_DECORD_REAL_MP4_DECODE=PASS')" \
+  && rm /tmp/wan-decord-smoke.mp4
+COPY scripts/wan5_gpu_worker.py /opt/trustfolio/wan5_gpu_worker.py
+WORKDIR /opt/Wan2.2
+ENV PYTHONUNBUFFERED=1 HF_HOME=/workspace/cache/huggingface
+ENTRYPOINT ["python", "/opt/trustfolio/wan5_gpu_worker.py"]

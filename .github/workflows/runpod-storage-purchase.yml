@@ -1,0 +1,17 @@
+name: RunPod Storage Purchase — DISABLED (Existing Volume Registered)
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths: ['config/runpod_storage_purchase.json','.github/workflows/runpod-storage-purchase.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  existing-storage-reconciliation-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assert storage already exists and provisioning is disabled
+        run: |
+          python -c 'import json; p=json.load(open("config/runpod_storage_purchase.json")); assert p["status"]=="CREATED_MANUALLY"; assert p["volume_id"]=="1bch597yrz"; assert p["new_purchase_enabled"] is False; print("Existing network volume registered. No purchase job.")'

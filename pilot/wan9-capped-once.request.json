@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "private_technical_qa_only": true,
+  "publish": false,
+  "single_pod": true,
+  "max_new_gpu_spend_usd": 1,
+  "network_volume_id": "1bch597yrz",
+  "user_approved": true,
+  "approved_by": "jayantjos",
+  "approved_at_utc": "2026-10-24T12:28:41Z",
+  "approval_id": "wan9fastpilot20261024f"
+}

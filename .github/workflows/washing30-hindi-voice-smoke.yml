@@ -1,0 +1,30 @@
+name: Test Hindi neural voice for TrustFolio 30-second storyboard (NO GPU)
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths: ['.github/workflows/washing30-hindi-voice-smoke.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  hindi-voice:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - name: Install Hindi voice and audio QA
+        run: |
+          python -m pip install -q 'edge-tts>=6,<8'
+          command -v ffprobe || (sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg)
+      - name: Test fixed Hindi narrator (private no publication)
+        run: |
+          python - <<'PY'
+          import asyncio
+          import edge_tts
+          async def main():
+              await edge_tts.Communicate("अरे बाप रे! इतने सारे कपड़े? अब कौन धोएगा?",voice="hi-IN-SwaraNeural",rate="+13%").save("hindi-test.mp3")
+          asyncio.run(main())
+          PY
+          test "$(stat -c%s hindi-test.mp3)" -gt 3000
+          ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 hindi-test.mp3
+          echo "HINDI_TTS_NETWORK_AND_MP3=PASS_NO_GPU"

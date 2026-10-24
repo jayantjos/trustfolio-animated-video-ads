@@ -1,0 +1,57 @@
+name: WAN5 9-scene real animation readiness (NO GPU / NO BILL)
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths:
+      - '.github/workflows/wan5-nine-scene-readiness.yml'
+  workflow_dispatch:
+    inputs:
+      budget:
+        description: INR budget used for fresh current TrustFolio Top-5
+        type: number
+        default: 40000
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: wan5-9scene-no-gpu-readiness
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 9
+    env:
+      TF_BUDGET: ${{ inputs.budget || '40000' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - name: Run scene plan unit tests and original video pipeline tests
+        run: |
+          python -m unittest discover -s tests -p 'test_wan5_nineshot.py' -v
+          python -m unittest discover -s tests -p 'test_final_motion_gate.py' -v
+          python -m unittest discover -s tests -p 'test_washing30*.py' -v
+      - name: Validate exact nine scene images and generate live API-backed motion plan
+        run: |
+          python -m scripts.washing30_wan5_prepare --budget "$TF_BUDGET" --out output/wan5-nineshot-qa
+      - name: Report genuine GPU animation as unrendered until receipts exist
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.loads(Path('output/wan5-nineshot-qa/motion-plan.json').read_text())
+          assert p['new_paid_gpu_authorized'] is False
+          assert p['gpu_pods_created']==0
+          assert p['complete_motion_video_exists'] is False
+          assert len(p['shots'])==9
+          print('WAN5_NEW_PAID_GPU_STARTED=false')
+          print('WAN5_NINE_MOTION_CLIPS=NOT_RENDERED')
+          print('WAN5_NINE_SCENE_MANIFEST=PASS')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wan5-9scene-plan-qa-no-gpu
+          path: output/wan5-nineshot-qa/*.json
+          if-no-files-found: warn
+          retention-days: 2

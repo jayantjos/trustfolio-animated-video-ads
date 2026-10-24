@@ -1,0 +1,40 @@
+name: Wan2.2 S3 multipart 179MB file validation
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths:
+      - '.github/workflows/wan-model-multipart-test.yml'
+      - 'config/wan_model_multipart_test.json'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: trustfolio-wan-s3-multipart-sample
+  cancel-in-progress: false
+jobs:
+  medium-weight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      RUNPOD_S3_ACCESS_KEY_ID: ${{ secrets.RUNPOD_S3_ACCESS_KEY_ID }}
+      RUNPOD_S3_SECRET_ACCESS_KEY: ${{ secrets.RUNPOD_S3_SECRET_ACCESS_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install transfer deps
+        run: python -m pip install 'boto3>=1.35,<2' 'requests>=2.32,<3' 'huggingface_hub>=0.32,<2'
+      - name: Refuse unpinned or unapproved config
+        run: |
+          python -c 'import json; p=json.load(open("config/wan_model_multipart_test.json")); assert p["file"]=="diffusion_pytorch_model-00003-of-00003.safetensors" and p["gpu_enabled"] is False and p["volume"]=="1bch597yrz"'
+      - name: Upload then remotely SHA256-verify the 179MB model shard
+        run: |
+          python -m scripts.runpod_model_transfer --file diffusion_pytorch_model-00003-of-00003.safetensors
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wan-179mb-multipart-receipt
+          path: output/model-transfers/
+          if-no-files-found: ignore
+          retention-days: 14

@@ -1,0 +1,62 @@
+name: TrustFolio WAN5 GHCR and RunPod registry access (NO GPU)
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths: ['.github/workflows/wan5-registry-preflight.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  registry-access:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    env:
+      RUNPOD_POD_WRITE_KEY: ${{ secrets.RUNPOD_POD_WRITE_KEY }}
+    steps:
+      - name: Test anonymous GHCR OCI image visibility, and RunPod saved registries (GET only)
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json,os,urllib.request,urllib.error,urllib.parse
+          digest="sha256:5f920321ce5cd6485e560a670b3b53f8f69cc07b2b71b10caa28723eea15cdf1"
+          manifest="https://ghcr.io/v2/jayantjos/trustfolio-wan5-worker/manifests/"+digest
+          token_url="https://ghcr.io/token?service=ghcr.io&scope=repository%3Ajayantjos%2Ftrustfolio-wan5-worker%3Apull"
+          try:
+            with urllib.request.urlopen(token_url,timeout=20) as r:
+              token=json.load(r).get("token","")
+            req=urllib.request.Request(manifest,method="GET",headers={
+              "Authorization":"Bearer "+token,
+              "Accept":"application/vnd.oci.image.manifest.v1+json, application/vnd.docker.distribution.manifest.v2+json"})
+            with urllib.request.urlopen(req,timeout=20) as r:
+              raw=r.read(100000)
+              print("GHCR_ANONYMOUS_PINNED_MANIFEST=ACCESSIBLE" if r.status==200 else "GHCR_ANONYMOUS_PINNED_MANIFEST=BLOCKED")
+              print("OCI_MANIFEST_CONTENT_LENGTH="+str(len(raw)))
+          except urllib.error.HTTPError as e:
+            print("GHCR_ANONYMOUS_PINNED_MANIFEST=HTTP_"+str(e.code))
+          except Exception:
+            print("GHCR_ANONYMOUS_PINNED_MANIFEST=NETWORK_ERROR")
+          k=os.environ.get("RUNPOD_POD_WRITE_KEY","")
+          if not k:
+            print("RUNPOD_WRITE_KEY=MISSING")
+            raise SystemExit(1)
+          u="https://api.runpod.io/v2/registries"
+          q=urllib.request.Request(u,headers={"Authorization":"Bearer "+k,"Accept":"application/json"},method="GET")
+          try:
+            with urllib.request.urlopen(q,timeout=25) as r:
+              body=json.loads(r.read(100001))
+            print("RUNPOD_REGISTRY_GET=HTTP_200")
+            rows=body.get("registries") if isinstance(body,dict) else None
+            if isinstance(rows,list):
+              print("RUNPOD_REGISTRY_COUNT="+str(len(rows)))
+              for item in rows:
+                if isinstance(item,dict):
+                  safe_name=str(item.get("name",""))
+                  safe_url=str(item.get("url",""))
+                  print("RUNPOD_REGISTRY_GHCR_MATCH="+str("ghcr" in (safe_name+" "+safe_url).lower()))
+            else:print("RUNPOD_REGISTRY_LIST_SCHEMA=UNRECOGNIZED")
+          except urllib.error.HTTPError as e:
+            print("RUNPOD_REGISTRY_GET=HTTP_"+str(e.code))
+          except Exception:
+            print("RUNPOD_REGISTRY_GET=NETWORK_ERROR")
+          print("GPU_CREATED=false")
+          PY

@@ -1,0 +1,153 @@
+name: RUN FIRST APPROVED WAN5 REAL 5-SECOND GPU PILOT (MAX $1 GPU)
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths:
+      # Historical approval request is permanently ineligible for another paid Pod.
+      - 'pilot/wan5-fresh-launch.request.json'
+permissions:
+  contents: read
+  packages: read
+  actions: read
+concurrency:
+  group: first-wan5-laundry-approved-paid-single-pod
+  cancel-in-progress: false
+jobs:
+  launch-first-real-video:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 44
+    env:
+      RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+      RUNPOD_POD_WRITE_KEY: ${{ secrets.RUNPOD_POD_WRITE_KEY }}
+      RUNPOD_S3_ACCESS_KEY_ID: ${{ secrets.RUNPOD_S3_ACCESS_KEY_ID }}
+      RUNPOD_S3_SECRET_ACCESS_KEY: ${{ secrets.RUNPOD_S3_SECRET_ACCESS_KEY }}
+      GHCR_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TRUSTFOLIO_PAID_FIRST_TEST: 'yes'
+      TRUSTFOLIO_ATTEMPT_ID: 'wan5-${{ github.sha }}'
+      TRUSTFOLIO_NEXT_ATTEMPT_APPROVED: 'wan5-${{ github.sha }}'
+      TRUSTFOLIO_TESTED_WORKER_IMAGE: 'ghcr.io/jayantjos/trustfolio-wan5-worker@sha256:77ad3c7235ccf9ea6fedbf32c7ad2198388f2004b66b6ed6768fd7acaa3f431f'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - name: Install storage + preflight dependencies, no GPU
+        run: python -m pip install 'boto3>=1.35,<2'
+      - name: Require newly authorized one-time $1 paid attempt (reject reruns)
+        env:
+          TRUSTFOLIO_RUN_ACTOR: ${{ github.actor }}
+          TRUSTFOLIO_RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          python - <<'PY'
+          import json, os, re
+          from datetime import datetime, timezone, timedelta
+          from pathlib import Path
+          req=json.loads(Path('pilot/wan5-fresh-launch.request.json').read_text())
+          expected={'launch_approved_by_user':True,
+                    'confirmation':'I_APPROVE_NEW_WAN5_GPU_TEST_MAX_1_USD',
+                    'job_id':'wan5-laundry-first-20261021',
+                    'gpu_usd_max':1,
+                    'seconds':5,
+                    'instance_count_max':1,
+                    'mode':'private-qa',
+                    'publish':False,
+                    'auto_delete_pod':True,
+                    'existing_network_volume':'1bch597yrz'}
+          assert set(req)==set(expected)|{'approved_at_utc','approval_id'}, 'INVALID_FRESH_APPROVAL_SCHEMA'
+          assert all(req.get(k)==v for k,v in expected.items()), 'NO_FRESH_EXPLICIT_PAID_APPROVAL'
+          assert os.environ.get('TRUSTFOLIO_RUN_ATTEMPT')=='1', 'REPLAYED_WORKFLOW_RUN_REFUSED'
+          assert os.environ.get('TRUSTFOLIO_RUN_ACTOR')=='jayantjos', 'NON_OWNER_PAID_APPROVAL_REFUSED'
+          assert re.fullmatch(r'[A-Za-z0-9_-]{8,64}',str(req['approval_id'])), 'INVALID_APPROVAL_ID'
+          try: approved_at=datetime.fromisoformat(req['approved_at_utc'].replace('Z','+00:00'))
+          except (ValueError,AttributeError): raise SystemExit('APPROVAL_TIMESTAMP_INVALID_NO_GPU')
+          now=datetime.now(timezone.utc)
+          assert approved_at.tzinfo is not None and timedelta(0)<=now-approved_at<=timedelta(minutes=60), 'STALE_PAID_APPROVAL_REFUSED'
+          print('FRESH_PAID_AUTHORIZATION_SCOPE_VERIFIED_NO_GPU_CREATED')
+          PY
+      - name: Validate controller safety and immutable original art
+        run: |
+          python -m unittest discover -s tests -p 'test_wan5_first_paid_controller.py' -v
+          python -m unittest discover -s tests -p 'test_wan5_live_log_guard.py' -v
+          python -c 'from scripts.stage_canonical_character import hash_image; assert hash_image()=="7f9ca4e47803ff9df57ff389ede1bba15eb6cb761c2fe4521edfe4036bc20ac6"'
+      - name: BLOCK paid launch unless independent 5-minute reaper is recently healthy
+        env:
+          GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python - <<'PY'
+          import json, os, urllib.request
+          from datetime import datetime,timezone,timedelta
+          repo=os.environ["GITHUB_REPOSITORY"]
+          url=("https://api.github.com/repos/"+repo+
+            "/actions/workflows/wan5-independent-pod-reaper.yml/runs?branch=main&per_page=12")
+          req=urllib.request.Request(url,headers={
+            "Authorization":"Bearer "+os.environ["GITHUB_API_TOKEN"],
+            "Accept":"application/vnd.github+json"})
+          with urllib.request.urlopen(req,timeout=20) as response:
+              rows=json.load(response).get("workflow_runs",[])
+          now=datetime.now(timezone.utc)
+          healthy=any(
+            r.get("status")=="completed" and r.get("conclusion")=="success"
+            and r.get("head_branch")=="main"
+            and (now-datetime.fromisoformat(r["created_at"].replace("Z","+00:00")))
+                <=timedelta(minutes=20)
+            for r in rows if r.get("created_at")
+          )
+          if not healthy:
+              raise SystemExit("INDEPENDENT_REAPER_NOT_RECENTLY_HEALTHY_REFUSE_PAID_GPU")
+          print("INDEPENDENT_REAPER_RECENT_SUCCESS=VERIFIED_NO_GPU_CREATED")
+          PY
+      - name: REFUSE paid GPU if any official tokenizer file missing or hash changed on S3
+        run: |
+          python - <<'PY'
+          import hashlib, json, time
+          from scripts.stage_wan5_tokenizer import TOKENIZER, MODEL_PREFIX
+          from scripts import wan5_first_paid_controller as c
+          # Use the same bounded S3 GET client already verified by remote QA.
+          # RunPod S3 can transiently return InvalidArgument/Invalid object path.
+          # Never treat a read error or hash mismatch as success; no GPU yet.
+          s3=c.make_s3()
+          for name,(cap,sha) in TOKENIZER.items():
+              for attempt in range(3):
+                  try:
+                      data=c.get_object(s3,MODEL_PREFIX+name,cap)
+                      break
+                  except c.PilotError:
+                      if attempt==2:
+                          raise SystemExit("WAN5_TOKENIZER_S3_READ_UNAVAILABLE_NO_GPU")
+                      time.sleep(2*(attempt+1))
+              assert data and 10<len(data)<=cap, "WAN5_TOKENIZER_MISSING_OR_INVALID_SIZE"
+              if sha:
+                  assert hashlib.sha256(data).hexdigest()==sha, "WAN5_TOKENIZER_SHA256_MISMATCH"
+              else:
+                  assert isinstance(json.loads(data),dict), "WAN5_TOKENIZER_METADATA_INVALID"
+          print("WAN5_ALL_FOUR_OFFICIAL_TOKENIZER_S3_PREFLIGHT=PASS")
+          print("WAN5_GPU_CREATED_BY_THIS_CHECK=false")
+          PY
+      - name: Check authenticated private GHCR image manifest without GPU charge
+        env:
+          GHCR_USER: ${{ github.actor }}
+          GHCR_PASS: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          printf '%s' "$GHCR_PASS" | docker login ghcr.io -u "$GHCR_USER" --password-stdin >/dev/null
+          docker manifest inspect "$TRUSTFOLIO_TESTED_WORKER_IMAGE" >/dev/null
+          echo 'WAN5_PINNED_PRIVATE_WORKER_PULL_AUTH=VERIFIED'
+          docker logout ghcr.io >/dev/null
+      - name: Install CPU-only MP3 preflight tools before any GPU charge
+        run: |
+          if ! command -v ffprobe >/dev/null || ! command -v ffmpeg >/dev/null; then
+            timeout 120s sudo apt-get -o Acquire::Retries=1 update -qq
+            timeout 150s sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ffmpeg
+          fi
+          ffprobe -version | head -1
+      - name: Stage already-reviewed exact Hindi audio before any GPU creation
+        run: python -m scripts.wan5_stage_approved_audio
+      - name: REAL $1 MAX GPU LAUNCH, render 5s, S3 verify, destroy owned Pod
+        run: python -m scripts.wan5_first_paid_controller
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: first-real-wan5-5s-gpu-pilot-receipt
+          path: output/wan5-first-paid-test.json
+          if-no-files-found: warn
+          retention-days: 30
+

@@ -1,0 +1,6 @@
+# Reuse EXACT real 5-second Wan2.2 CUDA image successfully verified on RTX4090.
+# GPU rendering STILL requires a separate fresh capped authorization + clean input QA.
+FROM ghcr.io/jayantjos/trustfolio-wan5-worker@sha256:77ad3c7235ccf9ea6fedbf32c7ad2198388f2004b66b6ed6768fd7acaa3f431f
+COPY scripts/wan5_nine_scene_gpu_worker.py /opt/trustfolio/wan5_nine_scene_gpu_worker.py
+WORKDIR /opt/Wan2.2
+ENTRYPOINT ["python", "/opt/trustfolio/wan5_nine_scene_gpu_worker.py"]

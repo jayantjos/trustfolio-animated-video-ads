@@ -1,0 +1,5 @@
+**
+!gpu/
+!gpu/Dockerfile.wan5
+!scripts/
+!scripts/wan5_gpu_worker.py

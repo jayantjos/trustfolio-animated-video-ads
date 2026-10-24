@@ -1,0 +1,66 @@
+name: WAN5 retrospective GPU failure stage audit (READ-ONLY NO GPU)
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths: ['.github/workflows/wan5-last-failure-readonly.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      RUNPOD_S3_ACCESS_KEY_ID: ${{ secrets.RUNPOD_S3_ACCESS_KEY_ID }}
+      RUNPOD_S3_SECRET_ACCESS_KEY: ${{ secrets.RUNPOD_S3_SECRET_ACCESS_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - name: Read only last attempted GPU progress and sanitized error metadata
+        run: |
+          python -m pip install -q boto3
+          python - <<'PY'
+          import json, re
+          from scripts import wan5_first_paid_controller as c
+          s3 = c.make_s3()
+          expected = 'wan5-6fbcb291faf9fb3bd3bc67fe785a78ff29b1d3d3'
+          for label, key in [('progress', c.PROGRESS), ('failure', c.FAILURE_RECEIPT), ('success_receipt', c.RECEIPT)]:
+              payload = c.get_object(s3, key, 8192)
+              if payload is None:
+                  print('WAN5_READONLY_'+label.upper()+'=NOT_FOUND', flush=True)
+                  continue
+              obj = json.loads(payload)
+              assert isinstance(obj, dict), 'SCHEMA_UNEXPECTED'
+              assert obj.get('attempt_id') == expected, 'EXPECTED_THIRD_ATTEMPT_ONLY'
+              assert obj.get('job_id') == c.JOB_ID, 'OTHER_JOB_REFUSED'
+              if label == 'progress':
+                  stage = obj.get('stage', '')
+                  assert stage in {'STARTUP', 'VALIDATE_AND_RENDER', 'VERIFY_AUDIO_AND_MODEL',
+                                   'WAN_INFERENCE', 'HINDI_MUX_AND_DECODE_QA', 'COMPLETE'}, 'UNRECOGNIZED_STAGE'
+                  print('WAN5_THIRD_FINAL_PROGRESS_STAGE='+stage, flush=True)
+                  seq = obj.get('sequence')
+                  if type(seq) is int and 0 < seq < 10000000: print('WAN5_THIRD_HEARTBEAT_SEQUENCE='+str(seq),flush=True)
+                  when=obj.get('updated_at')
+                  if type(when) in (int,float) and 1792700000 < when < 1792900000:
+                      from datetime import datetime, timezone
+                      print('WAN5_THIRD_LAST_PROGRESS_AT='+datetime.fromtimestamp(when, timezone.utc).isoformat(),flush=True)
+              elif label == 'failure':
+                  reason = obj.get('failure_reason','')
+                  assert isinstance(reason,str) and re.fullmatch(r'[A-Z0-9_]{1,115}',reason), 'BAD_REASON'
+                  print('WAN5_THIRD_FAILURE_REASON='+reason,flush=True)
+                  if type(obj.get('return_code')) is int and -255 <= obj['return_code'] <= 255:
+                      print('WAN5_THIRD_EXIT_CODE='+str(obj['return_code']),flush=True)
+                  diag = obj.get('subprocess_diagnostics') or {}
+                  if isinstance(diag,dict):
+                      name=diag.get('python_exception_type')
+                      if name in {'UNKNOWN', 'RuntimeError', 'ValueError', 'AssertionError', 'TypeError',
+                                  'IndexError','KeyError','ImportError','ModuleNotFoundError',
+                                  'FileNotFoundError','OSError','MemoryError','SystemError',
+                                  'EOFError','PermissionError','NotImplementedError',
+                                  'UnicodeDecodeError','AttributeError','RecursionError','SafetensorError'}:
+                          print('WAN5_THIRD_EXCEPTION_CLASS='+name,flush=True)
+              else:
+                  print('WAN5_THIRD_SUCCESS_RECEIPT_PRESENT=TRUE',flush=True)
+          print('WAN5_READ_ONLY_NO_PODS_CREATED_NO_BILLING=PASS',flush=True)
+          PY

@@ -1,0 +1,14 @@
+{
+  "launch_approved_by_user": true,
+  "confirmation": "I_APPROVE_NEW_WAN5_GPU_TEST_MAX_1_USD",
+  "job_id": "wan5-laundry-first-20261021",
+  "gpu_usd_max": 1,
+  "seconds": 5,
+  "instance_count_max": 1,
+  "mode": "private-qa",
+  "publish": false,
+  "auto_delete_pod": true,
+  "existing_network_volume": "1bch597yrz",
+  "approved_at_utc": "2026-10-24T01:40:59.749Z",
+  "approval_id": "wan5_oct24_retry_s3_verified_safe"
+}

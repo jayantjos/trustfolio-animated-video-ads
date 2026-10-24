@@ -1,0 +1,22 @@
+{
+  "category": "washing-machines",
+  "engine": "Indus-Labs/indus-pocket-tts",
+  "model_license": "CC-BY-4.0",
+  "status": "NEEDS_LISTENING_QA",
+  "gpu_enabled": false,
+  "publishing_enabled": false,
+  "clips": [
+    {
+      "id": "01_laundry_panic",
+      "text": "अरे बाप रे! इतने सारे कपड़े? अब कौन धोएगा?"
+    },
+    {
+      "id": "02_machine_entrance",
+      "text": "घबराओ मत! सही वॉशिंग मशीन चुनते हैं!"
+    },
+    {
+      "id": "08_cta",
+      "text": "अपने बजट की टॉप पाँच मशीनें देखो, ट्रस्टफोलियो डॉट इन पर!"
+    }
+  ]
+}

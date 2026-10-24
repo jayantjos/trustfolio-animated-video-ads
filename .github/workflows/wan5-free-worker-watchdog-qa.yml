@@ -1,0 +1,119 @@
+# Recheck tokenizer S3 four-file GET integrity after transient InvalidArgument on 2026-10-24T01:39:47.625Z; NO GPU.
+name: Wan5 Free Worker Watchdog QA
+on:
+  push:
+    branches:
+      - fix/wan5-free-watchdog-worker-qa-20261022
+      - feat/washing-machine-character-video-pilot
+    # Re-run Docker CPU packaging after safety-controller or regression changes,
+    # so the paid launch can use a freshly verified image digest.
+    paths:
+      - 'scripts/wan5_gpu_worker.py'
+      - 'scripts/wan5_offline_wan_cli_qa.py'
+      - 'gpu/patch_wan_attention.py'
+      - 'scripts/wan5_attention_cpu_qa.py'
+      - 'tests/test_wan5_attention_patch.py'
+      - 'gpu/Dockerfile.wan5'
+      - 'config/wan5_exact_audio_candidate.json'
+      - 'gpu/Dockerfile.wan5-overlay'
+      - 'scripts/wan5_container_cpu_qa.py'
+      - 'scripts/wan5_model_config_cpu_smoke.py'
+      - 'scripts/wan5_readonly_qa.py'
+      - 'scripts/wan5_audio_preflight.py'
+      - 'scripts/wan5_stage_approved_audio.py'
+      - 'tests/test_wan5_audio_preflight.py'
+      - 'tests/test_wan5_inference_diagnostics.py'
+      - 'scripts/wan5_first_paid_controller.py'
+      - '.github/workflows/wan5-first-paid-gpu-pilot.yml'
+      - 'tests/test_wan5_first_paid_controller.py'
+      - 'tests/test_wan5_progress.py'
+      - '.github/workflows/wan5-free-worker-watchdog-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cpu-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install CPU-only controller dependencies
+        run: python -m pip install boto3
+      - name: Run worker and watchdog unit tests without GPU or RunPod credentials
+        env:
+          TRUSTFOLIO_PAID_FIRST_TEST: 'no'
+        run: python -m unittest discover -s tests -p 'test_wan5_*py' -v
+
+  remote-readonly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+      RUNPOD_POD_WRITE_KEY: ${{ secrets.RUNPOD_POD_WRITE_KEY }}
+      RUNPOD_S3_ACCESS_KEY_ID: ${{ secrets.RUNPOD_S3_ACCESS_KEY_ID }}
+      RUNPOD_S3_SECRET_ACCESS_KEY: ${{ secrets.RUNPOD_S3_SECRET_ACCESS_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: python -m pip install boto3
+      - name: Read-only model, tokenizer, character, price and Pod audit
+        run: python -m scripts.wan5_readonly_qa
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wan5-readonly-inputs
+          path: output/wan5-readonly/
+          retention-days: 14
+  docker-cpu:
+    needs: [cpu-only, remote-readonly]
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: wan5-readonly-inputs
+          path: output/wan5-readonly/
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Test exact existing image on CPU with revised worker mounted read-only
+        env:
+          IMAGE: ghcr.io/jayantjos/trustfolio-wan5-worker@sha256:2c1b8f960e7084bf7a3aca002c09b72956030c2305aa4c1d4992679ea92eb604
+        run: |
+          docker pull "$IMAGE"
+          docker run --rm --network none --entrypoint python -v "$PWD:/qa:ro" "$IMAGE" /qa/scripts/wan5_container_cpu_qa.py
+          docker run --rm --network none --entrypoint python -e PYTHONPATH=/qa -v "$PWD:/qa:ro" "$IMAGE" /qa/scripts/wan5_offline_wan_cli_qa.py
+          # Full upstream 5B architecture object, META tensors only.
+          # This exercises the actually installed diffusers version/model
+          # config at zero GPU cost, not merely argument parsing.
+          timeout 150s docker run --rm --network none --entrypoint python -e PYTHONPATH=/qa:/opt/Wan2.2 -v "$PWD:/qa:ro" "$IMAGE" /qa/scripts/wan5_model_config_cpu_smoke.py
+          # This exact pinned image already passed ffmpeg/ffprobe checks.
+          # Test real S3-read MP3 bytes and synthetic invalid/overlong inputs,
+          # all offline, before any billable GPU or published content.
+          docker run --rm --network none --entrypoint python -e PYTHONPATH=/qa -v "$PWD:/qa:ro" "$IMAGE" -m unittest discover -s /qa/tests -p test_wan5_audio_preflight.py -v
+          docker run --rm --network none --entrypoint python -e PYTHONPATH=/qa -v "$PWD:/qa:ro" "$IMAGE" -c 'from pathlib import Path; from scripts.wan5_audio_preflight import inspect_mp3_bytes; p=Path("/qa/output/wan5-readonly/hindi_candidate_sha256_verified.mp3"); r=inspect_mp3_bytes(p.read_bytes()); assert r["technical_qa_passed"] and 1<=r["seconds"]<=5; print("REAL_HINDI_MP3_CPU_DECODE_SHA256_VERIFIED_NO_GPU=PASS")'
+      - name: Package tested worker over the existing immutable image; no GPU
+        env:
+          TAG: ghcr.io/jayantjos/trustfolio-wan5-worker:qa-${{ github.sha }}
+        run: |
+          docker build --network none -f gpu/Dockerfile.wan5-overlay -t "$TAG" .
+          # Test the actual patched OCI layer before publishing its immutable digest.
+          docker run --rm --network none --entrypoint python -e PYTHONPATH=/qa \
+            -v "$PWD:/qa:ro" "$TAG" /qa/scripts/wan5_attention_cpu_qa.py
+          docker push "$TAG"
+          docker inspect --format '{{index .RepoDigests 0}}' "$TAG" > output/wan5-readonly/worker-image.txt
+          cat output/wan5-readonly/worker-image.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wan5-tested-worker-digest
+          path: output/wan5-readonly/worker-image.txt
+          retention-days: 14

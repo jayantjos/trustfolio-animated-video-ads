@@ -1,0 +1,92 @@
+# Third-pass technical clean plates with neutral non-branded controls and removed country flag; GPU gated.
+# Rerender all nine candidates after accurate scene09 phone cleanup and control panel lettering reduction.
+name: Build and stage nine text-masked Wan2.2 character plate candidates (NO GPU)
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths:
+      - .github/workflows/wan9-masked-plates-stage.yml
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  prepare-and-stage:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 9
+    env:
+      RUNPOD_S3_ACCESS_KEY_ID: ${{ secrets.RUNPOD_S3_ACCESS_KEY_ID }}
+      RUNPOD_S3_SECRET_ACCESS_KEY: ${{ secrets.RUNPOD_S3_SECRET_ACCESS_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - name: Install CPU-only art processing and S3 client
+        run: python -m pip install -q 'Pillow>=10,<13' 'opencv-python-headless>=4.9,<5' 'numpy>=1.24,<3' 'boto3>=1.35,<2'
+      - name: Mask all nine reference captions and create 720x1280 animation candidates
+        run: python -m scripts.wan9_mask_text_for_gpu --out output/wan9-text-masked-candidate
+      - name: SHA-verify nine candidates and stage in PRIVATE RunPod volume for GPU input review
+        run: |
+          python - <<'PY'
+          import json,os,hashlib
+          from pathlib import Path
+          import boto3
+          from botocore.config import Config
+          from PIL import Image
+          from trustfolio_video.washing30 import verify_reference_images
+          root=Path("output/wan9-text-masked-candidate")
+          data=json.loads((root/"plate-manifest.json").read_text())
+          refs=verify_reference_images()
+          assert data["num_scenes"]==9 and data["new_gpu_authorized"] is False
+          if not os.environ.get("RUNPOD_S3_ACCESS_KEY_ID") or not os.environ.get("RUNPOD_S3_SECRET_ACCESS_KEY"):
+              raise SystemExit("MISSING_RUNPOD_S3_CREDENTIALS")
+          s3=boto3.client("s3",endpoint_url="https://s3api-eu-ro-1.runpod.io",
+              region_name="eu-ro-1",config=Config(signature_version="s3v4",s3={"addressing_style":"path"},
+              connect_timeout=12,read_timeout=30),
+              aws_access_key_id=os.environ["RUNPOD_S3_ACCESS_KEY_ID"],
+              aws_secret_access_key=os.environ["RUNPOD_S3_SECRET_ACCESS_KEY"])
+          bucket="1bch597yrz"
+          dest="jobs/washing-9scene-v1/visual-review-candidates/"
+          rows=[]
+          for idx,item in enumerate(data["scenes"]):
+              assert item["scene_id"]==f"scene{idx+1:02d}"
+              assert item["source_reference_sha256"]==refs[idx]["sha256"]
+              assert item["expression_visual_qa_approved"] is False
+              path=root/(item["scene_id"]+".png")
+              assert path.is_file() and Image.open(path).size==(720,1280)
+              original=path.read_bytes()
+              digest=hashlib.sha256(original).hexdigest()
+              assert digest==item["visual_sha256"]
+              key=dest+path.name
+              s3.put_object(Bucket=bucket,Key=key,Body=original,ContentType="image/png",
+                Metadata={"sha256":digest,"visuallyapproved":"false"})
+              fetched=s3.get_object(Bucket=bucket,Key=key)
+              try: remote=fetched["Body"].read(8000001)
+              finally:fetched["Body"].close()
+              assert remote==original and hashlib.sha256(remote).hexdigest()==digest,"CANDIDATE_S3_SHA_MISMATCH"
+              rows.append({"scene_id":item["scene_id"],"s3_key":key,"sha256":digest,
+                 "visual_qa_approved":False})
+              print("WAN9_S3_CANDIDATE_SHA_VERIFIED="+item["scene_id"])
+          report={"count":len(rows),"images":rows,"gpu_ready":False,
+                  "pod_created":False,"paid_gpu_cost_usd":0,
+                  "status":"NINE_CANDIDATES_PRIVATE_S3_STAGED_NEED_VISUAL_QA"}
+          # Separate from provider-specific object metadata: immutable JSON of
+          # the bytes just SHA-verified by S3 GET. Still NOT visually approved.
+          manifest_key="jobs/washing-9scene-v1/visual-review-candidates/s3-stage-manifest.json"
+          raw=json.dumps(report,sort_keys=True,separators=(",",":")).encode()
+          s3.put_object(Bucket=bucket,Key=manifest_key,Body=raw,
+            ContentType="application/json")
+          check=s3.get_object(Bucket=bucket,Key=manifest_key)
+          try: copied=check["Body"].read(len(raw)+1)
+          finally: check["Body"].close()
+          assert copied==raw and hashlib.sha256(copied).digest()==hashlib.sha256(raw).digest(), "S3_MANIFEST_READBACK_FAILED"
+          print("WAN9_S3_STAGE_MANIFEST_SHA="+hashlib.sha256(raw).hexdigest())
+          (root/"s3-stage-receipt.json").write_text(json.dumps(report,indent=2))
+          print("WAN9_CLEANUP_STAGE=COMPLETE_CANDIDATES_NOT_APPROVED")
+          print("WAN9_NEW_GPU_POD_CREATED=false")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wan9-nine-text-masked-character-candidates-and-private-S3-receipt
+          path: output/wan9-text-masked-candidate/
+          retention-days: 2
+          if-no-files-found: warn

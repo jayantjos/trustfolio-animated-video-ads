@@ -1,0 +1,65 @@
+name: TrustFolio GitHub 9 scenes + live story TO RunPod S3 (NO GPU)
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths: ['.github/workflows/wan9-github-to-runpod-handoff.yml']
+  workflow_dispatch:
+    inputs:
+      budget:
+        description: Washing machine budget INR
+        type: number
+        default: 40000
+        required: true
+permissions: {contents: read}
+concurrency:
+  group: trustfolio-wan9-github-s3-handoff
+  cancel-in-progress: false
+jobs:
+  stage-nine-scenes:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    env:
+      TF_BUDGET: ${{ github.event.inputs.budget || '40000' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - name: Test original nine images and GitHub->RunPod story mapping
+        run: |
+          python -m unittest discover -s tests -p 'test_wan9_source_handoff.py' -v
+          python -m unittest discover -s tests -p 'test_wan5_nineshot.py' -v
+      - name: Obtain current exact website Top5 GET + POST prices
+        run: |
+          python -m scripts.washing30_live_build --budget "$TF_BUDGET" --output output/wan9-handoff/live
+      - name: Install private RunPod S3 client without starting GPU
+        run: python -m pip install -q 'boto3>=1.35,<2'
+      - name: SHA256 GET verify all NINE source images and story on existing EU-RO-1 volume
+        env:
+          TRUSTFOLIO_STORYBOARD_S3_STAGE: 'yes'
+          RUNPOD_S3_ACCESS_KEY_ID: ${{ secrets.RUNPOD_S3_ACCESS_KEY_ID }}
+          RUNPOD_S3_SECRET_ACCESS_KEY: ${{ secrets.RUNPOD_S3_SECRET_ACCESS_KEY }}
+        run: |
+          python -m scripts.wan9_stage_source_handoff --story output/wan9-handoff/live/storyboard30.json --out output/wan9-handoff/upload-receipt.json
+      - name: Assert this bridge NEVER arms paid GPU or social publication
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          r=json.loads(Path('output/wan9-handoff/upload-receipt.json').read_text())
+          assert r["status"]=="NINE_GITHUB_SOURCE_IMAGES_AND_STORY_AT_RUNPOD_S3_VERIFIED"
+          assert r["reference_scene_count"]==9
+          assert r["gpu_ready"] is False and r["gpu_pods_created"]==0
+          assert r["published"] is False and r["paid_gpu_cost_usd"]==0
+          print("WAN9_GITHUB_IMAGES_AND_STORY_RUNPOD_TRANSFER=PASS")
+          print("WAN9_GPU_CLEAN_PLATES_PENDING=true")
+          print("WAN9_PAID_GPU_CREATED=false")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wan9-github-images-live-story-runpod-stage-RECEIPT
+          path: |
+            output/wan9-handoff/upload-receipt.json
+            output/wan9-handoff/live/validation30.json
+          if-no-files-found: warn
+          retention-days: 2

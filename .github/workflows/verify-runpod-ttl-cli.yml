@@ -1,0 +1,68 @@
+name: Verify RunPod native auto-terminate CLI and Pods credential (NO GPU)
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths: ['.github/workflows/verify-runpod-ttl-cli.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-cli-and-key:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      RUNPOD_POD_WRITE_KEY: ${{ secrets.RUNPOD_POD_WRITE_KEY }}
+    steps:
+      - name: Download exact SHA256-pinned official RunPod CLI v3.0.1
+        run: |
+          curl -fL --retry 3 --silent --show-error -o /tmp/runpodctl \
+            https://github.com/runpod/runpodctl/releases/download/v3.0.1/runpodctl-linux-amd64
+          echo 'b66d11eca8cacbf18a2de6943c6e18a79ffbdc8a3c30aa13a49dc6cfc15d4239  /tmp/runpodctl' | sha256sum -c -
+          chmod 755 /tmp/runpodctl
+          /tmp/runpodctl --version
+          /tmp/runpodctl pod create --help > /tmp/cli-create-help.txt
+          if grep -F -- '--terminate-after' /tmp/cli-create-help.txt; then
+            echo 'NATIVE_CLI_V3_TERMINATE_AFTER_FLAG=PRESENT_NOT_LIVE_VERIFIED'
+          else
+            echo 'NATIVE_CLI_V3_TERMINATE_AFTER_FLAG=MISSING_BLOCK_PAID_GPU'
+          fi
+          for flag in --network-volume-id --data-center-ids --gpu-id; do
+            if grep -F -- "$flag" /tmp/cli-create-help.txt; then :; else
+              echo "NATIVE_CLI_V3_REQUIRED_FLAG_MISSING=$flag"
+            fi
+          done
+          echo 'NATIVE_CLI_V3_HELP_HEAD:'
+          head -35 /tmp/cli-create-help.txt
+          curl -fL --retry 3 --silent --show-error -o /tmp/runpodctl-v2             https://github.com/runpod/runpodctl/releases/download/v2.15.0/runpodctl-linux-amd64
+          echo '51c6f5a7e6f6c7cd4a52373f2262b9aeb0f16084e39595d25f71bc0cf5bc826b  /tmp/runpodctl-v2' | sha256sum -c -
+          chmod 755 /tmp/runpodctl-v2
+          /tmp/runpodctl-v2 --version
+          /tmp/runpodctl-v2 pod create --help >/tmp/cli-v2-create-help.txt
+          if grep -F -- '--terminate-after' /tmp/cli-v2-create-help.txt; then
+            echo 'NATIVE_CLI_V2_TERMINATE_AFTER_FLAG=PRESENT_NOT_LIVE_VERIFIED'
+          else
+            echo 'NATIVE_CLI_V2_TERMINATE_AFTER_FLAG=MISSING_BLOCK_PAID_GPU'
+          fi
+          echo 'NO_PAID_GPU_CREATED=true'
+      - name: Verify connected write key can at least LIST Pods (NO POST)
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json,os,urllib.request,urllib.error
+          k=os.environ.get("RUNPOD_POD_WRITE_KEY","")
+          if not k:raise SystemExit("POD_WRITE_KEY_MISSING")
+          req=urllib.request.Request("https://api.runpod.io/v2/pods",
+            headers={"Authorization":"Bearer "+k,"Accept":"application/json"},method="GET")
+          try:
+              with urllib.request.urlopen(req,timeout=25) as resp:
+                  if resp.status!=200:raise SystemExit("POD_WRITE_KEY_READ_HTTP_ERROR")
+                  data=json.load(resp)
+              if not isinstance(data.get("pods"),list):
+                  raise SystemExit("POD_WRITE_KEY_READ_SCHEMA_FAILED")
+              print("POD_WRITE_KEY_READ_AUTH=SUCCESS_NO_MUTATION")
+              print("PAID_GPU_CREATED=false")
+          except urllib.error.HTTPError as exc:
+              raise SystemExit("POD_WRITE_KEY_READ_HTTP_"+str(exc.code))
+          except (TimeoutError,urllib.error.URLError,ValueError):
+              raise SystemExit("POD_WRITE_KEY_READ_UNAVAILABLE")
+          PY
