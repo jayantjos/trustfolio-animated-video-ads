@@ -24,6 +24,7 @@ jobs:
       - name: Compile controller and run no GPU security tests
         run: |
           python -m py_compile scripts/wan9_capped_controller.py
+          python -m unittest discover -s tests -p 'test_wan9_capped_controller.py' -v
           python -m unittest discover -s tests -p 'test_wan9_dollar1_budget.py' -v
           python -m unittest discover -s tests -p 'test_wan5_nine_scene_gpu_worker.py' -v
           python -m unittest discover -s tests -p 'test_wan9_source_handoff.py' -v
