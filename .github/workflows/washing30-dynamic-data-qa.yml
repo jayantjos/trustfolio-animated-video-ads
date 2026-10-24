@@ -54,6 +54,27 @@ jobs:
           RUNPOD_S3_SECRET_ACCESS_KEY: ${{ secrets.RUNPOD_S3_SECRET_ACCESS_KEY }}
         run: |
           python -m scripts.stage_washing30_s3 --story output/washing30-live/storyboard30.json --output output/washing30-live/s3-stage-receipt.json
+      - name: Install Pillow for truthful per-rank poster compositing (NO GPU)
+        run: python -m pip install -q 'Pillow>=10,<13'
+      - name: Render nine vertical scenes with actual source product photos and prices
+        run: |
+          python -m scripts.washing30_compose_preview --story output/washing30-live/storyboard30.json --output output/washing30-frames
+      - name: Compose and QA 30-second silent preview, no Hindi-voice or real Wan claims
+        run: |
+          command -v ffmpeg
+          command -v ffprobe
+          python -m scripts.washing30_build_preview_mp4 --frames output/washing30-frames --output output/washing30-preview/TrustFolio-Washing-30s-STORYBOARD-ONLY.mp4
+      - name: Upload preview for visual review (not for publication)
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: washing30-visual-preview-NO-GPU-NO-VOICE
+          path: |
+            output/washing30-preview/*.mp4
+            output/washing30-preview/video_qa.json
+            output/washing30-frames/scene09.png
+          if-no-files-found: error
+          retention-days: 1
       - name: Upload evidence + approved dynamic scene manifest
         if: always()
         uses: actions/upload-artifact@v4
