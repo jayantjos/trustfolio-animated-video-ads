@@ -53,8 +53,13 @@ def validate_manifest(meta, *, root=ROOT, now=None):
     now=now or time.time()
     if meta.get("version")!=1 or meta.get("category")!="washing-machines":
         raise RenderError("NINE_SCENE_MANIFEST_WRONG_CATEGORY_OR_VERSION")
-    if meta.get("state")!="CLEAN_PLATES_USER_VISUALLY_APPROVED":
-        raise RenderError("UNAPPROVED_INPUT_PLATES")
+    state=meta.get("state")
+    if state not in ("CLEAN_PLATES_USER_VISUALLY_APPROVED",
+                     "MASKED_CANDIDATES_NONPUBLISHABLE_TECHNICAL_QA"):
+        raise RenderError("UNRECOGNIZED_INPUT_PLATES")
+    technical_qa=(state=="MASKED_CANDIDATES_NONPUBLISHABLE_TECHNICAL_QA")
+    if technical_qa and meta.get("technical_render_only") is not True:
+        raise RenderError("UNTRUSTED_CANDIDATE_MODE")
     if meta.get("private_qa") is not True or meta.get("published") is not False:
         raise RenderError("PUBLICATION_SCOPE_VIOLATION")
     if meta.get("paid_gpu_authorized") is not False:
@@ -70,7 +75,10 @@ def validate_manifest(meta, *, root=ROOT, now=None):
         if scene.get("id")!=sid:
             raise RenderError("SCENE_ORDER_CHANGED_"+sid)
         filename=scene.get("plate_path")
-        if filename!=f"assets/clean-plates/washing-machines/{sid}.png":
+        expected=(f"assets/candidates/washing-machines/{sid}.png"
+                  if technical_qa else
+                  f"assets/clean-plates/washing-machines/{sid}.png")
+        if filename!=expected:
             raise RenderError("CLEAN_PLATE_PATH_NOT_ALLOWLISTED_"+sid)
         path=root/filename
         if not path.resolve().is_relative_to(root.resolve()):
@@ -85,9 +93,14 @@ def validate_manifest(meta, *, root=ROOT, now=None):
                 raise RenderError("PLATE_SHA_CHANGED_"+sid)
         else:
             raise RenderError("CLEAN_PLATE_MISSING_"+sid)
-        if (scene.get("source_text_burned_in") is not False
-            or scene.get("visual_qa_approved") is not True
-            or scene.get("character_identity_approved") is not True):
+        if technical_qa:
+            if (scene.get("visual_qa_approved") is not False
+                or scene.get("not_for_publication") is not True
+                or scene.get("candidate_sha_verified") is not True):
+                raise RenderError("TECHNICAL_CANDIDATE_NOT_CLEARLY_MARKED_"+sid)
+        elif (scene.get("source_text_burned_in") is not False
+              or scene.get("visual_qa_approved") is not True
+              or scene.get("character_identity_approved") is not True):
             raise RenderError("VISUAL_QA_REQUIRED_"+sid)
         prompt=scene.get("prompt")
         if (not isinstance(prompt,str) or len(prompt)>MAX_PROMPT_CHARS
@@ -179,6 +192,8 @@ def run(*, input_path=MANIFEST, root=ROOT, outdir=OUTPUT_DIR,
                 "private_qa":True,"public_publishing":False,
                 "lip_sync_claimed":False,"attempt_id":attempt,
                 "s3_get_sha256_verified":False,"pod_deleted_get_404":False,
+                "source_is_unapproved_technical_candidate":
+                    meta.get("state")=="MASKED_CANDIDATES_NONPUBLISHABLE_TECHNICAL_QA",
             }
             atomic_json(receipt_file,receipt)
             rendered.append(sid)
