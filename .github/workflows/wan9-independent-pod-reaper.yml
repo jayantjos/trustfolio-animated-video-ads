@@ -1,3 +1,4 @@
+# Fresh reaper safety check before user-requested capped WAN9 private retry, 2026-10-24.
 # Post-GPU-attempt read-only-or-cleanup confirmation, exact WAN9 owned pod only.
 # WAN9 independent watch tick during one-time capped attempt; exact-name only.
 # WAN9 one-time capped job preflight: fresh independently running protected reaper; preserve network volume.
