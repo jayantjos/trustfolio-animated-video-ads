@@ -1,3 +1,4 @@
+# Bounded, exact-owned WAN9 Pod observer during fresh heartbeat-worker attempt; never delete network volume.
 # Fresh independently scoped WAN9 safety check before user-requested heartbeat-worker test, 24 Oct.
 # Read-only/stop-if-fatal exact WAN9 Pod inspection for capped RTX4090 retry.
 # Live exact-pod observer during approved WAN9 private retry; volume always protected.
