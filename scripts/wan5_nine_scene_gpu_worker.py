@@ -18,12 +18,22 @@ import re
 import sys
 import time
 
-from scripts.wan5_gpu_worker import (
-    MODEL, WAN_SOURCE, MODEL_FILES, RenderError,
-    verify_tokenizer_dir, check_video, sha256_file,
-    generate_command, run_inference_streamed, gpu_check,
-    verify_torch_cuda_kernel, atomic_json,
-)
+try:
+    from scripts.wan5_gpu_worker import (
+        MODEL, WAN_SOURCE, MODEL_FILES, RenderError,
+        verify_tokenizer_dir, check_video, sha256_file,
+        generate_command, run_inference_streamed, gpu_check,
+        verify_torch_cuda_kernel, atomic_json,
+    )
+except ModuleNotFoundError as missing_package:
+    if missing_package.name != "scripts":
+        raise
+    from wan5_gpu_worker import (
+        MODEL, WAN_SOURCE, MODEL_FILES, RenderError,
+        verify_tokenizer_dir, check_video, sha256_file,
+        generate_command, run_inference_streamed, gpu_check,
+        verify_torch_cuda_kernel, atomic_json,
+    )
 
 ROOT=Path("/workspace")
 INPUT_DIR=ROOT/"jobs"/"washing-9scene-v1"
