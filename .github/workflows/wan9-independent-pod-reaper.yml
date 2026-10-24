@@ -1,3 +1,4 @@
+# Post-GPU-attempt read-only-or-cleanup confirmation, exact WAN9 owned pod only.
 # WAN9 independent watch tick during one-time capped attempt; exact-name only.
 # WAN9 one-time capped job preflight: fresh independently running protected reaper; preserve network volume.
 name: TrustFolio WAN9 independent GPU Pod reaper (EXACT-owned Pod only)
