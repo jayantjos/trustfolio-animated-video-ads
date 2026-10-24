@@ -15,7 +15,7 @@ TIMES=((0,3),(3,6),(6,10),(10,14),(14,18),(18,22),(22,26),(26,28),(28,30))
 KINDS=("hook","intro","product","product","product","product","product","ranking","cta")
 EXPECTED_RANK=(None,None,5,4,3,2,1,None,None)
 SCENE_MOTIONS=(
-    "The same approved woman in pink kurta reacts to a huge pile of laundry. Eyebrows rise, eyes widen, hands go to head, hair and clothing subtly sway. Match the initial approved character identity precisely.",
+    "Animate the same approved woman in pink kurta as she reacts to a huge pile of laundry. Eyebrows rise, eyes widen, hands go to head, hair and clothing subtly sway. Match the initial approved character identity precisely.",
     "Five happy anonymous washing-machine mascots bounce into a tropical courtyard. They have arms, faces and feet, with natural staggered entrance and subtle camera tracking. Keep them UNBRANDED.",
     "A cheerful neutral washing machine mascot makes a confident thumbs-up and laughs gently. Smooth cartoon expression, subtle body sway, steady product silhouette.",
     "A cute washing machine mascot winks, blinks, smiles and gestures to a laundry basket. Continuous natural acting and stable machine body.",
@@ -23,7 +23,7 @@ SCENE_MOTIONS=(
     "A confident washing-machine mascot smiles and turns slightly, with a thumbs-up gesture and polished metallic reflections.",
     "A triumphant washing-machine mascot celebrates with a floating crown and tiny cape motion. Eyes brighten and arms lift while body stays consistent.",
     "Five anonymous neutral washing-machine mascots cheer on numbered podiums. Gentle movement, mild parallax, no brand or price lettering.",
-    "The same approved pink-kurta woman smiles, lifts a phone toward camera, points at a blank clean phone screen and looks confidently at viewers."
+    "Animate the same approved pink-kurta woman as she smiles, lifts a phone toward camera, points at a blank clean phone screen and looks confidently at viewers."
 )
 NO_TEXT_SUFFIX=(" No legible text, no logos, no price labels, no rank numbers,"
                 " no watermark, no new people or fingers, no morphing,"
