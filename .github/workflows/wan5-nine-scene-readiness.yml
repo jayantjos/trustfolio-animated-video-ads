@@ -29,6 +29,7 @@ jobs:
       - name: Run scene plan unit tests and original video pipeline tests
         run: |
           python -m unittest discover -s tests -p 'test_wan5_nineshot.py' -v
+          python -m unittest discover -s tests -p 'test_final_motion_gate.py' -v
           python -m unittest discover -s tests -p 'test_washing30*.py' -v
       - name: Validate exact nine scene images and generate live API-backed motion plan
         run: |
