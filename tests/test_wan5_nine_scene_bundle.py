@@ -32,7 +32,7 @@ class BundleTest(unittest.TestCase):
         self.story_path.write_text(json.dumps(story()))
         self.platemeta=self.base/"plates.json"
         self.plates=[]
-        pic=Image.new("RGB",(720,1280),(32,74,122))
+        pic=Image.effect_noise((720,1280),60).convert("RGB")
         for i in range(1,10):
             p=self.base/f"scene{i:02d}.png"
             pic.save(p)
