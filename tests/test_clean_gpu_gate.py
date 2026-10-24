@@ -1,7 +1,8 @@
 """Production plates must be clean even when reference asset ZIP is valid."""
 from datetime import datetime,timezone
 from pathlib import Path
-import hashlib,tempfile,unittest\nfrom PIL import Image
+import hashlib,tempfile,unittest
+from PIL import Image
 
 from trustfolio_video.contract import Blocked
 from trustfolio_video.washing30 import build30,verify_reference_images
