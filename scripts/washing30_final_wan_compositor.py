@@ -8,7 +8,7 @@ import argparse,hashlib,json,subprocess
 from pathlib import Path
 from PIL import Image,ImageDraw,ImageFont,ImageOps
 
-from .contract import Blocked
+from trustfolio_video.contract import Blocked
 from .final_motion_gate import verify_final_motion_inputs
 from scripts.washing30_compose_preview import photo
 
