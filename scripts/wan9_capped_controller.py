@@ -279,7 +279,7 @@ def enforce_observation_timeout(*, now, started, last_seen, logs_ever,
 
 
 def run():
-    require_fresh_one_time_request()
+    attempt_id=require_fresh_one_time_request()
     require_independent_reaper()
     read_key=os.environ.get("RUNPOD_API_KEY","")
     write_key=os.environ.get("RUNPOD_POD_WRITE_KEY","")
@@ -315,7 +315,7 @@ def run():
         payload["env"]=[
             {"key":"TRUSTFOLIO_PRIVATE_QA","value":"yes"},
             {"key":"TRUSTFOLIO_WAN9_RENDER","value":"yes"},
-            {"key":"TRUSTFOLIO_ATTEMPT_ID","value":"wan9-one-shot-20261024"}]
+            {"key":"TRUSTFOLIO_ATTEMPT_ID","value":attempt_id}]
         deployment_guard(payload,quoted_rate=quote["live_rate_usd_per_hour"])
         print("WAN9_CREATING_ONE_CAPPED_GPU_POD=true",flush=True)
         attempted=True
@@ -326,6 +326,7 @@ def run():
         price=Decimal(str(pod.get("costPerHr")))
         quote_guard(price,ttl_minutes=TTL_MIN)
         report["status"]="GPU_POD_CREATED_PRIVATE_TECHNICAL_QA"
+        report["attempt_id"]=attempt_id
         report["pod_id"]=pod_id
         started=time.monotonic()
         fingerprint=None
@@ -334,7 +335,7 @@ def run():
         last_kind="startup"
         last_clip_count=0
         last_stage_marker=None
-        worker_attempt="wan9-one-shot-20261024"
+        worker_attempt=attempt_id
         # SHA-pinned payload was staged before launch; reread only bounded
         # JSON, reject a different job hash.
         input_raw,_=load(s3,JOB+"gpu-input.json",100000)
