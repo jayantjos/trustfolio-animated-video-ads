@@ -1,0 +1,62 @@
+name: Verify actual nine WAN GPU motion clips on RunPod volume (READ ONLY)
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths: ['.github/workflows/wan9-existing-gpu-clips-readonly.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  inventory:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      RUNPOD_S3_ACCESS_KEY_ID: ${{ secrets.RUNPOD_S3_ACCESS_KEY_ID }}
+      RUNPOD_S3_SECRET_ACCESS_KEY: ${{ secrets.RUNPOD_S3_SECRET_ACCESS_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install read-only S3 SDK
+        run: python -m pip install -q 'boto3>=1.35,<2'
+      - name: Inventory actual finished motions and receipts (no Pod operations)
+        run: |
+          python - <<'PY'
+          import os,json,boto3
+          from pathlib import Path
+          from botocore.config import Config
+          if not os.getenv("RUNPOD_S3_ACCESS_KEY_ID") or not os.getenv("RUNPOD_S3_SECRET_ACCESS_KEY"):
+              raise SystemExit("S3_READ_CREDS_NOT_CONFIGURED")
+          s=boto3.client("s3",endpoint_url="https://s3api-eu-ro-1.runpod.io",region_name="eu-ro-1",
+              aws_access_key_id=os.environ["RUNPOD_S3_ACCESS_KEY_ID"],
+              aws_secret_access_key=os.environ["RUNPOD_S3_SECRET_ACCESS_KEY"],
+              config=Config(signature_version="s3v4",s3={"addressing_style":"path"},connect_timeout=15,read_timeout=25))
+          bucket="1bch597yrz"
+          prefix="videos/private-qa/washing-9scene-v1/"
+          objects=[]
+          page=s.list_objects_v2(Bucket=bucket,Prefix=prefix,MaxKeys=100)
+          objects+=page.get("Contents",[])
+          while page.get("IsTruncated"):
+              page=s.list_objects_v2(Bucket=bucket,Prefix=prefix,MaxKeys=100,
+                                      ContinuationToken=page["NextContinuationToken"])
+              objects+=page.get("Contents",[])
+              if len(objects)>1000:raise SystemExit("UNEXPECTED_S3_OBJECT_COUNT")
+          present=[]
+          for i in range(1,10):
+              key=prefix+f"scene{i:02d}.motion.mp4"
+              matches=[z for z in objects if z.get("Key")==key and int(z.get("Size",0))>10000]
+              if matches:present.append(i)
+          result={"confirmed_gpu_mp4_objects":len(present),"scene_numbers":present,
+                  "all_nine_present":len(present)==9,
+                  "s3_prefix":prefix,"paid_gpu_pods_created":0,
+                  "human_lipsync_qa_not_verified":True,
+                  "final_ad_ready":False}
+          Path("output").mkdir(exist_ok=True)
+          Path("output/wan9-motion-inventory.json").write_text(json.dumps(result,indent=2))
+          print("WAN9_REAL_GPU_MP4_OBJECT_COUNT="+str(len(present)))
+          print("WAN9_ALL_NINE_GPU_CLIPS_STAGED="+str(len(present)==9).lower())
+          print("GPU_POD_CREATED=false")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wan9-runpod-real-motion-inventory-READONLY
+          path: output/wan9-motion-inventory.json
+          if-no-files-found: error
+          retention-days: 2
