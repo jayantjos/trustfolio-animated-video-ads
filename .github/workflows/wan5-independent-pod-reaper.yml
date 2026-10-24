@@ -1,3 +1,4 @@
+# Wan5 independent GPU reaper health check; checked 2026-10-24T01:38:18.848Z; no policy changes.
 name: TrustFolio WAN5 independent stale Pod reaper (FIRST PILOT ONLY)
 # Fifth pilot readiness: independent error/age reaper must be recently healthy.
 # Public-repository no-GPU API readiness rerun, 2026-10-23; ownership checks unchanged.
