@@ -60,7 +60,8 @@ jobs:
       - name: Check exact worker scene progress receipts without starting GPU
         run: |
           python - <<'PY'
-          import os,json,boto3
+          import os,json,boto3,time
+          from pathlib import Path
           from botocore.config import Config
           from botocore.exceptions import ClientError
           s=boto3.client("s3",endpoint_url="https://s3api-eu-ro-1.runpod.io",
@@ -68,7 +69,9 @@ jobs:
             aws_secret_access_key=os.environ["RUNPOD_S3_SECRET_ACCESS_KEY"],
             config=Config(signature_version="s3v4",s3={"addressing_style":"path"}))
           prefix="videos/private-qa/washing-9scene-v1/"
+          expected=json.loads(Path("pilot/wan9-capped-once.request.json").read_text())["approval_id"]
           states=[]
+          newest=[]
           for i in range(1,10):
               sid=f"scene{i:02d}"
               key=prefix+sid+".progress.json"
@@ -79,10 +82,18 @@ jobs:
                   state=json.loads(data)
                   if state.get("scene_id")==sid and state.get("stage")=="WAN_INFERENCE":
                       states.append(sid)
+                      if state.get("attempt_id")==expected:
+                          age=round(time.time()-float(state.get("time",0)),1)
+                          seq=int(state.get("sequence",0))
+                          newest.append((sid,seq,age))
+                          print("WAN9_CURRENT_ATTEMPT_SCENE="+sid+
+                              " HEARTBEAT_SEQUENCE="+str(seq)+
+                              " AGE_SECONDS="+str(age))
               except (ClientError,ValueError,KeyError):
                   pass
           print("WAN9_REAL_WORKER_INFERENCE_STARTED_FOR_SCENES="+",".join(states))
           print("WAN9_REAL_WORKER_PROGRESS_FILE_COUNT="+str(len(states)))
+          print("WAN9_CURRENT_ATTEMPT_PROGRESS_COUNT="+str(len(newest)))
           PY
       - uses: actions/upload-artifact@v4
         with:
