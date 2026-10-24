@@ -101,8 +101,10 @@ def build30(approved, *, references=None, blueprint=None):
             if not price.is_finite() or not 0<price<=budget:raise ValueError()
         except (ValueError,TypeError,ArithmeticError,KeyError):
             raise Blocked("Live price over budget or invalid") from None
-        if not safe_label(item.get("title"),limit=150) or not safe_label(item.get("platform"),limit=80):
-            raise Blocked("Missing approved product title/retailer")
+        if not safe_label(item.get("title"),limit=600):
+            raise Blocked("Missing or invalid product title at rank "+str(rank)+":length="+str(len(str(item.get("title") or ""))))
+        if not safe_label(item.get("platform"),limit=100):
+            raise Blocked("Missing or invalid retailer at rank "+str(rank)+":length="+str(len(str(item.get("platform") or ""))))
     if references is None:
         references=verify_reference_images()
     if len(references)!=9 or len({x["sha256"] for x in references})!=9:
