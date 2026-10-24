@@ -1,3 +1,4 @@
+# Revalidate after exact scene01/scene09 animation action wording correction.
 # Rerun after full-size decodable CPU plate fixture correction; no paid GPU.
 name: Verify nine-scene clean inputs and S3 bundle (NO GPU)
 on:
