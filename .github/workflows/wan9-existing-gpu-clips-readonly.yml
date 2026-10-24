@@ -55,6 +55,33 @@ jobs:
           print("WAN9_ALL_NINE_GPU_CLIPS_STAGED="+str(len(present)==9).lower())
           print("GPU_POD_CREATED=false")
           PY
+      - name: Check exact worker scene progress receipts without starting GPU
+        run: |
+          python - <<'PY'
+          import os,json,boto3
+          from botocore.config import Config
+          from botocore.exceptions import ClientError
+          s=boto3.client("s3",endpoint_url="https://s3api-eu-ro-1.runpod.io",
+            region_name="eu-ro-1",aws_access_key_id=os.environ["RUNPOD_S3_ACCESS_KEY_ID"],
+            aws_secret_access_key=os.environ["RUNPOD_S3_SECRET_ACCESS_KEY"],
+            config=Config(signature_version="s3v4",s3={"addressing_style":"path"}))
+          prefix="videos/private-qa/washing-9scene-v1/"
+          states=[]
+          for i in range(1,10):
+              sid=f"scene{i:02d}"
+              key=prefix+sid+".progress.json"
+              try:
+                  obj=s.get_object(Bucket="1bch597yrz",Key=key)
+                  try: data=obj["Body"].read(8192)
+                  finally: obj["Body"].close()
+                  state=json.loads(data)
+                  if state.get("scene_id")==sid and state.get("stage")=="WAN_INFERENCE":
+                      states.append(sid)
+              except (ClientError,ValueError,KeyError):
+                  pass
+          print("WAN9_REAL_WORKER_INFERENCE_STARTED_FOR_SCENES="+",".join(states))
+          print("WAN9_REAL_WORKER_PROGRESS_FILE_COUNT="+str(len(states)))
+          PY
       - uses: actions/upload-artifact@v4
         with:
           name: wan9-runpod-real-motion-inventory-READONLY
