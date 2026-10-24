@@ -1,3 +1,4 @@
+# Exact-owned RunPod GPU Pod status read-only at WAN9 heartbeat attempt.
 # User-requested WAN9 safe-stock alternatives preflight; GPU CREATE forbidden.
 # Read-only fresh RTX4090 stock/quote audit for 9-scene video 2026-10-24; no GPU start.\n# Wan5 stock-only RTX4090 check; checked 2026-10-24T01:38:18.848Z; no policy changes.
 # 2026-10-23 fresh user-requested no-charge stock/pod readiness check 2026-10-23T13:54:31.894Z
@@ -46,4 +47,11 @@ jobs:
           decision=check_catalog({'gpus':all_g},{'dataCenters':centers})
           print('WAN5_EXISTING_CHECK_CATALOG='+json.dumps(decision,sort_keys=True))
           print('GPU_CREATED=false')
+          pods=get('/pods').get('pods',[])
+          name='trustfolio-video-wan9-multiscene-private-qa-20261024'
+          target=[p for p in pods if isinstance(p,dict) and p.get('name')==name]
+          print('WAN9_RUNTIME_OWNED_PODS='+str(len(target)))
+          if len(target)==1:
+              print('WAN9_RUNTIME_POD_STATUS='+str(target[0].get('status','UNKNOWN')))
+              print('WAN9_RUNTIME_GPU='+str(target[0].get('gpuTypeId','UNREPORTED')))
           PY
