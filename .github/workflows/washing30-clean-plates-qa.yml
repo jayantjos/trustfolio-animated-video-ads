@@ -1,3 +1,4 @@
+# Retry strict clean plate test after import syntax repair; no paid GPU.
 # Rerun end-to-end strict decodable PNG clean-plate QA; GPU paid provisioning disabled.
 name: Build nine cartoon motion plate candidates (NO GPU)
 on:
