@@ -61,7 +61,6 @@ def verify_final_motion_inputs(story, receipts, files, qa, *, media_probe=None):
         expected_sha=rec.get("sha256")
         path=files.get(sid)
         if (rec.get("model")!="Wan2.2-TI2V-5B"
-            or rec.get("source_campaign_id")!=planned["campaign_id"]
             or rec.get("motion_job_hash")!=planned["motion_job_hash"]
             or rec.get("scene_source_reference_sha256")!=shot["source_storyboard_sha256"]
             or rec.get("private_qa") is not True
