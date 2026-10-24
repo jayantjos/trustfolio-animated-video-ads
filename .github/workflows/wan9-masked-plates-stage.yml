@@ -68,6 +68,17 @@ jobs:
           report={"count":len(rows),"images":rows,"gpu_ready":False,
                   "pod_created":False,"paid_gpu_cost_usd":0,
                   "status":"NINE_CANDIDATES_PRIVATE_S3_STAGED_NEED_VISUAL_QA"}
+          # Separate from provider-specific object metadata: immutable JSON of
+          # the bytes just SHA-verified by S3 GET. Still NOT visually approved.
+          manifest_key="jobs/washing-9scene-v1/visual-review-candidates/s3-stage-manifest.json"
+          raw=json.dumps(report,sort_keys=True,separators=(",",":")).encode()
+          s3.put_object(Bucket=bucket,Key=manifest_key,Body=raw,
+            ContentType="application/json")
+          check=s3.get_object(Bucket=bucket,Key=manifest_key)
+          try: copied=check["Body"].read(len(raw)+1)
+          finally: check["Body"].close()
+          assert copied==raw and hashlib.sha256(copied).digest()==hashlib.sha256(raw).digest(), "S3_MANIFEST_READBACK_FAILED"
+          print("WAN9_S3_STAGE_MANIFEST_SHA="+hashlib.sha256(raw).hexdigest())
           (root/"s3-stage-receipt.json").write_text(json.dumps(report,indent=2))
           print("WAN9_CLEANUP_STAGE=COMPLETE_CANDIDATES_NOT_APPROVED")
           print("WAN9_NEW_GPU_POD_CREATED=false")
