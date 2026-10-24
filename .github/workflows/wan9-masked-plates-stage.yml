@@ -1,3 +1,4 @@
+# Third-pass technical clean plates with neutral non-branded controls and removed country flag; GPU gated.
 # Rerender all nine candidates after accurate scene09 phone cleanup and control panel lettering reduction.
 name: Build and stage nine text-masked Wan2.2 character plate candidates (NO GPU)
 on:
