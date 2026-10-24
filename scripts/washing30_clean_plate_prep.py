@@ -44,7 +44,7 @@ def make(output_root):
             left,top,right,bottom=HIDE_HEADS[number]
             # Optical inpaint is a visual DRAFT; no one may claim it is guaranteed text-free.
             soft=foreground.filter(ImageFilter.GaussianBlur(25))
-            foreground.paste(soft,(left,top,right,bottom),(Image.new("L",(right-left,bottom-top),200)))
+            foreground.paste(soft.crop((left,top,right,bottom)),(left,top),Image.new("L",(right-left,bottom-top),200))
         if number in (2,8):
             wide=ImageOps.contain(foreground,(690,820),Image.Resampling.LANCZOS)
             xy=((FRAME[0]-wide.width)//2,(FRAME[1]-wide.height)//2)
