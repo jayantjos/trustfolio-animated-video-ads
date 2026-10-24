@@ -1,0 +1,21 @@
+name: Verify nine-scene clean inputs and S3 bundle (NO GPU)
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths: ['.github/workflows/wan9-input-bundle-qa.yml','scripts/wan5_nine_scene_bundle.py','tests/test_wan5_nine_scene_bundle.py']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  inputs:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install real image decoder
+        run: python -m pip install -q 'Pillow>=10,<13'
+      - name: Test real PNG input validation and exact 9-image GPU data lineage
+        run: |
+          python -m unittest discover -s tests -p 'test_clean_gpu_gate.py' -v
+          python -m unittest discover -s tests -p 'test_wan5_nine_scene_bundle.py' -v
+          echo 'NINE_STORYBOARD_SOURCE_IMAGE_HASHES=TRUSTED'
+          echo 'REAL_PAID_GPU_CREATED=false'
