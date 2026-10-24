@@ -23,7 +23,7 @@ from trustfolio_video.wan9_dollar1_budget import (
 )
 
 NAME = "trustfolio-video-wan9-multiscene-private-qa-20261024"
-IMAGE = "ghcr.io/jayantjos/trustfolio-wan9-worker@sha256:a526ba3a516b337aa2281d5d1ae1f22f36c79645f210d1effbe98910711e35ef"
+IMAGE = "ghcr.io/jayantjos/trustfolio-wan9-worker@sha256:0e7eb98f0db6a8163213f08804dd4b5f708d0670a458a9605bccc6815b7050eb"
 S3_PREFIX = "videos/private-qa/washing-9scene-v1/"
 JOB = "jobs/washing-9scene-v1/"
 REQUEST = Path("pilot/wan9-capped-once.request.json")
