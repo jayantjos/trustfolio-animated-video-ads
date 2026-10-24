@@ -1,3 +1,4 @@
+# Recheck tokenizer S3 four-file GET integrity after transient InvalidArgument on 2026-10-24T01:39:47.625Z; NO GPU.
 name: Wan5 Free Worker Watchdog QA
 on:
   push:
