@@ -22,6 +22,13 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: {python-version: '3.11'}
+      - name: Install ffmpeg for CPU-only genuine 49-frame retime smoke
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+      - name: Test real ffmpeg 49-frame synthetic conversion WITHOUT GPU
+        run: |
+          python -m unittest discover -s tests -p 'test_wan9_retime_cpu.py' -v
       - name: Verify no GPU allocation and all nine worker runtime gates
         run: |
           python -m unittest discover -s tests -p 'test_wan5_nine_scene_gpu_worker.py' -v
