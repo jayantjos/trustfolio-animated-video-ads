@@ -1,3 +1,4 @@
+# Live read-only checkpoint during capped WAN9 render; check real MP4 objects only.
 name: Verify actual nine WAN GPU motion clips on RunPod volume (READ ONLY)
 on:
   push:
