@@ -18,7 +18,7 @@ import re
 import sys
 import time
 
-from wan5_gpu_worker import (
+from scripts.wan5_gpu_worker import (
     MODEL, WAN_SOURCE, MODEL_FILES, RenderError,
     verify_tokenizer_dir, check_video, sha256_file,
     generate_command, run_inference_streamed, gpu_check,
