@@ -1,3 +1,4 @@
+# WAN9 one-time capped job preflight: fresh independently running protected reaper; preserve network volume.
 name: TrustFolio WAN9 independent GPU Pod reaper (EXACT-owned Pod only)
 on:
   schedule:
