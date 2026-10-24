@@ -6,6 +6,7 @@ Cost approval and provider watchdogs are a completely separate second gate.
 """
 import hashlib
 import json
+import struct
 from pathlib import Path
 from .contract import Blocked
 from .wan5_nineshot import verified_plan
@@ -49,6 +50,12 @@ def validate_clean_plates(story, plate_manifest, *, root=None):
             or not isinstance(record.get("visual_sha256"),str)
             or sha256(path)!=record["visual_sha256"]):
             raise Blocked(scene_id+":CLEAN_PLATE_FILE_OR_SHA_UNVERIFIED")
+        with path.open("rb") as inp:
+            header=inp.read(24)
+        if (header[:8]!=bytes((137,80,78,71,13,10,26,10))
+            or header[12:16]!=b"IHDR"
+            or struct.unpack(">II",header[16:24])!=(720,1280)):
+            raise Blocked(scene_id+":CLEAN_PLATE_PNG_720X1280_REQUIRED")
         approved.append({
             "scene_id":scene_id,
             "clean_plate_path":str(path),
