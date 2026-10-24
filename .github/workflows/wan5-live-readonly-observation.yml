@@ -24,7 +24,7 @@ jobs:
           python - <<'PY'
           import json, re, time
           from scripts import wan5_first_paid_controller as c
-          expected='wan5-bd7cff72ef38ef4046e780cf83e8cbcb2e7423a7'
+          expected='wan5-00f4044705a8818298281a45d36de280fda9fd79'
           s3=c.make_s3()
           allowed_files=('generate.py','wan/textimage2video.py','wan/modules/model.py',
                          'wan/modules/t5.py','wan/modules/vae2_2.py','wan/utils/utils.py',
