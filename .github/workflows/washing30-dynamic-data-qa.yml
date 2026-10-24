@@ -1,3 +1,4 @@
+# Retry on corrected nine-scene append + labels; approved CPU-only audit 2026-10-24T02:47:07.061Z
 name: WAN5 nine-scene washing ad live data QA (NO GPU)
 on:
   push:
