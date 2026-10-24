@@ -1,7 +1,7 @@
 """Production plates must be clean even when reference asset ZIP is valid."""
 from datetime import datetime,timezone
 from pathlib import Path
-import hashlib,struct,tempfile,unittest
+import hashlib,tempfile,unittest\nfrom PIL import Image
 
 from trustfolio_video.contract import Blocked
 from trustfolio_video.washing30 import build30,verify_reference_images
@@ -36,9 +36,9 @@ class CleanGateTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             root=Path(td)
             records=[]
-            header=bytes((137,80,78,71,13,10,26,10))+b"junk"+b"IHDR"+struct.pack(">II",720,1280)
+            dummy_png=root/"generic_test_pixels.png"\n            Image.effect_noise((720,1280),60).convert("RGB").save(dummy_png)
             for i in range(1,10):
-                p=root/f"scene{i:02d}.png";p.write_bytes(header+b"0"*50000)
+                p=root/f"scene{i:02d}.png";p.write_bytes(dummy_png.read_bytes())
                 records.append({"scene_id":f"scene{i:02d}","path":str(p),
                     "visual_sha256":hashlib.sha256(p.read_bytes()).hexdigest(),
                     "expression_visual_qa_approved":True,
