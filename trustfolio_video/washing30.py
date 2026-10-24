@@ -68,7 +68,7 @@ def build30(approved, *, references=None, blueprint=None):
     budget=campaign.get("budget")
     if type(budget) is not int or not 1<=budget<=10_000_000:
         raise Blocked("Invalid verified campaign budget")
-    products=approved.get("products")
+    if approved.get("live_price_refresh_completed") is not True:\n        raise Blocked("Both website GET Top5 and POST live-prices required")\n    products=approved.get("products")
     if not isinstance(products,list) or len(products)!=5:
         raise Blocked("Five verified products required")
     if not re.fullmatch(r"[a-f0-9]{64}",str(approved.get("source_sha256","")).lower()):
@@ -87,8 +87,7 @@ def build30(approved, *, references=None, blueprint=None):
         if type(rank) is not int or rank not in (1,2,3,4,5) or rank in by_rank or not isinstance(pid,str) or pid in ids:
             raise Blocked("Authoritative rank/id mismatch")
         ids.add(pid);by_rank[rank]=item
-        if item.get("price_source")!="website_live_price_api" or item.get("live_price_status")!="ok" or item.get("in_stock") is not True:
-            raise Blocked("No live-price evidence or out of stock")
+        src=item.get("price_source")\n        if src not in ("website_live_price_api","website_catalog") or item.get("in_stock") is not True:\n            raise Blocked("Unknown source or out of stock")\n        if src=="website_live_price_api" and item.get("live_price_status")!="ok":\n            raise Blocked("Live price falsely marked as verified")\n        if src=="website_catalog" and item.get("website_catalog_fallback") is not True:\n            raise Blocked("Catalog fallback disclosure missing")
         try:
             price=Decimal(str(item["price_inr"]))
             if not price.is_finite() or not 0<price<=budget:raise ValueError()
@@ -118,7 +117,7 @@ def build30(approved, *, references=None, blueprint=None):
             scene["dynamic"]={
                 "rank":rank,"source_product_id":item["id"],"title":item["title"],
                 "brand":safe_label(item.get("brand"),limit=60) or safe_label(item["title"].split()[0]),
-                "price_inr":item["price_inr"],"retailer":item["platform"],
+                "price_inr":item["price_inr"],"retailer":item["platform"],\n                "price_source":item["price_source"],\n                "price_label":("Website API price; verify retailer" if item["price_source"]=="website_live_price_api"\n                               else "Catalog fallback price; verify retailer"),\n                "upstream_checked_at":item.get("live_checked_at"),
                 "unaltered_photo_url":item["main_image"],"verified_spec":evidence_fact(item),
                 "name_badge":item["title"],"rank_badge":f"#{rank}",
                 "speech_pattern":"मैं हूँ {product}. मेरी कीमत ₹{price} है।",
@@ -140,5 +139,5 @@ def build30(approved, *, references=None, blueprint=None):
         "duration_seconds":30,"fps":24,"size":[1080,1920],"scenes":scenes,"source_sha256":approved["source_sha256"],
         "data_observed_at":source_time,"validated_budget_inr":budget,
         "original_product_photos_must_be_unchanged":True,"source_must_be_revalidated_before_publish":True,
-        "no_unverified_performance_claims":True,"publishing_enabled":False,
+        "no_unverified_performance_claims":True,"publishing_enabled":False,\n        "live_price_api_completed":True,\n        "live_price_count":approved.get("live_price_count"),\n        "catalog_fallback_count":approved.get("catalog_fallback_count"),
         "stage":"DYNAMIC_STORYBOARD_DATA_BOUND_NOT_ANIMATED_OR_VOICE_QA","runpod_gpu_launch_approved":False}
