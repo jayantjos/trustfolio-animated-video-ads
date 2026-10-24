@@ -232,6 +232,52 @@ def check_clips(s3):
             continue
     return clips
 
+def verified_worker_progress(s3, *, job_hash, attempt_id, now=None):
+    """Return an independently observed new scene checkpoint or None.
+
+    A repeated S3 receipt is *never* treated as fresh progress. The caller
+    remembers the last marker. Pod running/queued alone cannot extend billing.
+    """
+    now = time.time() if now is None else now
+    fresh = []
+    for sid in EXPECTED:
+        try:
+            raw,_=load(s3,S3_PREFIX+sid+".progress.json",8192)
+            p=json.loads(raw)
+        except Exception:
+            continue
+        if (not isinstance(p,dict) or p.get("scene_id")!=sid
+            or p.get("stage")!="WAN_INFERENCE"
+            or p.get("attempt_id")!=attempt_id
+            or p.get("job_hash")!=job_hash):
+            continue
+        t=p.get("time")
+        if not isinstance(t,(int,float)) or isinstance(t,bool):
+            continue
+        # A stale/replayed or future checkpoint must never keep a paid Pod live.
+        if not 0 <= now-float(t) <= 150:
+            continue
+        fresh.append((float(t),sid))
+    return max(fresh) if fresh else None
+
+
+def enforce_observation_timeout(*, now, started, last_seen, logs_ever,
+                                last_kind, startup_grace=550,
+                                inference_grace=440, log_grace=100):
+    """Fail closed while allowing expensive first-scene model warmup.
+
+    Worker runs a max-six-minute inference, so a genuine stage checkpoint
+    permits 440 seconds without a log stream, but NEVER a replayed heartbeat.
+    Provider TTL (30m), loop deadline (26m), and external reaper (27m) remain.
+    """
+    if not 0 <= now-started < MONITOR_SECS+30:
+        raise Wan9Blocked("GPU_MONITOR_GLOBAL_DEADLINE")
+    grace=(inference_grace if last_kind in ("worker_stage","clip_verified")
+           else log_grace if logs_ever else startup_grace)
+    if now-last_seen > grace:
+        raise Wan9Blocked("NO_NEW_LIVE_LOG_OR_VERIFIED_SCENE_PROGRESS")
+
+
 def run():
     require_fresh_one_time_request()
     require_independent_reaper()
@@ -285,6 +331,17 @@ def run():
         fingerprint=None
         last_seen=started
         seen=False
+        last_kind="startup"
+        last_clip_count=0
+        last_stage_marker=None
+        worker_attempt="wan9-one-shot-20261024"
+        # SHA-pinned payload was staged before launch; reread only bounded
+        # JSON, reject a different job hash.
+        input_raw,_=load(s3,JOB+"gpu-input.json",100000)
+        meta=json.loads(input_raw)
+        if hashlib.sha256(input_raw).hexdigest()!=bundle_sha:
+            raise Wan9Blocked("GPU_MANIFEST_CHANGED_SINCE_LAUNCH")
+        job_hash=meta["motion_job_hash"]
         while time.monotonic()-started<MONITOR_SECS:
             owned=list_owned(write_key)
             if len(owned)!=1 or exact_owned(owned[0])!=pod_id:
@@ -306,8 +363,22 @@ def run():
                 fingerprint=f
                 last_seen=time.monotonic()
                 seen=True
-            if time.monotonic()-last_seen>(100 if seen else 550):
-                raise Wan9Blocked("NO_VISIBLE_LIVE_GPU_LOG_PROGRESS")
+                last_kind="live_log"
+                print("WAN9_OBSERVATION=NEW_LIVE_LOG_FINGERPRINT",flush=True)
+            if len(clips)>last_clip_count:
+                last_clip_count=len(clips)
+                last_seen=time.monotonic()
+                last_kind="clip_verified"
+                print("WAN9_OBSERVATION=NEW_S3_SHA_VERIFIED_GPU_CLIP",flush=True)
+            stage=verified_worker_progress(s3,job_hash=job_hash,
+                attempt_id=worker_attempt)
+            if stage is not None and stage!=last_stage_marker:
+                last_stage_marker=stage
+                last_seen=time.monotonic()
+                last_kind="worker_stage"
+                print("WAN9_OBSERVATION=NEW_SHA_BOUND_WORKER_STAGE_"+stage[1],flush=True)
+            enforce_observation_timeout(now=time.monotonic(),started=started,
+                last_seen=last_seen,logs_ever=seen,last_kind=last_kind)
             time.sleep(20)
         report["status"]="STOPPED_AT_CAPPED_TIME_"+str(len(report["verified_scenes"]))
         return report
