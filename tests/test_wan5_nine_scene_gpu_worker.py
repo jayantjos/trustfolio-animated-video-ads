@@ -125,9 +125,9 @@ class TestNineGPUWorkerSafety(unittest.TestCase):
                                     "TRUSTFOLIO_ATTEMPT_ID":"wan9_unit_20261024"},clear=True),\
              patch.object(w,"check_video",return_value=5.0),\
              patch.object(w,"retime_native_wan_to_five_seconds",side_effect=
-               lambda src,dest: (dest.write_bytes(src.read_bytes()) or {
+               lambda src,dest: (dest.write_bytes(src.read_bytes()), {
                  "native_model_frames":49,"native_sampling_steps":8,
-                 "retimed_to_five_seconds":True,"is_original_native_121_frame_quality":False})),\
+                 "retimed_to_five_seconds":True,"is_original_native_121_frame_quality":False})[1]),\
              patch.object(w,"MODEL",self.root/"fake-model"),\
              patch.object(w,"WAN_SOURCE",self.root/"fake-source"):
             result=w.run(input_path=manifest,root=self.root,outdir=dest,
