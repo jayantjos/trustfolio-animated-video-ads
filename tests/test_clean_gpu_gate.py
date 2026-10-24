@@ -37,7 +37,8 @@ class CleanGateTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             root=Path(td)
             records=[]
-            dummy_png=root/"generic_test_pixels.png"\n            Image.effect_noise((720,1280),60).convert("RGB").save(dummy_png)
+            dummy_png=root/"generic_test_pixels.png"
+            Image.effect_noise((720,1280),60).convert("RGB").save(dummy_png)
             for i in range(1,10):
                 p=root/f"scene{i:02d}.png";p.write_bytes(dummy_png.read_bytes())
                 records.append({"scene_id":f"scene{i:02d}","path":str(p),
