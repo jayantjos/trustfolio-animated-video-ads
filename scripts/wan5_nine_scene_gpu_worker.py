@@ -10,6 +10,7 @@ original character poses while product facts remain editable at composition.
 """
 from __future__ import annotations
 import argparse
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
 import hashlib
 import json
 import os
@@ -40,7 +41,7 @@ INPUT_DIR=ROOT/"jobs"/"washing-9scene-v1"
 OUTPUT_DIR=ROOT/"videos"/"private-qa"/"washing-9scene-v1"
 MANIFEST=INPUT_DIR/"gpu-input.json"
 MAX_BATCH_SECONDS=22*60
-MAX_SCENE_SECONDS=6*60
+MAX_SCENE_SECONDS=9*60
 SCENES=[f"scene{i:02d}" for i in range(1,10)]
 SHA_RE=re.compile(r"[0-9a-f]{64}\Z")
 ID_RE=re.compile(r"[A-Za-z0-9_-]{8,100}\Z")
@@ -121,6 +122,41 @@ def check_model():
     gpu_check()
     verify_torch_cuda_kernel()
 
+def infer_with_bounded_heartbeat(runner, command, *, cwd, env, timeout,
+                                 checkpoint, sid, attempt, job_hash,
+                                 heartbeat_seconds=20):
+    """Pulse PRIVATE scene progress only while the bounded Wan process is alive.
+
+    A pulse proves the worker is still awaiting inference, not that frames
+    have completed. The child runner retains the hard per-scene timeout and
+    process-group kill; the independent Pod TTL/reaper remain authoritative.
+    """
+    if timeout < 60 or timeout > MAX_SCENE_SECONDS:
+        raise RenderError("INFERENCE_TIMEOUT_OUTSIDE_BOUNDED_LIMIT")
+    sequence = 0
+    started = time.monotonic()
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        future = pool.submit(runner, command, cwd=cwd, env=env, timeout=timeout)
+        while True:
+            try:
+                return future.result(timeout=heartbeat_seconds)
+            except FutureTimeout:
+                sequence += 1
+                elapsed = time.monotonic() - started
+                if elapsed > timeout + 15:
+                    # Child runner is responsible for killpg on timeout.
+                    print("WAN9_CHILD_TIMEOUT_WAITING_FOR_TERMINATION=" + sid,
+                          flush=True)
+                    continue
+                atomic_json(checkpoint, {"scene_id":sid,"attempt_id":attempt,
+                    "stage":"WAN_INFERENCE","time":time.time(),
+                    "job_hash":job_hash,"sequence":sequence,
+                    "elapsed_seconds":round(elapsed,1),
+                    "completed_frames_claimed":False})
+                print("WAN9_PRIVATE_GPU_WORKER_ALIVE=" + sid +
+                      " SEQ=" + str(sequence), flush=True)
+
+
 def run(*, input_path=MANIFEST, root=ROOT, outdir=OUTPUT_DIR,
         wall_seconds=MAX_BATCH_SECONDS, runner=run_inference_streamed,
         model_check=check_model):
@@ -176,9 +212,10 @@ def run(*, input_path=MANIFEST, root=ROOT, outdir=OUTPUT_DIR,
             print("GPU_BATCH_TIME_GUARD_SKIP="+sid,flush=True)
             break
         try:
-            runner(command,cwd=str(WAN_SOURCE),
+            infer_with_bounded_heartbeat(runner,command,cwd=str(WAN_SOURCE),
                 env={**os.environ,"PYTORCH_CUDA_ALLOC_CONF":"expandable_segments:True"},
-                timeout=min(MAX_SCENE_SECONDS,int(remaining)))
+                timeout=min(MAX_SCENE_SECONDS,int(remaining)),checkpoint=checkpoint,
+                sid=sid,attempt=attempt,job_hash=meta["motion_job_hash"])
             check_video(pending)
             pending.replace(final)
             receipt={
