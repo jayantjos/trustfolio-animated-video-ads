@@ -56,6 +56,16 @@ def validate_clean_plates(story, plate_manifest, *, root=None):
             or header[12:16]!=b"IHDR"
             or struct.unpack(">II",header[16:24])!=(720,1280)):
             raise Blocked(scene_id+":CLEAN_PLATE_PNG_720X1280_REQUIRED")
+        # Reject truncated or maliciously malformed PNG rather than accepting a
+        # forged 24-byte IHDR header. Actual image bytes must fully decode.
+        from PIL import Image
+        try:
+            with Image.open(path) as verified_image:
+                if verified_image.format!="PNG" or verified_image.size!=(720,1280):
+                    raise ValueError("wrong image")
+                verified_image.verify()
+        except (ValueError,OSError,SyntaxError):
+            raise Blocked(scene_id+":CLEAN_PLATE_PIXELS_FAILED_PNG_DECODER") from None
         approved.append({
             "scene_id":scene_id,
             "clean_plate_path":str(path),
