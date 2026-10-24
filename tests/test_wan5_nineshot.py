@@ -54,6 +54,21 @@ class TestNineWanShots(unittest.TestCase):
         s=scene_data()
         with self.assertRaises(Blocked):verified_plan(s,photo_mode="ai_repaint")
 
+    def test_fixed_character_animation_not_rerendered_when_live_products_change(self):
+        original=scene_data()
+        alternative=copy.deepcopy(original)
+        alternative["campaign_id"]="f"*64
+        alternative["scenes"][2]["dynamic"]["title"]="An entirely different current model"
+        alternative["scenes"][2]["dynamic"]["brand"]="CompletelyDifferentBrand"
+        alternative["scenes"][2]["dynamic"]["price_inr"]=17500
+        alternative["scenes"][2]["dynamic"]["source_product_id"]="b"*24
+        m1=verified_plan(original)
+        m2=verified_plan(alternative)
+        self.assertNotEqual(m1["campaign_id"],m2["campaign_id"])
+        self.assertEqual(m1["motion_job_hash"],m2["motion_job_hash"])
+        self.assertNotEqual(m1["shots"][2]["dynamic_overlay_source_id"],
+                            m2["shots"][2]["dynamic_overlay_source_id"])
+
     def test_cloned_asset_manifest_hash_is_deterministic(self):
         s=scene_data();first=verified_plan(s)
         second=verified_plan(copy.deepcopy(s))
