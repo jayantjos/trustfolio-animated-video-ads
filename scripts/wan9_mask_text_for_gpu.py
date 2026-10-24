@@ -86,6 +86,34 @@ def clean_one(source,number):
             alpha[:,-edge-1]*=edge/13
         pixels[top:bottom,left:right]=(roi*(1-alpha[:,:,None])+softened*alpha[:,:,None]).astype(np.uint8)
         bg=Image.fromarray(pixels)
+    if number in (3,4,5,6,7):
+        # Remove the remaining tiny original maker/model/control-panel words.
+        # Draw a deliberately neutral, no-text control surface, preserving
+        # character faces, hands, costumes and scene surroundings.
+        boxes={
+            3:(208,334,605,401),4:(223,320,648,392),
+            5:(207,326,632,392),6:(201,331,628,396),
+            7:(209,328,570,389)}
+        colors={
+            3:(30,37,48),4:(245,243,245),5:(35,39,48),
+            6:(193,197,202),7:(242,244,245)}
+        x0,y0,x1,y1=boxes[number]
+        draw=ImageDraw.Draw(bg)
+        draw.rounded_rectangle((x0,y0,x1,y1),radius=14,
+            fill=colors[number],outline=(111,115,126),width=2)
+        cx=(x0+x1)//2
+        cy=(y0+y1)//2
+        draw.ellipse((cx-19,cy-19,cx+19,cy+19),
+            fill=(70,72,80),outline=(222,222,224),width=3)
+    if number==6:
+        # Source brand-specific country flag is not applicable to arbitrary
+        # brands returned later by live website ranking.
+        pixels=np.array(bg)
+        left,top,right,bottom=0,470,95,647
+        roi=pixels[top:bottom,left:right]
+        neutral=cv2.GaussianBlur(pixels,(0,0),sigmaX=45)[top:bottom,left:right]
+        pixels[top:bottom,left:right]=neutral
+        bg=Image.fromarray(pixels)
     if number==9:
         # Clean *the entire phone screen* for real current product cards
         # rendered as an independently editable late-stage overlay.
