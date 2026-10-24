@@ -41,7 +41,7 @@ jobs:
           GHCR_PASS: ${{ secrets.GITHUB_TOKEN }}
         run: |
           printf '%s' "$GHCR_PASS" | docker login ghcr.io -u "$GHCR_USER" --password-stdin >/dev/null
-          docker manifest inspect ghcr.io/jayantjos/trustfolio-wan9-worker@sha256:a526ba3a516b337aa2281d5d1ae1f22f36c79645f210d1effbe98910711e35ef >/dev/null
+          docker manifest inspect ghcr.io/jayantjos/trustfolio-wan9-worker@sha256:0e7eb98f0db6a8163213f08804dd4b5f708d0670a458a9605bccc6815b7050eb >/dev/null
           docker logout ghcr.io >/dev/null
       - name: ONE paid capped GPU; stream log visibility; verify each scene; DELETE exact Pod
         run: python -m scripts.wan9_capped_controller
