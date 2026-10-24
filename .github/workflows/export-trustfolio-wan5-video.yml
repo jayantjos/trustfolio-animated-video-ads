@@ -1,0 +1,76 @@
+name: Export TrustFolio WAN5 verified video (NO GPU)
+
+on:
+  push:
+    branches: [feat/washing-machine-character-video-pilot]
+    paths:
+      - '.github/workflows/export-trustfolio-wan5-video.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export-video:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      RUNPOD_S3_ACCESS_KEY_ID: ${{ secrets.RUNPOD_S3_ACCESS_KEY_ID }}
+      RUNPOD_S3_SECRET_ACCESS_KEY: ${{ secrets.RUNPOD_S3_SECRET_ACCESS_KEY }}
+    steps:
+      - name: Install S3 client
+        run: python3 -m pip install --quiet 'boto3>=1.35,<2'
+      - name: Download and verify exact original video from existing volume
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import os
+          from pathlib import Path
+          import boto3
+          from botocore.config import Config
+
+          bucket = '1bch597yrz'
+          key = 'videos/private-qa/wan5-laundry-first-20261021/scene01.mp4'
+          expected = '92ab2f374e9d44b6afffa3acf2b05ee9b1fa3339201de6b84b965f144edc1740'
+          client = boto3.client(
+              's3',
+              endpoint_url='https://s3api-eu-ro-1.runpod.io',
+              region_name='eu-ro-1',
+              aws_access_key_id=os.environ['RUNPOD_S3_ACCESS_KEY_ID'],
+              aws_secret_access_key=os.environ['RUNPOD_S3_SECRET_ACCESS_KEY'],
+              config=Config(signature_version='s3v4', s3={'addressing_style': 'path'}),
+          )
+          response = client.get_object(Bucket=bucket, Key=key)
+          expected_size = int(response.get('ContentLength', -1))
+          if not 10240 <= expected_size <= 200 * 1024 * 1024:
+              raise SystemExit('Video size unexpected; refusing export')
+          output = Path('video/TrustFolio-Hindi-Video.mp4')
+          output.parent.mkdir(parents=True, exist_ok=True)
+          digest = hashlib.sha256()
+          size = 0
+          try:
+              with output.open('wb') as dest:
+                  for chunk in response['Body'].iter_chunks(chunk_size=1024 * 1024):
+                      if chunk:
+                          size += len(chunk)
+                          if size > expected_size:
+                              raise SystemExit('Video exceeds verified length')
+                          digest.update(chunk)
+                          dest.write(chunk)
+          finally:
+              response['Body'].close()
+          if size != expected_size or digest.hexdigest() != expected:
+              output.unlink(missing_ok=True)
+              raise SystemExit('Video SHA256 mismatch; refusing export')
+          print('Verified original 5-second video SHA256:', expected)
+          print('Download size:', size)
+          print('No Pod created or GPU charged')
+          PY
+      - name: Upload temporary viewing copy to GitHub Actions
+        uses: actions/upload-artifact@v4
+        with:
+          name: TrustFolio-Hindi-Video
+          path: video/TrustFolio-Hindi-Video.mp4
+          if-no-files-found: error
+          retention-days: 1
