@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "project": "TrustFolio Google Flow animated video",
+  "category": "washing-machines",
+  "asset_status": "awaiting_binary_upload",
+  "source_file": "TrustFolio_40s_Reordered_Preview(1).mp4",
+  "target_path": "assets/video/washing-machines/trustfolio_washing_40s_visual_master_v1.mp4",
+  "sha256": "2d58880dc27c04c245ff95a10b53ba009538badd04f314062275149c9b5bb48c",
+  "size_bytes": 4427446,
+  "duration_seconds": 40,
+  "width": 360,
+  "height": 640,
+  "format": "mp4",
+  "video_codec": "h264",
+  "audio_codec": "aac",
+  "scenes": [
+    {
+      "number": 1,
+      "start": 0,
+      "end": 4,
+      "role": "laundry_problem"
+    },
+    {
+      "number": 2,
+      "start": 4,
+      "end": 8,
+      "role": "friends_entry"
+    },
+    {
+      "number": 3,
+      "start": 8,
+      "end": 12,
+      "role": "machine_intro"
+    },
+    {
+      "number": 4,
+      "start": 12,
+      "end": 16,
+      "role": "feature_intro"
+    },
+    {
+      "number": 5,
+      "start": 16,
+      "end": 20,
+      "role": "dynamic_feature_space"
+    },
+    {
+      "number": 6,
+      "start": 20,
+      "end": 24,
+      "role": "generic_drum_animation"
+    },
+    {
+      "number": 7,
+      "start": 24,
+      "end": 28,
+      "role": "dynamic_budget_space"
+    },
+    {
+      "number": 8,
+      "start": 28,
+      "end": 32,
+      "role": "top5_empty_podiums"
+    },
+    {
+      "number": 9,
+      "start": 32,
+      "end": 36,
+      "role": "comparison_stage_needs_qa"
+    },
+    {
+      "number": 10,
+      "start": 36,
+      "end": 40,
+      "role": "cta_character_no_final_overlay"
+    }
+  ],
+  "dynamic_integration_status": "not_implemented",
+  "production_ready": false,
+  "social_published": false
+}
