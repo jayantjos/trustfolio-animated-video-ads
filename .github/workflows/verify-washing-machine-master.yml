@@ -1,0 +1,33 @@
+name: Verify approved TrustFolio Washing Machine visual master (CPU only)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'assets/video/washing-machines/trustfolio_washing_40s_visual_master_v1.mp4'
+      - 'masters/washing-machines/manifest.json'
+      - 'scripts/verify_master.py'
+      - '.github/workflows/verify-washing-machine-master.yml'
+  pull_request:
+    paths:
+      - 'assets/video/washing-machines/trustfolio_washing_40s_visual_master_v1.mp4'
+      - 'masters/washing-machines/manifest.json'
+      - 'scripts/verify_master.py'
+      - '.github/workflows/verify-washing-machine-master.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-approved-video:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate exact original MP4 SHA256, size, duration and 9:16 dimensions
+        run: python scripts/verify_master.py
+      - name: Verify Git blob identity matches user-approved source
+        run: |
+          actual="$(git hash-object assets/video/washing-machines/trustfolio_washing_40s_visual_master_v1.mp4)"
+          expected="7c70df83c07f70de908a559f13a1158f9c64abe4"
+          test "$actual" = "$expected"
+          echo "APPROVED_GOOGLE_FLOW_MASTER_VERIFIED=YES"
+# CPU-only, no API price calls, no GPUs, no RunPod, no media generation or social publication.
