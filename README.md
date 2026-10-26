@@ -23,3 +23,11 @@ Lean, non-GPU-rendering starting point for the user-approved 40-second vertical 
 6. Review before any publishing.
 
 **Safety:** No paid GPU inference, no automatic social publishing, no VPS changes, no TrustFolio app repo changes. See [legacy recovery](docs/LEGACY_ARCHIVE.md).
+
+## Website Top-5 preview mode (GET-only, not live-verified)
+
+To prepare a premium **unpublished** Google Flow video from exactly the five products listed by TrustFolio, run:
+
+    python -m trustfolio_flow.cli fetch-website-display --category washing-machines --budget 25000 --output handoff/data/verified_receipt.json
+
+This uses one read-only website GET, no paid refresh POST. The receipt explicitly states WEBSITE_LISTED_ONLY and publishable=false. Current prices still require strict independent verification before any price advertising. See docs/WEBSITE_DISPLAY_PREVIEW.md. Screenshot and live API product ranking can change between requests; never combine their facts.
