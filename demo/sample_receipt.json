@@ -1,0 +1,94 @@
+{
+  "source": "qa_fixture",
+  "category": "washing-machines",
+  "mode": "budget",
+  "budget_inr": 30000,
+  "checked_at": "2026-10-26T00:00:00+00:00",
+  "products": [
+    {
+      "rank": 1,
+      "id": "000000000000000000000001",
+      "category": "washing-machines",
+      "title": "NOT REAL - SAMPLE WASHER 1",
+      "brand": "SAMPLE",
+      "price_inr": 20000,
+      "is_active": true,
+      "in_stock": true,
+      "price_source": "website_live_price_api",
+      "live_price_status": "ok",
+      "live_checked_at": "2026-10-26T00:00:00+00:00",
+      "specifications": {
+        "Capacity": "Sample 7 kg",
+        "Warranty": "Synthetic demo"
+      }
+    },
+    {
+      "rank": 2,
+      "id": "000000000000000000000002",
+      "category": "washing-machines",
+      "title": "NOT REAL - SAMPLE WASHER 2",
+      "brand": "SAMPLE",
+      "price_inr": 21000,
+      "is_active": true,
+      "in_stock": true,
+      "price_source": "website_live_price_api",
+      "live_price_status": "ok",
+      "live_checked_at": "2026-10-26T00:00:00+00:00",
+      "specifications": {
+        "Capacity": "Sample 7 kg",
+        "Warranty": "Synthetic demo"
+      }
+    },
+    {
+      "rank": 3,
+      "id": "000000000000000000000003",
+      "category": "washing-machines",
+      "title": "NOT REAL - SAMPLE WASHER 3",
+      "brand": "SAMPLE",
+      "price_inr": 22000,
+      "is_active": true,
+      "in_stock": true,
+      "price_source": "website_live_price_api",
+      "live_price_status": "ok",
+      "live_checked_at": "2026-10-26T00:00:00+00:00",
+      "specifications": {
+        "Capacity": "Sample 7 kg",
+        "Warranty": "Synthetic demo"
+      }
+    },
+    {
+      "rank": 4,
+      "id": "000000000000000000000004",
+      "category": "washing-machines",
+      "title": "NOT REAL - SAMPLE WASHER 4",
+      "brand": "SAMPLE",
+      "price_inr": 23000,
+      "is_active": true,
+      "in_stock": true,
+      "price_source": "website_live_price_api",
+      "live_price_status": "ok",
+      "live_checked_at": "2026-10-26T00:00:00+00:00",
+      "specifications": {
+        "Capacity": "Sample 7 kg",
+        "Warranty": "Synthetic demo"
+      }
+    },
+    {
+      "rank": 5,
+      "id": "000000000000000000000005",
+      "category": "washing-machines",
+      "title": "NOT REAL - SAMPLE WASHER 5",
+      "brand": "SAMPLE",
+      "price_inr": 24000,
+      "is_active": true,
+      "in_stock": true,
+      "price_source": "website_live_price_api",
+      "live_price_status": "ok",
+      "live_checked_at": "2026-10-26T00:00:00+00:00",
+      "specifications": {
+        "Capacity": "Sample 7 kg",
+        "Warranty": "Synthetic demo"
+      }
+    }
+  ]
+}
