@@ -1,0 +1,41 @@
+name: Verify Washing Machine INR25000 full 40s visual REVIEW (unpublished)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'assets/video/washing-machines/reviews/trustfolio_washing_25000_40s_visual_review_only.mp4'
+      - '.github/workflows/verify-washing-25000-full-review.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  review-only-binary-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install FFprobe
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - name: Verify exact QA binary or report that review upload is still pending
+        run: |
+          python3 - <<'PY'
+          import hashlib,json,pathlib,subprocess
+          path=pathlib.Path('assets/video/washing-machines/reviews/trustfolio_washing_25000_40s_visual_review_only.mp4')
+          if not path.is_file():
+              print('QA_REVIEW_BINARY_NOT_IN_GITHUB=YES; NO_PUBLISH=YES')
+              raise SystemExit(2)
+          raw=path.read_bytes()
+          sha=hashlib.sha256(raw).hexdigest()
+          gitsha=hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()
+          assert sha=='ad171b517b1098c2261dece89d7c7e106a4e8ee7ac5943d085fee5d88dbbd1fd'
+          assert gitsha=='33b14eaeaf66fc98e276ae260615b8e82d7287ce'
+          assert len(raw)==9293847
+          meta=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_entries','format=duration:stream=codec_type,width,height','-of','json',str(path)]))
+          assert abs(float(meta['format']['duration'])-40)<0.05
+          assert any(s.get('codec_type')=='video' and (s['width'],s['height'])==(720,1280) for s in meta['streams'])
+          assert any(s.get('codec_type')=='audio' for s in meta['streams'])
+          print('UNPUBLISHED_FULL40_VISUAL_REVIEW_MP4_VERIFIED=YES')
+          print('PRICING_VERIFIED_LIVE=NO; SOCIAL_PUBLISHING_ALLOWED=NO')
+          PY
+# This workflow only checks the exact user-approved QA preview; no video generation,
+# GPU/RunPod/Google Flow charges, DB writes, live-price POST, or social publishing.
