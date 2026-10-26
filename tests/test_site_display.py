@@ -147,5 +147,21 @@ class SiteDisplayTests(unittest.TestCase):
         self.assertEqual(check_flow_receipt(fixture_receipt(), now=NOW)["source"], SOURCE)
 
 
+    def test_cross_brand_duplicate_source_image_blocks_before_fetch(self):
+        from trustfolio_flow.images import fetch_ingredients
+        from unittest.mock import Mock
+        receipt = fixture_receipt()
+        # Same image URL for IFB #1 and Bosch #4: never let Flow stage a fake Bosch.
+        receipt["products"][3]["image_url"] = receipt["products"][0]["image_url"]
+        spec = campaign("washing-machines", 25000)
+        receipt["snapshot_sha256"] = sha({"spec": spec, "products": receipt["products"]})
+        opener = Mock()
+        with tempfile.TemporaryDirectory() as td:
+            with self.assertRaisesRegex(DataBlocked, "CROSS_BRAND_DUPLICATE"):
+                fetch_ingredients(receipt, td, opener=opener)
+        opener.assert_not_called()
+
+
+
 if __name__ == "__main__":
     unittest.main()
