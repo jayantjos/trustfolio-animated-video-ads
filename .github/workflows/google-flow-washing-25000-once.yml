@@ -1,8 +1,5 @@
 name: TrustFolio INR25000 washing-machine verification - one-time CPU check
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/google-flow-washing-25000-once.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -101,4 +98,4 @@ jobs:
           path: handoff/
           retention-days: 3
           if-no-files-found: warn
-# One explicit GET+POST for this campaign; no retries, GPU, RunPod, scheduler or social posting.
+# Manual-only after one initial run. No retries, GPU, RunPod, scheduler or social posting.
