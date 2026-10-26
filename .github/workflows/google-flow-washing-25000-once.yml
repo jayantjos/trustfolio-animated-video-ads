@@ -1,0 +1,104 @@
+name: TrustFolio INR25000 washing-machine verification - one-time CPU check
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/google-flow-washing-25000-once.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: tf-washing25000-verify-once
+  cancel-in-progress: false
+jobs:
+  verify-25000:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Pillow (CPU)
+        run: python -m pip install 'Pillow>=10,<13'
+      - name: Run local validation tests - no network
+        run: python -m unittest discover -s tests -p 'test_flow_pipeline.py' -v
+      - name: Fetch top five once, POST live prices once, record fail-closed diagnostic
+        id: prices
+        run: |
+          mkdir -p handoff/data
+          python - <<'PY'
+          import json,re
+          from datetime import datetime,timezone
+          from pathlib import Path
+          from urllib.parse import urlencode
+          from trustfolio_flow.live import ORIGIN,_get_json,campaign,normalize_live,sha,DataBlocked
+          spec=campaign('washing-machines',25000,'budget','')
+          report={'category':'washing-machines','budget_inr':25000,'mode':'budget',
+                  'policy':'five actual ranked products with fresh live prices only',
+                  'price_post_count':0,'ranked_products':[],'verification':'NOT_VERIFIED'}
+          path=Path('handoff/data/price_diagnostic.json')
+          try:
+              url=ORIGIN+'/api/products/top?'+urlencode({'category':'washing-machines','budget':'25000','limit':'5'})
+              top=_get_json(url)
+              data=top.get('data')
+              if not isinstance(data,dict) or not isinstance(data.get('products'),list) or len(data['products'])!=5:
+                  raise DataBlocked('Top-5 endpoint did not return exactly five products')
+              products=data['products']
+              ids=[str(p.get('id') or '') for p in products]
+              if len(set(ids))!=5 or any(not re.fullmatch(r'[a-fA-F0-9]{24}',x) for x in ids):
+                  raise DataBlocked('Top-5 ID mismatch/duplicate: no live-price POST attempted')
+              live=_get_json(ORIGIN+'/api/live-prices',body={'ids':ids})
+              report['price_post_count']=1
+              rows=live.get('data')
+              if not isinstance(rows,list):
+                  raise DataBlocked('Live-price API returned non-list response')
+              by_id={str(r.get('id')):r for r in rows if isinstance(r,dict)}
+              for i,p in enumerate(products,1):
+                  row=by_id.get(ids[i-1],{})
+                  result=row.get('live')
+                  price=(result.get('price_inr') if isinstance(result,dict) and result.get('status')=='ok' else None)
+                  report['ranked_products'].append({'rank':i,'title':str(p.get('title') or '')[:125],
+                       'brand':str(p.get('brand') or '')[:60],
+                       'platform':str(p.get('platform') or '')[:40],
+                       'live_status':result.get('status') if isinstance(result,dict) else 'missing_live',
+                       'live_price_inr':price,
+                       'checked_at':result.get('checked_at') if isinstance(result,dict) else None,
+                       'deleted':bool(row.get('deleted')),'out_of_budget':bool(isinstance(price,(int,float)) and price>25000)})
+              receipt=normalize_live(data,rows,spec=spec,now=datetime.now(timezone.utc))
+              receipt['api_evidence']={'get_response_sha256':sha(top),'post_response_sha256':sha(live),
+                    'top5_api_url':url,'live_endpoint':'POST /api/live-prices'}
+              Path('handoff/data/verified_receipt.json').write_text(json.dumps(receipt,ensure_ascii=False,indent=2)+'\n')
+              report['verification']='VERIFIED_FIVE'
+              print('ALL_FIVE_LIVE_PRICES_VERIFIED=YES')
+          except (DataBlocked,ValueError,KeyError,TypeError,TimeoutError,OSError) as exc:
+              report['error']=str(exc)
+              print('LIVE_PRICE_VERIFICATION_BLOCKED='+str(exc))
+          finally:
+              path.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
+              for p in report['ranked_products']:
+                  print(f"RANK_{p['rank']}_PLATFORM={p['platform']}_LIVE_STATUS={p['live_status']}_DELETED={p['deleted']}_IN_BUDGET={not p['out_of_budget']}")
+          if report['verification']!='VERIFIED_FIVE':
+              raise SystemExit('STRICT_VALIDATION_FAILED_NO_PREMIUM_AD')
+          PY
+      - name: Create premium Google Flow prompts and real product-image references
+        if: steps.prices.outcome == 'success'
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from trustfolio_flow.flow_prompts import write_prompts
+          from trustfolio_flow.images import fetch_ingredients
+          receipt=json.loads(Path('handoff/data/verified_receipt.json').read_text(encoding='utf-8'))
+          write_prompts(receipt,'handoff')
+          fetch_ingredients(receipt,'handoff/product_images')
+          print('VERIFIED_GOOGLE_FLOW_HANDOFF_READY=YES')
+          print('GOOGLE_FLOW_VIDEO_GENERATED=NO')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trustfolio-washing-inr25000-verification
+          path: handoff/
+          retention-days: 3
+          if-no-files-found: warn
+# One explicit GET+POST for this campaign; no retries, GPU, RunPod, scheduler or social posting.
