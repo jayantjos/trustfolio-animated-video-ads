@@ -1,0 +1,54 @@
+name: TrustFolio Washing Machines INR 20000 - one-time live Flow handoff (CPU)
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/google-flow-washing-20000-one-shot.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: trustfolio-washing-machines-20000-one-shot-live
+  cancel-in-progress: false
+jobs:
+  verified-live-handoff:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Prepare Pillow (CPU only)
+        run: python -m pip install 'Pillow>=10,<13'
+      - name: Check campaign and source-contract unit tests (offline)
+        run: python -m unittest discover -s tests -p 'test_flow_pipeline.py' -v
+      - name: Fetch only INR 20000 Washing Machine live Top 5 and exact-five-ID prices
+        id: fetch
+        run: |
+          mkdir -p handoff/data
+          python -m trustfolio_flow.cli fetch-live             --category washing-machines             --budget 20000             --mode budget             --output handoff/data/verified_receipt.json
+      - name: Generate scene 04/05/07/08/09/10 edit prompts and five real product-image ingredients
+        if: steps.fetch.outcome == 'success'
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from trustfolio_flow.flow_prompts import write_prompts
+          from trustfolio_flow.images import fetch_ingredients
+          doc=json.loads(Path('handoff/data/verified_receipt.json').read_text(encoding='utf-8'))
+          write_prompts(doc,'handoff')
+          fetch_ingredients(doc,'handoff/product_images')
+          print('TRUSTFOLIO_INR20000_PREMIUM_FLOW_HANDOFF_READY=YES')
+          print('ACTUAL_FLOW_VIDEO_GENERATED=NO')
+          print('SOCIAL_PUBLISHING=DISABLED')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trustfolio-washing-machines-inr20000-flow-handoff
+          path: handoff/
+          retention-days: 3
+          if-no-files-found: warn
+# This one-time workflow has no schedule, RunPod, GPU, social publishing, or app changes.
+# Flow editing still needs manual Google Flow interaction and output QA.
