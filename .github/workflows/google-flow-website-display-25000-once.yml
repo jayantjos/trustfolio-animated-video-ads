@@ -1,0 +1,95 @@
+name: TrustFolio ₹25000 Website Display Flow Pack (one-time CPU GET only)
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/google-flow-website-display-25000-once.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: trustfolio-site-display-washing-25000-once
+  cancel-in-progress: false
+jobs:
+  capture-site-display:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Pillow for genuine product references (CPU only)
+        run: python -m pip install 'Pillow>=10,<13'
+      - name: Test website-only and strict-live boundaries (offline)
+        run: python -m unittest discover -s tests -p 'test_*.py' -v
+      - name: GET exact current TrustFolio site Top5 once - no live price POST
+        id: fetch
+        run: |
+          mkdir -p handoff/data
+          python -m trustfolio_flow.cli fetch-website-display \
+            --category washing-machines \
+            --budget 25000 \
+            --mode budget \
+            --output handoff/data/verified_receipt.json
+      - name: Compare latest website response with user's earlier five screenshots
+        if: steps.fetch.outcome == 'success'
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          doc=json.loads(Path('handoff/data/verified_receipt.json').read_text(encoding='utf-8'))
+          prior=[('IFB',23500),('IFB',24994),('Samsung',20990),('Bosch',23290),('Whirlpool',23090)]
+          rows=[]
+          for i,(p,previous) in enumerate(zip(doc['products'],prior),1):
+              b,price=previous
+              ok=p['brand'].casefold()==b.casefold() and int(float(p['price_inr']))==price
+              rows.append({'rank':i,'expected_brand_from_user_screenshot':b,
+                           'expected_website_price_inr':price,'actual_brand':p['brand'],
+                           'actual_source_title':p['title'],'actual_source_price_inr':p['price_inr'],
+                           'actual_platform':p['platform'],'matches_user_screenshot':ok})
+              print(f"RANK_{i}_WEBSITE={p['brand']} Rs{p['price_inr']} PLATFORM={p['platform']} MATCHES_SCREENSHOT={ok}")
+          match=all(r['matches_user_screenshot'] for r in rows)
+          output={'category':'washing-machines','budget_inr':25000,
+                  'captured_at':doc['checked_at'],'matches_user_screenshot':match,
+                  'website_get_only':True,'live_price_verified':False,
+                  'previous_live_diagnostic_rank4':'Voltas Beko, not Bosch',
+                  'rows':rows,
+                  'note':'Source ordering/prices can change; generate videos only from the same single receipt; never invent live badges.'}
+          Path('handoff/data/screenshot_parity.json').write_text(json.dumps(output,indent=2,ensure_ascii=False)+'\n')
+          print('SCREENSHOT_EXACT_MATCH=' + ('YES' if match else 'NO_CHANGED_SINCE_SCREENSHOT'))
+          PY
+      - name: Make six source-backed premium Google Flow scene-edit prompts
+        if: steps.fetch.outcome == 'success'
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from trustfolio_flow.flow_prompts import write_prompts
+          doc=json.loads(Path('handoff/data/verified_receipt.json').read_text(encoding='utf-8'))
+          write_prompts(doc,'handoff')
+          print('SIX_PREMIUM_FLOW_PROMPTS=READY')
+          print('PRICE_PROVENANCE=WEBSITE_LISTED_ONLY_NOT_LIVE')
+          print('VIDEO_GENERATED=NO')
+          print('PUBLISHING=DISABLED')
+          PY
+      - name: Download five exact source product images for Flow input
+        if: steps.fetch.outcome == 'success'
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from trustfolio_flow.images import fetch_ingredients
+          doc=json.loads(Path('handoff/data/verified_receipt.json').read_text(encoding='utf-8'))
+          refs=fetch_ingredients(doc,'handoff/product_images')
+          print('PRODUCT_IMAGE_REFERENCES=' + str(len(refs)))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trustfolio-washing-site-display-inr25000
+          path: handoff/
+          retention-days: 7
+          if-no-files-found: warn
+# One GET. NO POST /api/live-prices, paid GPU, RunPod, browser automation, social posting or app changes.
+# User's website screenshot is reference only; if latest site snapshot differs the artifact states it explicitly.
