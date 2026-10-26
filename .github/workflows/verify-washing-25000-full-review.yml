@@ -4,7 +4,6 @@ on:
     branches: [main]
     paths:
       - 'assets/video/washing-machines/reviews/trustfolio_washing_25000_40s_visual_review_only.mp4'
-      - '.github/workflows/verify-washing-25000-full-review.yml'
   workflow_dispatch:
 permissions:
   contents: read
