@@ -2,7 +2,7 @@
   "schema_version": 1,
   "project": "TrustFolio Google Flow animated video",
   "category": "washing-machines",
-  "asset_status": "awaiting_binary_upload",
+  "asset_status": "binary_uploaded_hash_verified",
   "source_file": "TrustFolio_40s_Reordered_Preview(1).mp4",
   "target_path": "assets/video/washing-machines/trustfolio_washing_40s_visual_master_v1.mp4",
   "sha256": "2d58880dc27c04c245ff95a10b53ba009538badd04f314062275149c9b5bb48c",
@@ -77,5 +77,9 @@
   ],
   "dynamic_integration_status": "not_implemented",
   "production_ready": false,
-  "social_published": false
+  "social_published": false,
+  "github_blob_sha": "7c70df83c07f70de908a559f13a1158f9c64abe4",
+  "binary_git_path_verified": true,
+  "content_verified_against_user_approved_master": true,
+  "hash_verification_method": "GitHub blob SHA-1 matched git hash-object of approved local 4,427,446-byte MP4; SHA-256 of local source matched manifest"
 }
