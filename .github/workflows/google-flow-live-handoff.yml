@@ -1,0 +1,66 @@
+name: Google Flow Premium Live Product Prompt Pack (Manual Only)
+on:
+  workflow_dispatch:
+    inputs:
+      category:
+        description: Canonical category slug
+        required: true
+        default: washing-machines
+        type: string
+      budget:
+        description: Budget INR whole rupees
+        required: true
+        type: string
+      mode:
+        description: Budget / brand_budget / comparison
+        required: true
+        default: budget
+        type: choice
+        options: [budget, brand_budget, comparison]
+      brand:
+        description: Exact brand only in brand_budget mode; leave blank otherwise
+        required: false
+        default: ''
+        type: string
+permissions:
+  contents: read
+jobs:
+  create-flow-prompts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install 'Pillow>=10,<13'
+      - name: Validate source code tests (CPU only)
+        run: python -m unittest discover -s tests -p 'test_flow_pipeline.py' -v
+      - name: Query live TrustFolio Top5 once and its exact 5-ID live-price POST once
+        env:
+          CATEGORY: ${{ inputs.category }}
+          BUDGET: ${{ inputs.budget }}
+          MODE: ${{ inputs.mode }}
+          BRAND: ${{ inputs.brand }}
+        run: |
+          python -m trustfolio_flow.cli fetch-live --category "$CATEGORY" --budget "$BUDGET" --mode "$MODE" --brand "$BRAND" --output handoff/data/verified_receipt.json
+      - name: Generate premium scene-edit prompts and verify product image ingredients
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from trustfolio_flow.flow_prompts import write_prompts
+          from trustfolio_flow.images import fetch_ingredients
+          doc=json.loads(Path('handoff/data/verified_receipt.json').read_text())
+          write_prompts(doc,'handoff')
+          fetch_ingredients(doc,'handoff/product_images')
+          print('FLOW_HANDOFF_VALID=YES (not a video, no Google Flow automation)')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: trustfolio-flow-live-handoff
+          path: handoff/
+          retention-days: 1
+          if-no-files-found: error
+# No schedules, paid GPU inference, RunPod operations, server writes or social publishing.
