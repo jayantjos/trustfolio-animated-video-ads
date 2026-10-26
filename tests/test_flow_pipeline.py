@@ -11,7 +11,7 @@ from trustfolio_flow.live import DataBlocked, campaign, normalize_live, check_re
 from trustfolio_flow.flow_prompts import prompt_for, write_prompts, DYNAMIC
 from trustfolio_flow.clip_ops import probe, check_master, assemble
 
-NOW=datetime(2026,10,26,1,0,tzinfo=timezone.utc)
+NOW=datetime.now(timezone.utc)
 
 
 def input_fixture(brand=''):
