@@ -1,0 +1,28 @@
+name: TrustFolio Flow Bridge Validation (CPU only)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'trustfolio_flow/**'
+      - 'tests/test_flow_pipeline.py'
+      - '.github/workflows/google-flow-bridge-ci.yml'
+  pull_request:
+    paths:
+      - 'trustfolio_flow/**'
+      - 'tests/test_flow_pipeline.py'
+      - '.github/workflows/google-flow-bridge-ci.yml'
+permissions:
+  contents: read
+jobs:
+  offline-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install 'Pillow>=10,<13'
+      - name: Check real-price validation and scene approval gates (no API calls)
+        run: python -m unittest discover -s tests -p 'test_flow_pipeline.py' -v
+# Never starts a RunPod/GPU, calls live-price endpoints, publishes ads or modifies the app.
