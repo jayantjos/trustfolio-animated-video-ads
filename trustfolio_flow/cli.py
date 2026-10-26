@@ -2,7 +2,8 @@
 import argparse
 import json
 from pathlib import Path
-from .live import fetch_live, check_receipt, DataBlocked
+from .live import fetch_live, DataBlocked
+from .site_display import fetch_website_display, check_flow_receipt
 from .clip_ops import extract_originals, assemble
 from .flow_prompts import write_prompts
 from .images import fetch_ingredients
@@ -17,6 +18,12 @@ def main():
     f.add_argument('--mode',choices=['budget','brand_budget','comparison'],default='budget')
     f.add_argument('--brand',default='')
     f.add_argument('--output',required=True)
+    w=sub.add_parser('fetch-website-display',help='GET site Top5 once; website-listed prices, PREVIEW ONLY')
+    w.add_argument('--category',default='washing-machines')
+    w.add_argument('--budget',required=True,type=int)
+    w.add_argument('--mode',choices=['budget','brand_budget','comparison'],default='budget')
+    w.add_argument('--brand',default='')
+    w.add_argument('--output',required=True)
     h=sub.add_parser('prepare',help='Generate Flow prompts/images from a verified fresh receipt and master')
     h.add_argument('--receipt',required=True);h.add_argument('--master',required=True)
     h.add_argument('--output',required=True);h.add_argument('--download-images',action='store_true')
@@ -33,9 +40,17 @@ def main():
             print('TRUSTFOLIO_LIVE_RECEIPT_VERIFIED=YES')
             print('FIVE_VERIFIED_PRODUCTS=5')
             print('NO_AUTOMATIC_PUBLISH=YES')
+        elif args.command=='fetch-website-display':
+            receipt=fetch_website_display(args.category,args.budget,args.mode,args.brand)
+            file=Path(args.output);file.parent.mkdir(parents=True,exist_ok=True)
+            file.write_text(json.dumps(receipt,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+            print('WEBSITE_TOP5_CAPTURED=5')
+            print('CURRENT_LIVE_PRICE_VERIFIED=NO')
+            print('POST_LIVE_PRICE_CALLS=0')
+            print('PREVIEW_ONLY_NO_PUBLISH=YES')
         elif args.command=='prepare':
             receipt=json.loads(Path(args.receipt).read_text(encoding='utf-8'))
-            check_receipt(receipt)
+            check_flow_receipt(receipt)
             write_prompts(receipt,args.output)
             extract_originals(args.master,args.output)
             if args.download_images:

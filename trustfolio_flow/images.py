@@ -6,13 +6,14 @@ from pathlib import Path
 from urllib.request import Request, build_opener
 from PIL import Image, UnidentifiedImageError
 from io import BytesIO
-from .live import check_receipt, NoRedirect, DataBlocked
+from .live import NoRedirect, DataBlocked
+from .site_display import check_flow_receipt
 
 MAX_IMAGE_BYTES=8_000_000
 
 
 def fetch_ingredients(receipt, folder, *, opener=None):
-    check_receipt(receipt)
+    check_flow_receipt(receipt)
     opener=opener or build_opener(NoRedirect()).open
     folder=Path(folder);folder.mkdir(parents=True,exist_ok=True)
     outputs=[]

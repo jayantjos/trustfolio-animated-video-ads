@@ -8,7 +8,8 @@ import subprocess
 import tempfile
 
 from .flow_prompts import DYNAMIC
-from .live import DataBlocked, check_receipt
+from .live import DataBlocked
+from .site_display import check_flow_receipt
 
 SCENE_COUNT=10
 SCENE_SECONDS=4
@@ -112,7 +113,7 @@ def assemble(master, handoff, replacements, approvals, output, *, require_all=Tr
     # not be mistaken for present-time or pre-publish live price verification.
     from datetime import timezone
     historical=datetime.fromisoformat(doc['checked_at'].replace('Z','+00:00'))
-    check_receipt(doc, now=historical, allow_demo=False)
+    check_flow_receipt(doc, now=historical, allow_demo=False)
     handshake=json.loads((root/'data'/'flow_handoff_manifest.json').read_text())
     if handshake.get('verified_receipt_sha256')!=doc['snapshot_sha256']:
         raise DataBlocked('Prompt bundle does not match receipt')
@@ -160,6 +161,8 @@ def assemble(master, handoff, replacements, approvals, output, *, require_all=Tr
     metadata={"status":"UNPUBLISHED_VISUAL_REVIEW_NOT_LIVE_PRICE_CERTIFIED",
               "source_master_sha256":file_hash(master),"assembled_mp4_sha256":file_hash(output),
               "verified_receipt_sha256":doc['snapshot_sha256'],
+              "price_verification":doc.get('pricing_verification','LIVE_RECEIPT_AT_CAPTURE_ONLY'),
+              "publishable":False,
               "replaced_scenes":sorted(approved),"duration":x['duration'],
               "warning":"Snapshot ages; refresh product prices again before each publication. No scheduler/publishing."}
     output.with_suffix('.receipt.json').write_text(json.dumps(metadata,indent=2)+'\n')
