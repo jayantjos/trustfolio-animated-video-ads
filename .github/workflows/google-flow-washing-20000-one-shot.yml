@@ -1,9 +1,5 @@
 name: TrustFolio Washing Machines INR 20000 - one-time live Flow handoff (CPU)
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/google-flow-washing-20000-one-shot.yml'
   workflow_dispatch:
 permissions:
   contents: read
@@ -50,5 +46,6 @@ jobs:
           path: handoff/
           retention-days: 3
           if-no-files-found: warn
-# This one-time workflow has no schedule, RunPod, GPU, social publishing, or app changes.
+# This workflow is manual-only after the initial ₹20,000 run, preventing accidental repeat live-price API costs.
+# No schedule, RunPod, GPU, social publishing, or app changes.
 # Flow editing still needs manual Google Flow interaction and output QA.
