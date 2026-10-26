@@ -17,4 +17,4 @@ This is a **visual-only** preview produced in Google Flow. It includes 10 shots,
 
 Intended modes: Budget, Budget + Brand, Comparison. Do not imply that these are already working. The user-approved animation is a *base*, not a complete data-connected template. Product compositing on moving podiums requires tracking or constrained camera framing; a static overlay is not sufficient by itself.
 
-**Asset receipt:** see `manifest.json`; expected file `assets/video/washing-machines/trustfolio_washing_40s_visual_master_v1.mp4`, currently pending upload.
+**Asset receipt:** see `manifest.json`; expected file `assets/video/washing-machines/trustfolio_washing_40s_visual_master_v1.mp4`, uploaded and independently verified against the approved reference source on 2026-10-27. The exact 4,427,446-byte Git blob is `7c70df83c07f70de908a559f13a1158f9c64abe4`. The source video is still **only a visual master**, not a completed data-driven ad.
