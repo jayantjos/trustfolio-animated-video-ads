@@ -1,9 +1,5 @@
 name: TrustFolio ₹25000 Website Display Flow Pack (one-time CPU GET only)
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/google-flow-website-display-25000-once.yml'
   workflow_dispatch:
 permissions:
   contents: read
@@ -91,5 +87,6 @@ jobs:
           path: handoff/
           retention-days: 7
           if-no-files-found: warn
+# Manual-only after first successful one-time website snapshot on 2026-10-26. No auto repeat.
 # One GET. NO POST /api/live-prices, paid GPU, RunPod, browser automation, social posting or app changes.
 # User's website screenshot is reference only; if latest site snapshot differs the artifact states it explicitly.
