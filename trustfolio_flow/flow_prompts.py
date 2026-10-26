@@ -2,7 +2,8 @@
 from pathlib import Path
 import json
 import re
-from .live import check_receipt, canonical, sha, DataBlocked
+from .live import canonical, sha, DataBlocked
+from .site_display import check_flow_receipt, SOURCE as WEBSITE_DISPLAY_SOURCE
 
 DYNAMIC = (4, 5, 7, 8, 9, 10)
 SCENE_NAMES = {4:"purple_girl_features",5:"green_boy_features",7:"yellow_boy_budget",
@@ -23,9 +24,9 @@ def fact(p, limit=2):
 def fline(p, *, i=None):
     rank = p['rank'] if i is None else i
     return (f"RANK #{rank}: EXACT SOURCE PRODUCT: {p['title']} | "+
-            f"BRAND: {p['brand']} | VERIFIED CURRENT PRICE: {money(p['price_inr'])} | "+
+            f"BRAND: {p['brand']} | {'WEBSITE-LISTED PRICE (NOT LIVE VERIFIED)' if p.get('price_source')=='website_displayed_price' else 'VERIFIED CURRENT PRICE'}: {money(p['price_inr'])} | "+
             f"SOURCE REFERENCE IMAGE: product_{rank:02d}.png | "+
-            f"VERIFIED SPECS ONLY: "+ ("; ".join(f"{k}: {v}" for k,v in fact(p,3)) or "No verified specs"))
+            f"{'WEBSITE-LISTED SPECS (VERIFY MODEL/IMAGE MATCH)' if p.get('price_source')=='website_displayed_price' else 'VERIFIED SOURCE SPECS'}: "+ ("; ".join(f"{k}: {v}" for k,v in fact(p,3)) or "No listed specs"))
 
 
 def prompt_for(scene,receipt):
@@ -53,7 +54,7 @@ def prompt_for(scene,receipt):
         specific=(f"SCENE 4, PURPLE HOODIE GIRL. The girl gestures to the EXISTING washing machine. "
                   f"Edit the machine to match product_01.png faithfully. Integrate TWO understated premium embossed feature cues "
                   f"anchored to the machine instead of UI boxes. Exact verified product #1: {fline(p[0])}. "
-                  f"Use ONLY these source-backed cues: {detail}. Keep her original dialogue unless user separately approves a new Hindi voice track.")
+                  f"Use ONLY these source-listed cues (photo/model match must be manually verified): {detail}. Keep her original dialogue unless user separately approves a new Hindi voice track.")
     elif scene==5:
         facts=fact(p[0],2)
         if not facts:
@@ -61,11 +62,11 @@ def prompt_for(scene,receipt):
         specific=(f"SCENE 5, GREEN HOODIE BOY WITH GLASSES. Retain him on left and natural pointing to right. "
                   f"On the far-right physical surface in the existing set, integrate a subtle gleaming 3D feature showcase "
                   f"with no giant cards, for SOURCE PRODUCT #1. Actual product: {fline(p[0])}. "
-                  f"ONLY these verified features: "+"; ".join(f"{k}: {v}" for k,v in facts)+". Keep fingers and face unaltered.")
+                  f"ONLY these website-listed features (require model QA): "+"; ".join(f"{k}: {v}" for k,v in facts)+". Keep fingers and face unaltered.")
     elif scene==7:
         specific=(f"SCENE 7, YELLOW HOODIE BOY. Keep his shot unchanged except tasteful 3D budget/price storytelling "
                   f"physically integrated near his pointing direction. Campaign budget {money(receipt['budget_inr'])}. "
-                  f"Rank #1 ACTUAL VERIFIED PRICE {money(p[0]['price_inr'])}, source {p[0]['title']}. "
+                  f"Rank #1 {'TRUSTFOLIO-LISTED (NOT LIVE VERIFIED)' if receipt.get('source')==WEBSITE_DISPLAY_SOURCE else 'LIVE VERIFIED'} PRICE {money(p[0]['price_inr'])}, source {p[0]['title']}. "
                   "No fake crossed-out prices, sale claims, savings or unsupported promises. "
                   "The visual must feel like a polished advertisement shot rather than a text panel.")
     elif scene==8:
@@ -80,7 +81,7 @@ def prompt_for(scene,receipt):
         facts=[fline(p[0]),fline(p[1])]
         specific=("SCENE 9, COMPARISON STAGE. Remove extraneous podiums so there are exactly TWO elegant premium product bays left and right. "
                   "Put real PRODUCT #1 from product_01.png on left and PRODUCT #2 from product_02.png on right, each with honest size, controls, lighting. "
-                  "Physically integrated minimal brand/price and ONE common verified spec comparison, if present in both records. "
+                  "Physically integrated minimal brand/price and ONE common website-listed spec comparison, if present in both records, subject to model verification. "
                   "No fictitious 'winner', unsupported better/worse labels or made-up discount.\n"+"\n".join(facts))
     elif scene==10:
         specific=("SCENE 10, TRUSTFOLIO CTA. PRESERVE the original approved pink floral-shirt girl on left and luxurious ivory purple/gold curved stage. "
@@ -94,12 +95,12 @@ def prompt_for(scene,receipt):
     else:raise DataBlocked("Unsupported replacement scene")
     return (f"TRUSTFOLIO FLOW TARGETED EDIT — SCENE {scene:02d}; ORIGINAL TIMECODE "
             f"{(scene-1)*4:02d}–{scene*4:02d} SECONDS.\n\n"+common+"\n\n"+specific+"\n\n"+
-            "SOURCE EVIDENCE (QA USE): live-price snapshot sha256="+receipt['snapshot_sha256']+
-            ". Source images: listed product_NN.png ingredients. Product facts must match the latest verified API receipt.\n")
+            "SOURCE EVIDENCE (QA USE): website/product-data snapshot sha256="+receipt['snapshot_sha256']+
+            ". Source images: listed product_NN.png ingredients. Product facts must match source receipt; "+("WEBSITE LISTED PRICES ONLY, NO VERIFIED LIVE CLAIMS. Do not generate green Live badges. PREVIEW ONLY, NEVER PUBLISH.\n" if receipt.get('source')==WEBSITE_DISPLAY_SOURCE else "Strict live receipt still requires publication recheck.\n"))
 
 
 def write_prompts(receipt,output,*,allow_demo=False):
-    check_receipt(receipt,allow_demo=allow_demo)
+    check_flow_receipt(receipt,allow_demo=allow_demo)
     output=Path(output);(output/'prompts').mkdir(parents=True,exist_ok=True)
     (output/'data').mkdir(exist_ok=True)
     for scene in DYNAMIC:
@@ -110,7 +111,9 @@ def write_prompts(receipt,output,*,allow_demo=False):
               "category":receipt['category'],"budget_inr":receipt['budget_inr'],"mode":receipt['mode'],
               "required_flow_edits":[f'scene_{i:02d}.mp4' for i in DYNAMIC],
               "source_handoff_sha256":sha({"receipt_sha":receipt['snapshot_sha256'],"scenes":list(DYNAMIC)}),
-              "note":"AI Flow output may alter exact product appearance or text; manual visual and factual approval is mandatory."}
+              "note":"AI Flow output may alter exact product appearance or text; manual visual and factual approval is mandatory.",
+              "source":receipt["source"],"publishable":False,
+              "pricing_verification":receipt.get("pricing_verification","LIVE_RECEIPT_AT_CAPTURE_ONLY")}
     (output/'data'/'flow_handoff_manifest.json').write_text(json.dumps(manifest,indent=2)+'\n',encoding='utf-8')
     (output/'START_HERE.md').write_text(
         "# Premium Google Flow image-to-video editing handoff\n\n"
@@ -126,6 +129,6 @@ def write_prompts(receipt,output,*,allow_demo=False):
         "Check faces, lip-sync, brand spellings, prices, product count, UI integration and transitions.\n"
         "6. Fill `approvals.json` with exact approved SHA256 and QA booleans. Run `assemble` to splice the new "
         "Flow-generated clips into the original master; no ugly static boxes are drawn.\n"
-        "7. **Prices may change after filming**. New live refresh must be checked before any ad can be considered current. "
+        "7. **Website-listed prices are not live verified** unless a strict-live receipt exists; never generate a Live badge based only on a listing. New verification must run before publication. "
         "No automatic social posting is present.\n",encoding='utf-8')
     return manifest
