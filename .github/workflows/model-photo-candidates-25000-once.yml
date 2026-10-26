@@ -1,8 +1,5 @@
 name: TrustFolio ₹25000 exact-model product photo candidates - one-time CPU
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/model-photo-candidates-25000-once.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -25,5 +22,6 @@ jobs:
           path: handoff/candidate_photos/
           retention-days: 3
           if-no-files-found: warn
+# Manual-only after successful initial run on 2026-10-27; no automatic repeated photo fetch.
 # Photos are QA candidates, NOT automatic source-image replacement or live-price claim.
 # No GPU, RunPod, social posting, TrustFolio app change, or live-price API POST.
