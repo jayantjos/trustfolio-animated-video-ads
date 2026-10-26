@@ -1,8 +1,5 @@
 name: TrustFolio ₹25000 product image alternatives source audit (one GET, CPU only)
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/website-image-alternatives-25000-once.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -32,4 +29,4 @@ jobs:
           retention-days: 5
           if-no-files-found: warn
 # No GPU, RunPod, media generation, POST /api/live-prices, or social publishing.
-# Auto-push triggering must be removed after the initial audit finishes.
+# Manual-only since initial 2026-10-26 audit; do not re-run without new user request.
