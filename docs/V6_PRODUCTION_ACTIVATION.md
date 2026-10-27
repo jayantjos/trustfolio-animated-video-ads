@@ -61,3 +61,26 @@ After verified correct model photos and first preview with clear natural Hindi v
 - Once Washing Machine V6 is genuinely complete, reuse code with category-specific visual masters for the other 19 categories; never recycle washing-machine room as a visual for unrelated products.
 
 **Result:** Production code/infrastructure is built and fail-closed, not actually live-posting until external model-photo and access/QA prerequisites pass.
+
+## Confirmed read-only infrastructure audit — 28 Oct 2026
+
+GitHub run: https://github.com/jayantjos/trustfolio-animated-video-ads/actions/runs/40597161176 **SUCCESS** (this audit does NOT post anything).
+
+As observed inside the ACTUAL video repo, all are **NOT PRESENT**:
+- `TF_META_PAGE_ACCESS_TOKEN` secret
+- `TF_VIDEO_OPENAI_TTS_API_KEY` secret
+- `TF_VIDEO_MEDIA_SSH_KEY` secret
+- `TF_VIDEO_MEDIA_SSH_KNOWN_HOSTS` secret
+- `TF_VIDEO_MEDIA_SSH_HOST` variable
+- `TF_VIDEO_MEDIA_SSH_USER` variable
+- `TF_VIDEO_MEDIA_UPLOAD_DIR` variable
+
+All four flags currently **FALSE/OFF**:
+- `TF_VIDEO_REELS_AUTO_ENABLED`
+- `TF_VIDEO_REELS_PUBLISH_ENABLED`
+- `TF_VIDEO_FIRST_REEL_QA_APPROVED`
+- `TF_VIDEO_HINDI_VOICE_TEMPLATE_APPROVED`
+
+Meta Page/IG read-only preflight could not run without a video-repo Page token. No social write and NO live-price POST were attempted in this secret audit. The audit workflow was made manual-only after this result to prevent needless recurring Actions charges.
+
+**Owner setup is required to proceed with public Reels**: provide these protected values through the *video repository* GitHub Settings UI, not chat or source. A connected Meta token in the separate **poster/image** repository is NOT automatically available in the video repo. Until the IFB/Bosch photo source is corrected and actual first voiced video QA passes, keep auto/publish flags OFF.
