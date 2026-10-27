@@ -1,0 +1,120 @@
+name: TrustFolio V6 FIRST-GATED direct Instagram + Facebook video REELS
+on:
+  workflow_run:
+    workflows: [TrustFolio V6 guarded daily LIVE Washing Machine reel render (no posting)]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      render_run_id:
+        description: Successful V6 render workflow run ID to use (reviewed and released)
+        required: true
+        type: string
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: trustfolio-v6-reels-single-guarded-publisher
+  cancel-in-progress: false
+jobs:
+  upload-verify-and-publish:
+    if: ${{ vars.TF_VIDEO_REELS_PUBLISH_ENABLED == 'true' && vars.TF_VIDEO_FIRST_REEL_QA_APPROVED == 'true' && (github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TF_VIDEO_REELS_PUBLISH_ENABLED: ${{ vars.TF_VIDEO_REELS_PUBLISH_ENABLED }}
+      TF_VIDEO_FIRST_REEL_QA_APPROVED: ${{ vars.TF_VIDEO_FIRST_REEL_QA_APPROVED }}
+      TF_META_PAGE_ID: '619193294620746'
+      TF_META_PAGE_ACCESS_TOKEN: ${{ secrets.TF_META_PAGE_ACCESS_TOKEN }}
+      TF_VIDEO_MEDIA_SSH_HOST: ${{ vars.TF_VIDEO_MEDIA_SSH_HOST }}
+      TF_VIDEO_MEDIA_SSH_USER: ${{ vars.TF_VIDEO_MEDIA_SSH_USER }}
+      TF_VIDEO_MEDIA_UPLOAD_DIR: ${{ vars.TF_VIDEO_MEDIA_UPLOAD_DIR }}
+      TF_VIDEO_MEDIA_SSH_KEY: ${{ secrets.TF_VIDEO_MEDIA_SSH_KEY }}
+      TF_VIDEO_MEDIA_SSH_KNOWN_HOSTS: ${{ secrets.TF_VIDEO_MEDIA_SSH_KNOWN_HOSTS }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_REPOSITORY: ${{ github.repository }}
+      SOURCE_RUN_ID: ${{ github.event.workflow_run.id || inputs.render_run_id }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fail closed on missing media host credentials
+        run: |
+          test -n "$TF_VIDEO_MEDIA_SSH_HOST"
+          test -n "$TF_VIDEO_MEDIA_SSH_USER"
+          test -n "$TF_VIDEO_MEDIA_UPLOAD_DIR"
+          test -n "$TF_VIDEO_MEDIA_SSH_KEY"
+          test -n "$TF_VIDEO_MEDIA_SSH_KNOWN_HOSTS"
+          test -n "$TF_META_PAGE_ACCESS_TOKEN"
+          [[ "$SOURCE_RUN_ID" =~ ^[0-9]+$ ]]
+          [[ "$TF_VIDEO_MEDIA_UPLOAD_DIR" =~ ^/[A-Za-z0-9/_-]+$ ]]
+          [[ "$TF_VIDEO_MEDIA_SSH_HOST" =~ ^[A-Za-z0-9.-]+$ ]]
+          [[ "$TF_VIDEO_MEDIA_SSH_USER" =~ ^[A-Za-z_][A-Za-z0-9_-]*$ ]]
+      - uses: actions/download-artifact@v4
+        with:
+          name: tf-v6-live-reel-render-and-audit-${{ env.SOURCE_RUN_ID }}
+          path: campaign
+          run-id: ${{ env.SOURCE_RUN_ID }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+      - name: NEVER publish until video, voices, captions and models are all approved
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          path=Path('campaign/release_qa_pending.json')
+          if not path.is_file():raise SystemExit('No released V6 QA manifest')
+          q=json.loads(path.read_text())
+          required=['frame_text_qa_pass','product_model_qa_pass','four_specs_qa_pass',
+               'hindi_voice_qa_pass','audio_loudness_qa_pass','video_duration_qa_pass',
+               'caption_qa_pass','public_media_sha256_pass','human_release_approved']
+          missing=[key for key in required if q.get(key) is not True]
+          if missing:raise SystemExit('V6_REEL_QA_BLOCKED='+','.join(missing))
+          if q.get('published') is not False:
+              raise SystemExit('Missing explicit not-published state')
+          print('INITIAL_MANUAL_REEL_RELEASE_QA=PASS')
+          PY
+      - name: Install ffprobe for real Reels video technical QA
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - name: Verify local 54s MP4 is H264 720x1280 48kHz AAC and calculate deterministic URL
+        id: media
+        run: |
+          set -euo pipefail
+          path="campaign/new_live_V6_54s_REVIEW_ONLY.mp4"
+          test -f "$path"
+          digest="$(sha256sum "$path" | cut -d ' ' -f1)"
+          echo "video_sha256=$digest" >> "$GITHUB_OUTPUT"
+          echo "public_url=https://media.trustfolio.in/trustfolio-videos/$digest.mp4" >> "$GITHUB_OUTPUT"
+          python - <<'PY'
+          from trustfolio_flow.v6_meta_reels import inspect_mp4
+          inspect_mp4('campaign/new_live_V6_54s_REVIEW_ONLY.mp4')
+          print('VIDEO_CODEC_ASPECT_AUDIO_DURATION_QA=PASS')
+          PY
+      - name: Secure media uploader - pin host key; no SSH host acceptance shortcuts
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/.ssh"
+          chmod 700 "$HOME/.ssh"
+          printf '%s\n' "$TF_VIDEO_MEDIA_SSH_KEY" > "$HOME/.ssh/id_ed25519"
+          chmod 600 "$HOME/.ssh/id_ed25519"
+          printf '%s\n' "$TF_VIDEO_MEDIA_SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/known_hosts"
+          path="campaign/new_live_V6_54s_REVIEW_ONLY.mp4"
+          digest="${{ steps.media.outputs.video_sha256 }}"
+          scp -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+              -i "$HOME/.ssh/id_ed25519" "$path" \
+              "$TF_VIDEO_MEDIA_SSH_USER@$TF_VIDEO_MEDIA_SSH_HOST:$TF_VIDEO_MEDIA_UPLOAD_DIR/$digest.mp4"
+      - name: Re-verify current prices, public hosted video byte SHA, account, Reel quota, ledger and POST
+        env:
+          TF_VIDEO_PUBLIC_URL: ${{ steps.media.outputs.public_url }}
+        run: |
+          python -m trustfolio_flow.v6_meta_reels \
+            --source-receipt campaign/data/fresh_verified_live_receipt.json \
+            --render-qa campaign/release_qa_pending.json \
+            --mp4 campaign/new_live_V6_54s_REVIEW_ONLY.mp4 \
+            --public-url "$TF_VIDEO_PUBLIC_URL" \
+            --caption campaign/data/caption.txt
+# Existing image poster cron and ledger are untouched. Video kill switch OFF by default.
+# No credentials? No verified product photo? No approved voice/quality? No post.
