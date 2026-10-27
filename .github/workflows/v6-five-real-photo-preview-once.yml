@@ -1,0 +1,91 @@
+name: TrustFolio ₹25000 V6 one-time fresh REAL product image preview assets (NO POST)
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/v6-five-real-photo-preview-once.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  fetch-candidates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install 'Pillow>=10,<13'
+      - name: One live Top5 GET and one corresponding five-ID live price POST
+        id: prices
+        run: |
+          mkdir -p handoff/v6-preview/photos
+          python -m trustfolio_flow.cli fetch-live --category washing-machines \
+            --budget 25000 --mode budget --output handoff/v6-preview/current_live_receipt.json
+      - name: Download five model-photo references for non-publishable visual preview
+        if: steps.prices.outcome == 'success'
+        run: |
+          python - <<'PY'
+          import json,hashlib
+          from io import BytesIO
+          from pathlib import Path
+          from urllib.request import Request,build_opener
+          from PIL import Image
+          from trustfolio_flow.live import NoRedirect
+          root=Path('handoff/v6-preview')
+          data=json.loads((root/'current_live_receipt.json').read_text())
+          # For the two corrupt cross-brand source photos use model-number-specific third-party alternatives.
+          # Only for REVIEW; not authority to write website/DB or post on Meta.
+          corrected={
+            '69f4c68a9a622ea2d7cd01f9':{
+              'model':'IFB TL800EP1S',
+              'url':'https://aaravelectronics.com/cdn/shop/files/tl-800ep1s-fv.webp?v=1766863542'},
+            '69f4c68a9a622ea2d7cd01f7':{
+              'model':'Bosch WOE703S0IN',
+              'url':'https://img-prd-pim.poorvika.com/cdn-cgi/image/width%3D500%2Cheight%3D500%2Cquality%3D75/product/37582-bosch-7-0-kg-fully-automatic-top-load-washing-machine-woe703s0in-silver-01.png'}}
+          op=build_opener(NoRedirect()).open
+          report={'source_snapshot_sha256':data['snapshot_sha256'],
+                  'source':'TrustFolio 5 current-live prices + model-specific candidate photo websites',
+                  'all_photos_model_approved':False,'publishing_allowed':False,'products':[]}
+          for p in data['products']:
+            entry={'rank':p['rank'],'id':p['id'],'brand':p['brand'],'title':p['title'],
+                   'actual_db_image_url':p['image_url'],'approved_for_commercial':False}
+            choice=corrected.get(p['id'])
+            urls=[choice['url']] if choice else [p['image_url']]
+            # For Amazon thumbnail URLs, ask the same Amazon image ID for a higher-res copy.
+            if not choice and 'm.media-amazon.com' in p['image_url']:
+              candidate=p['image_url'].replace('._AC_UY218_.jpg','._AC_SL1200_.jpg')
+              if candidate!=p['image_url']:urls=[candidate,p['image_url']]
+            for url in urls:
+              try:
+                req=Request(url,headers={'User-Agent':'Mozilla/5.0','Accept':'image/*'})
+                with op(req,timeout=25) as res:
+                  if res.status!=200 or 'image/' not in res.headers.get('Content-Type','').lower():
+                    raise RuntimeError('non-image result')
+                  raw=res.read(6_000_001)
+                if len(raw)>6_000_000:raise RuntimeError('image > 6 MB')
+                with Image.open(BytesIO(raw)) as im:
+                  im.load()
+                  target=root/'photos'/f'rank_{p["rank"]:02d}.png'
+                  im.convert('RGBA').save(target)
+                  entry.update({'file':target.name,'downloaded_from':url,
+                    'download_status':'OK','image_sha256':hashlib.sha256(target.read_bytes()).hexdigest(),
+                    'dimensions':im.size,'model_candidate':choice['model'] if choice else 'source retailer image URL'})
+                  break
+              except Exception as exc:
+                entry.update({'download_status':'FAILED','error_type':type(exc).__name__})
+            report['products'].append(entry)
+            print('PREVIEW_PHOTO_RANK='+str(p['rank'])+' '+entry.get('download_status','missing')+' '+str(entry.get('dimensions')))
+          (root/'candidate_photo_qa.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
+          print('REAL_PRICE_IDS='+','.join(p['id'] for p in data['products']))
+          print('VIDEO_PUBLISH=NO; SOURCE_IMAGE_CORRECTIONS=NO')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tf-v6-five-real-photo-source-preview-${{ github.run_id }}
+          path: handoff/v6-preview/
+          retention-days: 3
+          if-no-files-found: warn
+# One-time explicit source pull for PREVIEW ONLY. No production photo approvals.
+# No Meta post, no model GPU, no database writes, no cron changes.
