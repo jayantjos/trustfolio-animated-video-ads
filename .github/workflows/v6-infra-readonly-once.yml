@@ -1,0 +1,57 @@
+name: TrustFolio V6 One-Time video Reels infrastructure READ-ONLY audit
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/v6-infra-readonly-once.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  nonposting-video-readiness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      TF_META_PAGE_ACCESS_TOKEN: ${{ secrets.TF_META_PAGE_ACCESS_TOKEN }}
+      TF_VIDEO_OPENAI_TTS_API_KEY: ${{ secrets.TF_VIDEO_OPENAI_TTS_API_KEY }}
+      TF_VIDEO_MEDIA_SSH_KEY: ${{ secrets.TF_VIDEO_MEDIA_SSH_KEY }}
+      TF_VIDEO_MEDIA_SSH_KNOWN_HOSTS: ${{ secrets.TF_VIDEO_MEDIA_SSH_KNOWN_HOSTS }}
+      TF_VIDEO_MEDIA_SSH_HOST: ${{ vars.TF_VIDEO_MEDIA_SSH_HOST }}
+      TF_VIDEO_MEDIA_SSH_USER: ${{ vars.TF_VIDEO_MEDIA_SSH_USER }}
+      TF_VIDEO_MEDIA_UPLOAD_DIR: ${{ vars.TF_VIDEO_MEDIA_UPLOAD_DIR }}
+      TF_VIDEO_REELS_AUTO_ENABLED: ${{ vars.TF_VIDEO_REELS_AUTO_ENABLED }}
+      TF_VIDEO_REELS_PUBLISH_ENABLED: ${{ vars.TF_VIDEO_REELS_PUBLISH_ENABLED }}
+      TF_VIDEO_FIRST_REEL_QA_APPROVED: ${{ vars.TF_VIDEO_FIRST_REEL_QA_APPROVED }}
+      TF_VIDEO_HINDI_VOICE_TEMPLATE_APPROVED: ${{ vars.TF_VIDEO_HINDI_VOICE_TEMPLATE_APPROVED }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Show only secret/variable PRESENCE booleans, never values; optional read-only Meta identity
+        run: |
+          python - <<'PY'
+          import os
+          names=['TF_META_PAGE_ACCESS_TOKEN','TF_VIDEO_OPENAI_TTS_API_KEY',
+                 'TF_VIDEO_MEDIA_SSH_KEY','TF_VIDEO_MEDIA_SSH_KNOWN_HOSTS',
+                 'TF_VIDEO_MEDIA_SSH_HOST','TF_VIDEO_MEDIA_SSH_USER',
+                 'TF_VIDEO_MEDIA_UPLOAD_DIR']
+          for key in names:
+              print('VIDEO_CONFIG_'+key+'_PRESENT='+str(bool(os.getenv(key))).upper())
+          for key in ['TF_VIDEO_REELS_AUTO_ENABLED','TF_VIDEO_REELS_PUBLISH_ENABLED',
+                      'TF_VIDEO_FIRST_REEL_QA_APPROVED','TF_VIDEO_HINDI_VOICE_TEMPLATE_APPROVED']:
+              print('VIDEO_FLAG_'+key+'_ON='+str(os.getenv(key)=='true').upper())
+          if not os.getenv('TF_META_PAGE_ACCESS_TOKEN'):
+              print('META_VIDEO_REELS_ACCOUNT_PREFLIGHT=NOT_POSSIBLE_NO_SECRET')
+          else:
+              from trustfolio_flow.v6_meta_reels import preflight_account,ReelBlocked
+              try:
+                  account=preflight_account({'token':os.environ['TF_META_PAGE_ACCESS_TOKEN'],
+                    'page':'619193294620746'})
+                  print('META_VIDEO_REELS_ACCOUNT_PREFLIGHT=PASS')
+                  print('VERIFIED_IG_ACCOUNT_LINKED=YES')
+              except (ReelBlocked,ValueError) as exc:
+                  print('META_VIDEO_REELS_ACCOUNT_PREFLIGHT=BLOCKED_'+type(exc).__name__)
+          print('META_POST_ATTEMPTED=NO')
+          print('LIVE_PRICE_API_POST_ATTEMPTED=NO')
+          PY
+# One-time check only; remove push trigger after first run.
