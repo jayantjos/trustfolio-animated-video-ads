@@ -126,12 +126,24 @@ def handoff(receipt,photo_manifest,*,now=None):
         "note":"Render newly with actual live values; never post the static approved 54s V6 reference file."
     }
 
+def stable_product_fingerprint(receipt):
+    """Model/price/rank/spec/merchant identity without changing check timestamps.
+
+    POST /api/live-prices legitimately refreshes live_checked_at; requiring two
+    literal receipt hashes to match makes *every* prepublish POST fail.
+    """
+    fields=("rank","id","brand","title","platform","price_inr","image_url",
+            "specifications","category","price_source","live_price_status")
+    data={"campaign":{k:receipt[k] for k in ("category","budget_inr","mode","brand")},
+          "products":[{k:p.get(k) for k in fields} for p in receipt["products"]]}
+    return sha(data)
+
 def prepublish_hard_gate(render_record,source_receipt,latest_receipt,*,now=None):
     """Recheck old rendered vs NEW live receipt. No API calls in this function."""
     validate_receipt(source_receipt,now=now)
     validate_receipt(latest_receipt,now=now)
-    if source_receipt["snapshot_sha256"]!=latest_receipt["snapshot_sha256"]:
-        raise DataBlocked("Products/prices/specifications/rank changed; re-render")
+    if stable_product_fingerprint(source_receipt)!=stable_product_fingerprint(latest_receipt):
+        raise DataBlocked("Products/prices/specifications/model photos/rank changed; re-render")
     if not isinstance(render_record,dict) or (
             render_record.get("source_snapshot_sha256")!=source_receipt["snapshot_sha256"]):
         raise DataBlocked("Rendered frame data not bound to exact live receipt")
