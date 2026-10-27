@@ -240,6 +240,10 @@ def publish(cfg,receipt,render_record,mp4,url,caption,*,fresh_fetch=fetch_live):
     demand(caption==caption_for(source)["caption"],
            "Caption does not correspond to these exact five products and prices")
     verify_public_media(url,digest)
+    # Source manifest cannot attest to media hosted later. This exact verifier
+    # alone grants the hosted SHA integrity gate, only after bytes match.
+    render_record=dict(render_record)
+    render_record["public_media_sha256_pass"]=True
     ig=preflight_account(cfg)
     # One explicit latest live refresh before touching public Meta post, not cached catalog.
     recent=fresh_fetch(source["category"],source["budget_inr"],
