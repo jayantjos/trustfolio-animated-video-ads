@@ -1,0 +1,36 @@
+name: TrustFolio V6 one-shot 54-second SYNTHETIC engine render test (no posts)
+on:
+  pull_request:
+    paths:
+      - 'tests/v6_render_synthetic_smoke.py'
+      - '.github/workflows/v6-dynamic-54s-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  original-master-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install 'Pillow>=10,<13'
+      - name: Ensure FFmpeg encoder for CPU-only compositing
+        run: |
+          command -v ffmpeg
+          command -v ffprobe
+          ffmpeg -hide_banner -encoders | grep libx264
+      - name: Render synthetic non-postable V6 54s from actual uploaded original and approved V6 source
+        run: python -m tests.v6_render_synthetic_smoke
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trustfolio-v6-SYNTHETIC-nonpublishable-smoke
+          path: |
+            handoff/synthetic_v6_engine_test/*qa.json
+            handoff/synthetic_v6_engine_test/synthetic_not_for_posting.mp4
+          retention-days: 2
+          if-no-files-found: warn
+# No market/price fetch, real user or merchant data, paid GPU, TTS or posting.
