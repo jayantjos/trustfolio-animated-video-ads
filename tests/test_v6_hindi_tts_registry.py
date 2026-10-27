@@ -42,7 +42,7 @@ class Gates(unittest.TestCase):
     def test_first_photo_campaign_requires_review(self):
         r=receipt();p=photos(r)
         with patch("trustfolio_flow.v6_photo_registry.check_receipt"):
-            with self.assertRaisesRegex(DataBlocked,"No approved"):
+            with self.assertRaisesRegex(DataBlocked,"Model photo not yet approved"):
                 resolve(r,p,{"approved_models":{}})
     def test_signed_registry_reuse(self):
         r=receipt();p=photos(r)
