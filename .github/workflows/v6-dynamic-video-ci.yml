@@ -1,0 +1,36 @@
+name: TrustFolio Premium V6 dynamic-video rendering safety CI
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'trustfolio_flow/v6_dynamic_renderer.py'
+      - 'trustfolio_flow/v6_product_images.py'
+      - 'tests/test_v6_dynamic_renderer.py'
+      - '.github/workflows/v6-dynamic-video-ci.yml'
+  pull_request:
+    paths:
+      - 'trustfolio_flow/v6_dynamic_renderer.py'
+      - 'trustfolio_flow/v6_product_images.py'
+      - 'tests/test_v6_dynamic_renderer.py'
+      - '.github/workflows/v6-dynamic-video-ci.yml'
+permissions:
+  contents: read
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Pillow required for deterministic rasterized premium V6 overlays
+        run: python -m pip install 'Pillow>=10,<13'
+      - name: Offline real-price overlay, model-photo checksum, five-detail scene tests
+        run: python -m unittest discover -s tests -p 'test_v6_dynamic_renderer.py' -v
+      - name: Existing source provenance, photo QA and Hindi voice checks
+        run: |
+          python -m unittest discover -s tests -p 'test_v6_live_campaign.py' -v
+          python -m unittest discover -s tests -p 'test_v6_hindi_mixer.py' -v
+# Tests create synthetic dummy photos locally; they are NOT real ads.
+# No network marketplace calls, paid GPU or Meta publication.
