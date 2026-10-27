@@ -1,0 +1,27 @@
+name: TrustFolio V6 Hindi voice audio-mixer offline tests
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/mix_v6_hindi_voice.py'
+      - 'tests/test_v6_hindi_mixer.py'
+      - '.github/workflows/v6-hindi-audio-mix-ci.yml'
+  pull_request:
+    paths:
+      - 'scripts/mix_v6_hindi_voice.py'
+      - 'tests/test_v6_hindi_mixer.py'
+      - '.github/workflows/v6-hindi-audio-mix-ci.yml'
+permissions:
+  contents: read
+jobs:
+  audio-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test V6 audio command integrity without creating media or spending credits
+        run: python -m unittest discover -s tests -p 'test_v6_hindi_mixer.py' -v
+# Not a Hindi TTS engine. No GPU, no prices and no Meta posting.
