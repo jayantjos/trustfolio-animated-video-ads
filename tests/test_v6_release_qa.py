@@ -28,6 +28,7 @@ class ReleaseQA(unittest.TestCase):
     def setup_patches(self):
         return [
             patch("trustfolio_flow.v6_release_qa.validate_receipt"),
+            patch("trustfolio_flow.v6_hindi_voice_tts.validate_receipt"),
             patch("trustfolio_flow.v6_release_qa.check_photo_approvals"),
             patch("trustfolio_flow.v6_release_qa.caption_for",return_value={"caption":"actual caption"}),
             patch("trustfolio_flow.v6_release_qa.probe",return_value={
@@ -41,7 +42,7 @@ class ReleaseQA(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             file=Path(td)/"v.mp4";file.write_bytes(b"synthetic bytes")
             ctx=self.setup_patches()
-            with ctx[0],ctx[1],ctx[2],ctx[3],ctx[4]:
+            with ctx[0],ctx[1],ctx[2],ctx[3],ctx[4],ctx[5]:
                 result=assess(r,p,m,file,"actual caption",v,environ={})
             self.assertFalse(result["human_release_approved"])
             self.assertFalse(result["hindi_voice_qa_pass"])
@@ -52,7 +53,7 @@ class ReleaseQA(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             file=Path(td)/"v.mp4";file.write_bytes(b"synthetic bytes")
             ctx=self.setup_patches()
-            with ctx[0],ctx[1],ctx[2],ctx[3],ctx[4]:
+            with ctx[0],ctx[1],ctx[2],ctx[3],ctx[4],ctx[5]:
                 result=assess(r,p,m,file,"actual caption",v,environ={
                   "TF_VIDEO_FIRST_REEL_QA_APPROVED":"true",
                   "TF_VIDEO_HINDI_VOICE_TEMPLATE_APPROVED":"true"})
@@ -65,7 +66,7 @@ class ReleaseQA(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             file=Path(td)/"v.mp4";file.write_bytes(b"x")
             ctx=self.setup_patches()
-            with ctx[0],ctx[1],ctx[2],ctx[3],ctx[4]:
+            with ctx[0],ctx[1],ctx[2],ctx[3],ctx[4],ctx[5]:
                 with self.assertRaisesRegex(RuntimeError,"Hindi voice"):
                     assess(r,p,m,file,"actual caption",v,environ={})
 
