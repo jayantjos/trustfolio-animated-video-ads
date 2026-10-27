@@ -1,8 +1,5 @@
 name: TrustFolio V6 One-Time video Reels infrastructure READ-ONLY audit
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/v6-infra-readonly-once.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -54,4 +51,4 @@ jobs:
           print('META_POST_ATTEMPTED=NO')
           print('LIVE_PRICE_API_POST_ATTEMPTED=NO')
           PY
-# One-time check only; remove push trigger after first run.
+# Verified first check 40597161176. Manual-only now to avoid redundant checks/Actions usage.
