@@ -37,6 +37,8 @@ jobs:
       MODE: ${{ inputs.mode || vars.TF_VIDEO_MODE || 'budget' }}
       BRAND: ${{ inputs.brand || vars.TF_VIDEO_BRAND || '' }}
       TF_VIDEO_OPENAI_TTS_API_KEY: ${{ secrets.TF_VIDEO_OPENAI_TTS_API_KEY }}
+      TF_VIDEO_FIRST_REEL_QA_APPROVED: ${{ vars.TF_VIDEO_FIRST_REEL_QA_APPROVED }}
+      TF_VIDEO_HINDI_VOICE_TEMPLATE_APPROVED: ${{ vars.TF_VIDEO_HINDI_VOICE_TEMPLATE_APPROVED }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -111,23 +113,18 @@ jobs:
             --hindi-voice handoff/hindi_voice/five_products_hindi_14s.wav \
             --output handoff/new_live_V6_54s_REVIEW_ONLY.mp4
           ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 handoff/new_live_V6_54s_REVIEW_ONLY.mp4
-      - name: Mark audio/image release still awaiting first full human model/voice QA
+      - name: Validate actual 54s MP4 + audio loudness + exact 5 caption/photo/voice against source
         if: steps.final.outcome == 'success'
         run: |
-          python - <<'PY'
-          import hashlib,json
-          from pathlib import Path
-          v=Path('handoff/new_live_V6_54s_REVIEW_ONLY.mp4')
-          report=json.loads(Path('handoff/dynamic_visual_no_new_voice.qa.json').read_text())
-          report.update({'video_sha256':hashlib.sha256(v.read_bytes()).hexdigest(),
-            'new_hindi_voice_track_present':True,'hindi_voice_qa_pass':False,
-            'audio_loudness_qa_pass':False,'human_release_approved':False,
-            'public_media_sha256_pass':False,'post_allowed':False,
-            'status':'NOT_YET_RELEASED_FIRST_FULL_QA_REQUIRED'})
-          Path('handoff/release_qa_pending.json').write_text(json.dumps(report,indent=2)+'\n')
-          print('REEL_READY_FOR_INITIAL_MANUAL_QUALITY_REVIEW=YES')
-          print('AUTO_META_POSTING=DISABLED')
-          PY
+          python -m trustfolio_flow.v6_release_qa \
+            --receipt handoff/data/fresh_verified_live_receipt.json \
+            --photo-qa handoff/data/approved_photo_receipt.json \
+            --render-source handoff/dynamic_visual_no_new_voice.qa.json \
+            --mp4 handoff/new_live_V6_54s_REVIEW_ONLY.mp4 \
+            --caption handoff/data/caption.txt \
+            --voice-evidence handoff/hindi_voice/source_backed_hindi_lines.json \
+            --output handoff/release_qa_pending.json
+          echo 'VIDEO_ON_SOCIAL=NOT_YET; HOSTED_SHA_AND_FRESH_PRICE_RECHECK_REQUIRED'
       - uses: actions/upload-artifact@v4
         if: always()
         with:
