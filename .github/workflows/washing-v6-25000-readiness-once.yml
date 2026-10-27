@@ -1,8 +1,5 @@
 name: TrustFolio V6 One-Time INR25000 current live readiness (CPU, no publish)
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/washing-v6-25000-readiness-once.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -87,4 +84,4 @@ jobs:
           retention-days: 3
           if-no-files-found: warn
 # One-time push trigger to execute explicit requested readiness check ONCE.
-# No GPU, no new Google Flow, no public posting, no retries. Convert to manual-only immediately after run.
+# No GPU, no new Google Flow, no public posting, no retries. Manual-only after the first verified 2026-10-28 run; no repeats without explicit dispatch.
