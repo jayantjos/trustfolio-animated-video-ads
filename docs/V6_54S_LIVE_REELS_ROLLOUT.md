@@ -7,9 +7,9 @@ SHA256: `da1e0193a7c50bfc1253c9794bedfff941b739aead0c0a4b913f6377b16c9923`.
 
 ## Exact binary upload status
 
-The 40s original master is already on GitHub. **The 54s V6 binary is NOT yet uploaded.**
+The 40s original master is already on GitHub. **The 54s V6 binary IS now uploaded and exact checksum-verified** (GitHub Actions run 40592285055).
 The text/code GitHub connector cannot transfer MP4 bytes from this chat's local sandbox.
-Manually upload the actual V6 original MP4 to:
+The approved V6 original MP4 is now at:
 `assets/video/washing-machines/trustfolio_washing_v6_54s_approved_visual_master.mp4`.
 Do not replace the existing 40s file. CI `verify-v6-54s-master.yml` then validates its original SHA256, size, length, dimensions and codecs.
 
@@ -64,7 +64,10 @@ Proposed future kill switch: `TF_VIDEO_REELS_PUBLISH_ENABLED=false`.
 
 ## Current truth
 
-DONE: approved V6 visual master QA locally, audio-balanced derivative locally, code/test/CI/manual live handoff.
-NOT DONE: V6 MP4 binary GitHub upload, upstream wrong image repair, current fully live Top5,
+DONE: approved V6 visual master MP4 on GitHub, exact checksum PASS, QA locally, audio-balanced derivative locally, code/test/CI/manual live handoff.
+NOT DONE: upstream wrong image repair, production-ready persistent 5-product photo registry,
 production dynamic video renderer, new Hindi narration, video media hosting and actual Reels publishing.
 No paid GPU/Flow render and no Instagram/Facebook video post were initiated by this work.
+
+## 28 October development update
+User uploaded the approved 54s MP4; binary/hash verification PASS. New branch PR #19 implements source-driven 54s compositor, auto product-photo download + strict durable approval registry, optional limited five-line Hindi TTS, guarded daily render workflow and dedicated Meta Instagram/Facebook Reels publisher with independent ledgers/kill-switch. FULL synthetic end-to-end 54s video render: https://github.com/jayantjos/trustfolio-animated-video-ads/actions/runs/40594549201 PASS. Production automatic posting remains OFF while IFB/Bosch share the wrong source photo and there is no approved model/photo registry, voice secret, public media SSH config or first QA release.

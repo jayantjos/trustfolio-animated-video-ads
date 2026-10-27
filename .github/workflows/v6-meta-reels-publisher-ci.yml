@@ -1,0 +1,36 @@
+name: TrustFolio Reels publisher no-duplicate and fail-closed offline CI
+on:
+  pull_request:
+    paths:
+      - 'trustfolio_flow/v6_meta_reels.py'
+      - 'trustfolio_flow/v6_live_campaign.py'
+      - 'tests/test_v6_reels_publisher.py'
+      - 'trustfolio_flow/v6_release_qa.py'
+      - 'tests/test_v6_release_qa.py'
+      - '.github/workflows/v6-meta-reels-publisher-ci.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'trustfolio_flow/v6_meta_reels.py'
+      - 'trustfolio_flow/v6_live_campaign.py'
+      - 'tests/test_v6_reels_publisher.py'
+      - 'trustfolio_flow/v6_release_qa.py'
+      - 'tests/test_v6_release_qa.py'
+      - '.github/workflows/v6-meta-reels-publisher-ci.yml'
+permissions:
+  contents: read
+jobs:
+  offline-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: No Meta requests, only fake ledger/permission/source tests
+        run: |
+          python -m unittest discover -s tests -p 'test_v6_reels_publisher.py' -v
+          python -m unittest discover -s tests -p 'test_v6_live_campaign.py' -v
+          python -m unittest discover -s tests -p 'test_v6_release_qa.py' -v
+# NEVER posts. Does not need Meta credentials, no API costs.

@@ -10,7 +10,7 @@
   "width": 720,
   "height": 1280,
   "codec": "h264+aac",
-  "file_upload_status": "pending",
+  "file_upload_status": "uploaded_verified_github_actions_40592285055",
   "audio_balanced_reference_sha256": "9e3b469be2f0439d6548ad80b7304614cad34c08fe8317d872213499a3c9e04d",
   "audio_balanced_lufs": -17.09,
   "historical_website_data_date": "2026-10-26",
@@ -23,5 +23,7 @@
   "publishable": false,
   "video_posting_enabled": false,
   "google_flow_new_generations": 0,
-  "paid_gpu_runs": 0
+  "paid_gpu_runs": 0,
+  "github_verified_blob_sha1": "22f8b56160788637115f7bcb7b6eb221d81c3ab9",
+  "github_verification_url": "https://github.com/jayantjos/trustfolio-animated-video-ads/actions/runs/40592285055"
 }
