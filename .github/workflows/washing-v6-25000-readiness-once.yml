@@ -1,0 +1,90 @@
+name: TrustFolio V6 One-Time INR25000 current live readiness (CPU, no publish)
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/washing-v6-25000-readiness-once.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: trustfolio-washing-v6-25000-one-live-check
+  cancel-in-progress: false
+jobs:
+  readiness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Local V6 source contract tests
+        run: python -m unittest discover -s tests -p 'test_v6_live_campaign.py' -v
+      - name: Check exact ranked five once and then one current-live five-ID POST
+        run: |
+          mkdir -p handoff/data
+          python - <<'PY'
+          import json,re
+          from pathlib import Path
+          from datetime import datetime,timezone
+          from urllib.parse import urlencode
+          from trustfolio_flow.live import ORIGIN,_get_json,normalize_live,campaign,DataBlocked,sha
+          from trustfolio_flow.v6_live_campaign import caption_for,source_specs
+          spec=campaign('washing-machines',25000)
+          report={'category':'washing-machines','budget_inr':25000,
+              'status':'BLOCKED_NOT_LIVE_READY','price_post_calls':0,
+              'publication_enabled':False,'rows':[]}
+          try:
+              q=urlencode({'category':spec['category'],'budget':str(spec['budget_inr']),'limit':'5'})
+              doc=_get_json(ORIGIN+'/api/products/top?'+q)
+              raw=doc.get('data')
+              if not isinstance(raw,dict) or not isinstance(raw.get('products'),list) or len(raw['products'])!=5:
+                  raise DataBlocked('Top5 missing five exact products; no POST')
+              products=raw['products']
+              ids=[str(p.get('id') or '') for p in products]
+              if len(set(ids))!=5 or any(not re.fullmatch('[a-f0-9]{24}',i,re.I) for i in ids):
+                  raise DataBlocked('Bad IDs; no POST attempted')
+              prices=_get_json(ORIGIN+'/api/live-prices',body={'ids':ids})
+              report['price_post_calls']=1
+              rows=prices.get('data')
+              if not isinstance(rows,list):raise DataBlocked('Live-price API returned non-list')
+              byid={str(p.get('id')):p for p in rows if isinstance(p,dict)}
+              for i,p in enumerate(products,1):
+                  match=byid.get(ids[i-1],{})
+                  live=match.get('live') or {}
+                  if not isinstance(live,dict):live={}
+                  features=p.get('specifications') or {}
+                  report['rows'].append({'rank':i,'platform':str(p.get('platform') or ''),
+                    'brand':str(p.get('brand') or ''),
+                    'title':str(p.get('title') or '')[:110],
+                    'live_status':live.get('status') or 'missing_live',
+                    'live_price_inr':live.get('price_inr') if live.get('status')=='ok' else None,
+                    'deleted':bool(match.get('deleted')),
+                    'source_specs_count':sum(1 for v in features.values() if isinstance(v,str) and v.strip())})
+              current=normalize_live(raw,rows,spec=spec,now=datetime.now(timezone.utc))
+              caption=caption_for(current)
+              Path('handoff/data/live_receipt.json').write_text(json.dumps(current,ensure_ascii=False,indent=2)+'\n')
+              Path('handoff/data/caption.txt').write_text(caption['caption']+'\n')
+              Path('handoff/data/four_real_specs.json').write_text(json.dumps(caption['four_specs_by_rank'],ensure_ascii=False,indent=2)+'\n')
+              report['status']='FIVE_PRICES_AND_SPECS_VERIFIED_NEEDS_IMAGES_VOICE_RENDER_QA'
+          except (ValueError,TypeError,KeyError,TimeoutError,OSError,DataBlocked) as e:
+              report['reason']=str(e)
+              print('FIVE_LIVE_PRICE_VALIDATION_BLOCKED='+str(e))
+          finally:
+              Path('handoff/data/status.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
+              for r in report['rows']:
+                  print('RANK='+str(r['rank'])+' PLATFORM='+r['platform']+' LIVE_STATUS='+str(r['live_status'])+' SPECS_COUNT='+str(r['source_specs_count']))
+              print('POST_LIVE_PRICE_CALLS='+str(report['price_post_calls']))
+              print('POST_TO_META=NO')
+          if report['status'].startswith('BLOCKED'):
+              raise SystemExit('VIDEO_LIVE_SOURCE_NOT_READY_NO_PUBLISH')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tf-v6-current-live-25000-readiness
+          path: handoff/
+          retention-days: 3
+          if-no-files-found: warn
+# One-time push trigger to execute explicit requested readiness check ONCE.
+# No GPU, no new Google Flow, no public posting, no retries. Convert to manual-only immediately after run.
