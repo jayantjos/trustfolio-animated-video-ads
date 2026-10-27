@@ -1,0 +1,144 @@
+name: TrustFolio V6 guarded daily LIVE Washing Machine reel render (no posting)
+on:
+  workflow_dispatch:
+    inputs:
+      budget:
+        description: Target INR budget
+        required: true
+        default: '25000'
+        type: string
+      mode:
+        description: Ranking mode
+        required: true
+        default: budget
+        type: choice
+        options: [budget, brand_budget, comparison]
+      brand:
+        description: Only for brand_budget
+        required: false
+        default: ''
+        type: string
+  schedule:
+    - cron: '10 13 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: trustfolio-v6-live-washing-machine-render
+  cancel-in-progress: false
+jobs:
+  create-real-data-video:
+    # To enable schedule, set TF_VIDEO_REELS_AUTO_ENABLED=true after FIRST real QA.
+    # This workflow ONLY renders; the social publisher is a separate audited gate.
+    if: ${{ github.event_name != 'schedule' || vars.TF_VIDEO_REELS_AUTO_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    env:
+      BUDGET: ${{ inputs.budget || vars.TF_VIDEO_BUDGET_INR || '25000' }}
+      MODE: ${{ inputs.mode || vars.TF_VIDEO_MODE || 'budget' }}
+      BRAND: ${{ inputs.brand || vars.TF_VIDEO_BRAND || '' }}
+      TF_VIDEO_OPENAI_TTS_API_KEY: ${{ secrets.TF_VIDEO_OPENAI_TTS_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: CPU dependencies (no RunPod and no Google Flow credits)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fonts-dejavu-core
+          python -m pip install 'Pillow>=10,<13'
+      - name: Check no data/image/audio contract regression
+        run: |
+          python -m unittest discover -s tests -p 'test_v6_live_campaign.py' -v
+          python -m unittest discover -s tests -p 'test_v6_dynamic_renderer.py' -v
+          python -m unittest discover -s tests -p 'test_v6_hindi_mixer.py' -v
+      - name: Capture exactly ONE website-ranked Top5 and refresh the SAME five IDs
+        id: fetch
+        run: |
+          mkdir -p handoff/data
+          python -m trustfolio_flow.cli fetch-live --category washing-machines \
+            --budget "$BUDGET" --mode "$MODE" --brand "$BRAND" \
+            --output handoff/data/fresh_verified_live_receipt.json
+      - name: Produce price/brand/spec-accurate automatic caption
+        if: steps.fetch.outcome == 'success'
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from trustfolio_flow.v6_live_campaign import caption_for
+          receipt=json.loads(Path('handoff/data/fresh_verified_live_receipt.json').read_text())
+          c=caption_for(receipt)
+          Path('handoff/data/caption.txt').write_text(c['caption']+'\n',encoding='utf-8')
+          Path('handoff/data/four_source_specs.json').write_text(json.dumps(c['four_specs_by_rank'],ensure_ascii=False,indent=2)+'\n')
+          print('CAPTION_HAS_FIVE_REAL_PRODUCTS_WITH_LIVE_PRICES=YES')
+          PY
+      - name: Download exact source product photos; block duplicates/missing quality
+        id: photos
+        run: |
+          python -m trustfolio_flow.v6_product_images \
+            --receipt handoff/data/fresh_verified_live_receipt.json \
+            --outdir handoff/photos
+      - name: Reuse previously manually approved exact-model image hashes only
+        id: approve
+        run: |
+          python -m trustfolio_flow.v6_photo_registry \
+            --receipt handoff/data/fresh_verified_live_receipt.json \
+            --pending handoff/photos/photo_review_pending.json \
+            --registry masters/washing-machines/approved_product_photos.json \
+            --output handoff/data/approved_photo_receipt.json
+      - name: Re-render FULL 54 second premium V6 from approved original 40s story
+        id: render
+        run: |
+          python -m trustfolio_flow.v6_dynamic_renderer \
+            --receipt handoff/data/fresh_verified_live_receipt.json \
+            --photo-qa handoff/data/approved_photo_receipt.json \
+            --photo-dir handoff/photos \
+            --master assets/video/washing-machines/trustfolio_washing_40s_visual_master_v1.mp4 \
+            --v6-reference assets/video/washing-machines/trustfolio_washing_v6_54s_approved_visual_master.mp4 \
+            --output handoff/dynamic_visual_no_new_voice.mp4
+      - name: Paid Hindi TTS only after ALL images, source & visual QA pass
+        id: voice
+        run: |
+          test -n "$TF_VIDEO_OPENAI_TTS_API_KEY" || { echo "NO_TTS_KEY -> NO UNNARRATED VIDEO RELEASE"; exit 1; }
+          python -m trustfolio_flow.v6_hindi_voice_tts \
+            --receipt handoff/data/fresh_verified_live_receipt.json \
+            --output-dir handoff/hindi_voice
+      - name: Mix clear Hindi narration with original cartoon audio
+        id: final
+        run: |
+          python scripts/mix_v6_hindi_voice.py \
+            --video handoff/dynamic_visual_no_new_voice.mp4 \
+            --hindi-voice handoff/hindi_voice/five_products_hindi_14s.wav \
+            --output handoff/new_live_V6_54s_REVIEW_ONLY.mp4
+          ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 handoff/new_live_V6_54s_REVIEW_ONLY.mp4
+      - name: Mark audio/image release still awaiting first full human model/voice QA
+        if: steps.final.outcome == 'success'
+        run: |
+          python - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          v=Path('handoff/new_live_V6_54s_REVIEW_ONLY.mp4')
+          report=json.loads(Path('handoff/dynamic_visual_no_new_voice.qa.json').read_text())
+          report.update({'video_sha256':hashlib.sha256(v.read_bytes()).hexdigest(),
+            'new_hindi_voice_track_present':True,'hindi_voice_qa_pass':False,
+            'audio_loudness_qa_pass':False,'human_release_approved':False,
+            'public_media_sha256_pass':False,'post_allowed':False,
+            'status':'NOT_YET_RELEASED_FIRST_FULL_QA_REQUIRED'})
+          Path('handoff/release_qa_pending.json').write_text(json.dumps(report,indent=2)+'\n')
+          print('REEL_READY_FOR_INITIAL_MANUAL_QUALITY_REVIEW=YES')
+          print('AUTO_META_POSTING=DISABLED')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tf-v6-live-reel-render-and-audit-${{ github.run_id }}
+          path: |
+            handoff/data/
+            handoff/photos/photo_review_pending.json
+            handoff/hindi_voice/source_backed_hindi_lines.json
+            handoff/new_live_V6_54s_REVIEW_ONLY.mp4
+            handoff/release_qa_pending.json
+          retention-days: 5
+          if-no-files-found: warn
+# No direct social posting. Publishing is isolated, explicit, with separate Meta credentials and ledger.
+# No changes to existing TrustFolio poster cron; never publish V6 reference as a new live-price ad.
