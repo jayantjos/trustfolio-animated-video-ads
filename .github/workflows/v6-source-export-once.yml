@@ -1,0 +1,26 @@
+name: TrustFolio V6 render-source export for local photo-model QA (one time)
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/v6-source-export-once.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bundle audited, existing V6 Python modules (no binary video, secrets, API calls)
+        run: |
+          mkdir -p handoff/src/trustfolio_flow
+          cp trustfolio_flow/__init__.py trustfolio_flow/live.py trustfolio_flow/v6_live_campaign.py \
+            trustfolio_flow/v6_dynamic_renderer.py trustfolio_flow/v6_product_images.py \
+            trustfolio_flow/v6_photo_registry.py handoff/src/trustfolio_flow/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tf-v6-current-source-to-review
+          path: handoff/src/
+          retention-days: 2
+# Exports source code only for local visual QA; no RunPod, Meta, TTS, or live requests.
