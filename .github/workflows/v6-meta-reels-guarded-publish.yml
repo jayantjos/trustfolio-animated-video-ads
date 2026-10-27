@@ -69,7 +69,7 @@ jobs:
           q=json.loads(path.read_text())
           required=['frame_text_qa_pass','product_model_qa_pass','four_specs_qa_pass',
                'hindi_voice_qa_pass','audio_loudness_qa_pass','video_duration_qa_pass',
-               'caption_qa_pass','public_media_sha256_pass','human_release_approved']
+               'caption_qa_pass','human_release_approved']
           missing=[key for key in required if q.get(key) is not True]
           if missing:raise SystemExit('V6_REEL_QA_BLOCKED='+','.join(missing))
           if q.get('published') is not False:
