@@ -19,7 +19,7 @@ on:
         default: ''
         type: string
   schedule:
-    - cron: '10 13 * * *'
+    - cron: '10 15 * * *'  # 20:40 IST, after the existing 19:00 poster slot
 permissions:
   contents: read
 concurrency:
