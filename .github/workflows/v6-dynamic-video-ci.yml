@@ -6,12 +6,16 @@ on:
       - 'trustfolio_flow/v6_dynamic_renderer.py'
       - 'trustfolio_flow/v6_product_images.py'
       - 'tests/test_v6_dynamic_renderer.py'
+      - 'tests/test_v6_image_cutout.py'
+      - 'tests/test_v6_hindi_tts_registry.py'
       - '.github/workflows/v6-dynamic-video-ci.yml'
   pull_request:
     paths:
       - 'trustfolio_flow/v6_dynamic_renderer.py'
       - 'trustfolio_flow/v6_product_images.py'
       - 'tests/test_v6_dynamic_renderer.py'
+      - 'tests/test_v6_image_cutout.py'
+      - 'tests/test_v6_hindi_tts_registry.py'
       - '.github/workflows/v6-dynamic-video-ci.yml'
 permissions:
   contents: read
@@ -32,5 +36,7 @@ jobs:
         run: |
           python -m unittest discover -s tests -p 'test_v6_live_campaign.py' -v
           python -m unittest discover -s tests -p 'test_v6_hindi_mixer.py' -v
+          python -m unittest discover -s tests -p 'test_v6_image_cutout.py' -v
+          python -m unittest discover -s tests -p 'test_v6_hindi_tts_registry.py' -v
 # Tests create synthetic dummy photos locally; they are NOT real ads.
 # No network marketplace calls, paid GPU or Meta publication.
