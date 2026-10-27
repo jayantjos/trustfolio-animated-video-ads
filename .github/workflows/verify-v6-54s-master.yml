@@ -1,0 +1,22 @@
+name: Verify uploaded V6 approved 54-second MP4 (no price API)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'assets/video/washing-machines/trustfolio_washing_v6_54s_approved_visual_master.mp4'
+      - 'masters/washing-machines/v6_54s_art_direction.json'
+      - 'scripts/verify_v6_54s_master.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ffprobe
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - name: Verify exact source SHA256 and audible 48kHz AAC
+        run: python scripts/verify_v6_54s_master.py
+# Video quality test not a current-price certificate; no publish.

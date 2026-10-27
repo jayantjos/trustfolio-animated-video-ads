@@ -1,0 +1,112 @@
+name: TrustFolio V6 premium washing-video QA and manual live handoff
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'trustfolio_flow/v6_live_campaign.py'
+      - 'tests/test_v6_live_campaign.py'
+      - '.github/workflows/washing-v6-live-video-qa.yml'
+      - 'masters/washing-machines/v6_54s_art_direction.json'
+  pull_request:
+    paths:
+      - 'trustfolio_flow/v6_live_campaign.py'
+      - 'tests/test_v6_live_campaign.py'
+      - '.github/workflows/washing-v6-live-video-qa.yml'
+  workflow_dispatch:
+    inputs:
+      budget:
+        description: Washing Machine budget in INR (explicit live API call)
+        required: true
+        default: '25000'
+        type: string
+      mode:
+        description: Video category mode
+        required: true
+        default: budget
+        type: choice
+        options: [budget, comparison, brand_budget]
+      brand:
+        description: Required only for brand_budget mode
+        required: false
+        default: ''
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: trustfolio-v6-video-ci
+  cancel-in-progress: false
+jobs:
+  local-safety-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify source, five current live prices, four specs and no-publish rules
+        run: python -m unittest discover -s tests -p 'test_v6_live_campaign.py' -v
+  live-handoff:
+    needs: local-safety-tests
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install product image processing (CPU only)
+        run: python -m pip install 'Pillow>=10,<13'
+      - name: GET real Top5 once then POST live prices for exact five product IDs once
+        id: live
+        env:
+          BUDGET: ${{ inputs.budget }}
+          MODE: ${{ inputs.mode }}
+          BRAND: ${{ inputs.brand }}
+        run: |
+          mkdir -p handoff/data
+          python -m trustfolio_flow.cli fetch-live --category washing-machines \
+            --budget "$BUDGET" --mode "$MODE" --brand "$BRAND" \
+            --output handoff/data/live_receipt.json
+      - name: Build real-value caption and 4-spec-per-product script (NO VIDEO PUBLISH)
+        if: steps.live.outcome == 'success'
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from trustfolio_flow.v6_live_campaign import caption_for
+          r=json.loads(Path('handoff/data/live_receipt.json').read_text(encoding='utf-8'))
+          cap=caption_for(r)
+          p=Path('handoff');p.mkdir(exist_ok=True)
+          (p/'caption_instagram_facebook.txt').write_text(cap['caption']+'\n',encoding='utf-8')
+          (p/'four_verified_specs_by_rank.json').write_text(
+              json.dumps(cap['four_specs_by_rank'],ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          (p/'STATUS.txt').write_text(
+              'DATA_VERIFIED=YES\nIMAGES_MANUAL_QA=REQUIRED\n'
+              'HINDI_NARRATION=NOT_GENERATED\nDYNAMIC_VIDEO=NOT_GENERATED\n'
+              'SOCIAL_POSTS=DISABLED\n',encoding='utf-8')
+          print('LIVE_CAPTION_AND_4_SPEC_INPUTS=READY')
+          print('LIVE_REEL_MP4=NOT_RENDERED')
+          PY
+      - name: Download exact five source retailer photos (source-only, human photo QA required)
+        if: steps.live.outcome == 'success'
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from trustfolio_flow.images import fetch_ingredients
+          r=json.loads(Path('handoff/data/live_receipt.json').read_text(encoding='utf-8'))
+          fetch_ingredients(r,'handoff/source_images')
+          print('SOURCE_IMAGES_FETCHED_BUT_NOT_MODEL_APPROVED=5')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: washing-machine-v6-manual-live-price-handoff
+          path: handoff/
+          retention-days: 3
+          if-no-files-found: warn
+# Push/PR run OFFLINE tests only and NEVER call a live-price API.
+# Only explicit Run Workflow invokes one GET plus one POST without retries.
+# Never publishes Reels or uses paid GPU; existing poster cron untouched.
