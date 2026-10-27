@@ -1,0 +1,27 @@
+name: TrustFolio V8 no-blue Warm Gold palette QA (zero external calls)
+on:
+  pull_request:
+    paths:
+      - 'scripts/grade_v8_no_blue.py'
+      - 'tests/test_v8_no_blue.py'
+      - '.github/workflows/v8-no-blue-palette-ci.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/grade_v8_no_blue.py'
+      - 'tests/test_v8_no_blue.py'
+      - '.github/workflows/v8-no-blue-palette-ci.yml'
+permissions:
+  contents: read
+jobs:
+  exact-palette:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Unit-test cool hue removal, gold/skin preservation and reusable LUT
+        run: python -m unittest discover -s tests -p 'test_v8_no_blue.py' -v
+# No video rendering, no TTS, no Meta publishing, no live price API.

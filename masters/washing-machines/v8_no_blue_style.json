@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "category": "washing-machines",
+  "style_version": "V8-NO-BLUE-WARM-GOLD",
+  "user_directive": "No blue or cyan in UI, product showroom background, podium glow, specs or final CTA",
+  "palette": {
+    "background_walnut": "#392820",
+    "bronze": "#8A5A3D",
+    "copper": "#C88E5C",
+    "champagne_gold": "#EDCF9C",
+    "warm_cream": "#FFF5E1",
+    "title_charcoal": "#332419"
+  },
+  "approved_source_artwork": {
+    "role": "V7 90-second review source, NOT live publishing master",
+    "existing_review_video_sha256": "",
+    "status": "NOT_LIVE_PRICE_CERTIFIED"
+  },
+  "preview": {
+    "video_filename": "TrustFolio_Washing_Premium_V8_NO_BLUE_WarmGold_90s_Hindi_Review.mp4",
+    "sha256": "0f866d944cf00ebe1f232520779d1c99cbed8e03be3c4aac8d90facb69e69d3d",
+    "size_bytes": 10771282,
+    "duration_seconds": 90,
+    "width": 720,
+    "height": 1280,
+    "audio": "Original V7 AAC copied unchanged",
+    "github_video_binary_uploaded": false
+  },
+  "automation": {
+    "recolor_script": "scripts/grade_v8_no_blue.py",
+    "original_cartoon_0_to_28_unchanged": true,
+    "showroom_28_onwards_warm_gold": true,
+    "base_dynamic_version": "V6 54s data-driven renderer",
+    "output_filename": "new_live_V8_WarmGold_54s_REVIEW_ONLY.mp4",
+    "publish_gates_remain_required": true
+  },
+  "sampled_cool_hue_coverage_pct": {
+    "t29_4": {
+      "before": 76.09,
+      "after": 0.01
+    },
+    "t37_5": {
+      "before": 75.44,
+      "after": 0.02
+    },
+    "t67_5": {
+      "before": 78.12,
+      "after": 0.09
+    },
+    "t88_5": {
+      "before": 23.65,
+      "after": 0
+    }
+  },
+  "no_social_publication": true,
+  "pending": [
+    "approved actual product photo/source matches",
+    "fresh five prices at publishing time",
+    "natural Hindi voice QA",
+    "Meta media-host secrets and first release approval"
+  ]
+}

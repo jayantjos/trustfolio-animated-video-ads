@@ -82,14 +82,14 @@ jobs:
         id: media
         run: |
           set -euo pipefail
-          path="campaign/new_live_V6_54s_REVIEW_ONLY.mp4"
+          path="campaign/new_live_V8_WarmGold_54s_REVIEW_ONLY.mp4"
           test -f "$path"
           digest="$(sha256sum "$path" | cut -d ' ' -f1)"
           echo "video_sha256=$digest" >> "$GITHUB_OUTPUT"
           echo "public_url=https://media.trustfolio.in/trustfolio-videos/$digest.mp4" >> "$GITHUB_OUTPUT"
           python - <<'PY'
           from trustfolio_flow.v6_meta_reels import inspect_mp4
-          inspect_mp4('campaign/new_live_V6_54s_REVIEW_ONLY.mp4')
+          inspect_mp4('campaign/new_live_V8_WarmGold_54s_REVIEW_ONLY.mp4')
           print('VIDEO_CODEC_ASPECT_AUDIO_DURATION_QA=PASS')
           PY
       - name: Secure media uploader - pin host key; no SSH host acceptance shortcuts
@@ -101,7 +101,7 @@ jobs:
           chmod 600 "$HOME/.ssh/id_ed25519"
           printf '%s\n' "$TF_VIDEO_MEDIA_SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
           chmod 600 "$HOME/.ssh/known_hosts"
-          path="campaign/new_live_V6_54s_REVIEW_ONLY.mp4"
+          path="campaign/new_live_V8_WarmGold_54s_REVIEW_ONLY.mp4"
           digest="${{ steps.media.outputs.video_sha256 }}"
           scp -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
               -i "$HOME/.ssh/id_ed25519" "$path" \
@@ -113,7 +113,7 @@ jobs:
           python -m trustfolio_flow.v6_meta_reels \
             --source-receipt campaign/data/fresh_verified_live_receipt.json \
             --render-qa campaign/release_qa_pending.json \
-            --mp4 campaign/new_live_V6_54s_REVIEW_ONLY.mp4 \
+            --mp4 campaign/new_live_V8_WarmGold_54s_REVIEW_ONLY.mp4 \
             --public-url "$TF_VIDEO_PUBLIC_URL" \
             --caption campaign/data/caption.txt
 # Existing image poster cron and ledger are untouched. Video kill switch OFF by default.

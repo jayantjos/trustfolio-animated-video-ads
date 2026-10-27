@@ -54,6 +54,7 @@ jobs:
           python -m unittest discover -s tests -p 'test_v6_live_campaign.py' -v
           python -m unittest discover -s tests -p 'test_v6_dynamic_renderer.py' -v
           python -m unittest discover -s tests -p 'test_v6_hindi_mixer.py' -v
+          python -m unittest discover -s tests -p 'test_v8_no_blue.py' -v
       - name: Capture exactly ONE website-ranked Top5 and refresh the SAME five IDs
         id: fetch
         run: |
@@ -113,14 +114,23 @@ jobs:
             --hindi-voice handoff/hindi_voice/five_products_hindi_14s.wav \
             --output handoff/new_live_V6_54s_REVIEW_ONLY.mp4
           ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 handoff/new_live_V6_54s_REVIEW_ONLY.mp4
-      - name: Validate actual 54s MP4 + audio loudness + exact 5 caption/photo/voice against source
+      - name: V8 No Blue Warm Gold color finishing - preserve original cartoon and audio
+        id: v8color
         if: steps.final.outcome == 'success'
+        run: |
+          python scripts/grade_v8_no_blue.py \
+            --input handoff/new_live_V6_54s_REVIEW_ONLY.mp4 \
+            --output handoff/new_live_V8_WarmGold_54s_REVIEW_ONLY.mp4 \
+            --start-seconds 28
+          echo 'STAGE_PALETTE=CHAMPAGNE_GOLD_COPPER_NO_BLUE'
+      - name: Validate actual 54s MP4 + audio loudness + exact 5 caption/photo/voice against source
+        if: steps.v8color.outcome == 'success'
         run: |
           python -m trustfolio_flow.v6_release_qa \
             --receipt handoff/data/fresh_verified_live_receipt.json \
             --photo-qa handoff/data/approved_photo_receipt.json \
             --render-source handoff/dynamic_visual_no_new_voice.qa.json \
-            --mp4 handoff/new_live_V6_54s_REVIEW_ONLY.mp4 \
+            --mp4 handoff/new_live_V8_WarmGold_54s_REVIEW_ONLY.mp4 \
             --caption handoff/data/caption.txt \
             --voice-evidence handoff/hindi_voice/source_backed_hindi_lines.json \
             --output handoff/release_qa_pending.json
@@ -133,7 +143,8 @@ jobs:
             handoff/data/
             handoff/photos/photo_review_pending.json
             handoff/hindi_voice/source_backed_hindi_lines.json
-            handoff/new_live_V6_54s_REVIEW_ONLY.mp4
+            handoff/new_live_V8_WarmGold_54s_REVIEW_ONLY.mp4
+            handoff/new_live_V8_WarmGold_54s_REVIEW_ONLY.color_qa.json
             handoff/release_qa_pending.json
           retention-days: 5
           if-no-files-found: warn
