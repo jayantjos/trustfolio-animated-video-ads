@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "provider": "inworld",
+  "model_id": "inworld-tts-2",
+  "voice_id": "Ashley",
+  "language": "hi",
+  "locale": "hi-IN",
+  "voice_identity": "TrustFolio consistent Hindi product narrator; separate from original cartoon voices",
+  "approved_for_hindi_narration": false,
+  "approved_example_audio_sha256": null,
+  "status": "REFERENCE_PRESET_NOT_YET_HINDI_AUDIO_APPROVED",
+  "api_secret_name": "TF_VIDEO_INWORLD_API_KEY",
+  "original_cartoon_audio": "Preserve unchanged, never overwrite or infer/cloned character voice",
+  "per_product_seconds": 10,
+  "five_product_segment_seconds": [
+    32,
+    82
+  ],
+  "no_speedup": true,
+  "no_real_audio_model_weights_stored_on_github": true,
+  "note": "Github stores model and voice ID only. Inworld hosts weights. First sample must be heard and approved, then set approved_for_hindi_narration true."
+}

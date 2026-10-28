@@ -1,0 +1,94 @@
+name: V10 dynamic 90s Hindi voice from live source and FIXED vendor voice (no posting)
+on:
+  workflow_dispatch:
+    inputs:
+      budget:
+        description: INR washing-machine budget for one current Top5 voice receipt
+        required: true
+        default: '25000'
+        type: string
+      mode:
+        description: Source-backed ranking mode
+        required: true
+        default: budget
+        type: choice
+        options: [budget, brand_budget, comparison]
+      brand:
+        description: Brand in brand_budget mode only
+        required: false
+        default: ''
+        type: string
+  schedule:
+    - cron: '40 15 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: trustfolio-v10-fixed-hindi-voice-one-at-a-time
+  cancel-in-progress: false
+jobs:
+  five-ranked-verified-voice-lines:
+    if: ${{ vars.TF_VIDEO_V10_VOICE_AUTO_ENABLED == 'true' && vars.TF_VIDEO_HINDI_VOICE_TEMPLATE_APPROVED == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      BUDGET: ${{ inputs.budget || vars.TF_VIDEO_BUDGET_INR || '25000' }}
+      MODE: ${{ inputs.mode || vars.TF_VIDEO_MODE || 'budget' }}
+      BRAND: ${{ inputs.brand || vars.TF_VIDEO_BRAND || '' }}
+      TF_VIDEO_INWORLD_API_KEY: ${{ secrets.TF_VIDEO_INWORLD_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install no-GPU CPU and audio dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fonts-dejavu-core
+          python -m pip install 'Pillow>=10,<13'
+      - name: Check stable visuals, real-spec Hindi words, protected fixed TTS ID
+        run: python -m unittest discover -s tests -p 'test_v10_stable_voice.py' -v
+      - name: Fetch exact five current TrustFolio rankings and live prices
+        run: |
+          mkdir -p handoff/v10
+          python -m trustfolio_flow.cli fetch-live \
+            --category washing-machines --budget "$BUDGET" \
+            --mode "$MODE" --brand "$BRAND" \
+            --output handoff/v10/current_top_five.json
+      - name: Block duplicate/wrong model photos BEFORE any billed speech
+        run: |
+          python -m trustfolio_flow.v6_product_images \
+            --receipt handoff/v10/current_top_five.json --outdir handoff/v10/photos
+          python -m trustfolio_flow.v6_photo_registry \
+            --receipt handoff/v10/current_top_five.json \
+            --pending handoff/v10/photos/photo_review_pending.json \
+            --registry masters/washing-machines/approved_product_photos.json \
+            --output handoff/v10/photo_approved.json
+      - name: Enforce approved fixed Hindi voice model ID and protected TTS secret
+        run: |
+          test -n "$TF_VIDEO_INWORLD_API_KEY" || { echo 'NO_VOICE_SECRET -> NO PAID CALLS'; exit 1; }
+          python - <<'PY'
+          from trustfolio_flow.v10_fixed_voice import load_profile
+          p=load_profile('masters/washing-machines/v10_voice_profile.json')
+          if not p.get('approved_for_hindi_narration'):raise SystemExit('VOICE_LISTENING_NOT_APPROVED -> NO PAID CALLS')
+          print('FIXED_VENDOR_VOICE_ID_APPROVED=YES')
+          PY
+      - name: Generate five accurate Hindi voice lines with ONE approved voice ID
+        run: |
+          python -m trustfolio_flow.v10_fixed_voice \
+            --receipt handoff/v10/current_top_five.json \
+            --voice-profile masters/washing-machines/v10_voice_profile.json \
+            --output-dir handoff/v10/voice
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tf-v10-LIVE-50sec-fixed-voice-NOT-PUBLISHED-${{ github.run_id }}
+          path: |
+            handoff/v10/current_top_five.json
+            handoff/v10/photo_approved.json
+            handoff/v10/voice/fifty_seconds_stable_hindi_voice.wav
+            handoff/v10/voice/voice_receipt.json
+          retention-days: 4
+          if-no-files-found: warn
+# Voice artifact alone is NOT a rendered product Reel.
+# No Meta posting; no TTS until approved voice sample + 5 correct source photos.
+# Existing daily image poster workflow/ledger untouched.

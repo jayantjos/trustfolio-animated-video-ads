@@ -1,0 +1,38 @@
+name: V10 Hindi voice model ONE sample for listening - explicit manual only
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: trustfolio-v10-first-voice-audition
+  cancel-in-progress: false
+jobs:
+  make-first-voice-sample:
+    if: ${{ vars.TF_VIDEO_VOICE_AUDITION_APPROVED == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      TF_VIDEO_INWORLD_API_KEY: ${{ secrets.TF_VIDEO_INWORLD_API_KEY }}
+      TF_VIDEO_VOICE_AUDITION_APPROVED: ${{ vars.TF_VIDEO_VOICE_AUDITION_APPROVED }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check one-time provider key and 2,000-character cap before any billed call
+        run: |
+          test -n "$TF_VIDEO_INWORLD_API_KEY" || { echo 'NO_INWORLD_API_SECRET: NO CHARGES'; exit 1; }
+      - name: Generate EXACTLY ONE short sample from GitHub-pinned voice ID
+        run: |
+          python -m trustfolio_flow.v10_voice_audition \
+            --profile masters/washing-machines/v10_voice_profile.json \
+            --outdir handoff/voice-audition
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tf-v10-fixed-hindi-voice-FIRST-LISTENING-PREVIEW
+          path: handoff/voice-audition/
+          retention-days: 4
+          if-no-files-found: warn
+# NO source live-price call. NO social publishing. NO auto-approve of voice.
+# User must listen to one sample and explicitly approve before enabling full five-product TTS.
