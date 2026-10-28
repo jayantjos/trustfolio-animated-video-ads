@@ -19,31 +19,41 @@ def phrase(draw,pos,value,size,color=INK,anchor="lt"):
 def make_layers(receipt,folder):
     validate_receipt(receipt)
     product=receipt["products"][0]
-    specs={x["label"]:x["value"] for x in source_specs(product)}
-    for key in ("Capacity","Load Type","Energy Rating","Automation Type"):
-        if key not in specs:raise ValueError("Missing actual source spec: "+key)
+    # Whatever exact four facts the actual current top-ranked product provides.
+    # Do not invent a default 5-star/automation value when the source is missing it.
+    specs_rows=source_specs(product)
+    if len(specs_rows)!=4:raise ValueError("Exactly four source-backed specs required")
+    specs={x["label"]:x["value"] for x in specs_rows}
+    summary=" · ".join((str(x["value"]).upper() for x in specs_rows[:2]))
     dest=Path(folder);dest.mkdir(parents=True,exist_ok=True)
     a=Image.new("RGBA",(W,H));d=ImageDraw.Draw(a)
     phrase(d,(41,87),"THE SMARTER WASH",32)
     d.line((41,139,313,139),fill=GOLD,width=4)
-    phrase(d,(42,162),str(specs["Capacity"]).upper()+" · "+str(specs["Load Type"]).upper(),19,MUTED)
-    phrase(d,(42,204),str(specs["Energy Rating"]).upper()+" ENERGY RATING",17,MUTED)
+    phrase(d,(42,162),summary,19,MUTED)
+    phrase(d,(42,204),str(specs_rows[2]["label"]).upper()+": "+str(specs_rows[2]["value"]).upper(),17,MUTED)
     p1=dest/"girl_spec_LOCKED.png";a.save(p1)
     a=Image.new("RGBA",(W,H));d=ImageDraw.Draw(a)
     phrase(d,(462,83),"4 REAL SPECS",27)
     d.line((462,124,704,124),fill=GOLD,width=3)
-    rows=[("01 CAPACITY",specs["Capacity"]),("02 LOAD TYPE",specs["Load Type"]),
-          ("03 ENERGY RATING",specs["Energy Rating"]),("04 AUTOMATION",specs["Automation Type"])]
+    rows=[(f"{i+1:02d} {item['label'].upper()}",item["value"]) for i,item in enumerate(specs_rows)]
     for i,(label,value) in enumerate(rows):
         y=161+i*126
         phrase(d,(462,y),label,15,MUTED)
-        if i==3 and str(value).casefold()=="fully automatic":
+        if str(value).casefold()=="fully automatic":
             phrase(d,(462,y+33),"FULLY",28)
             phrase(d,(462,y+68),"AUTOMATIC",24)
             bottom=y+105
         else:
-            phrase(d,(462,y+34),str(value).upper(),27)
-            bottom=y+90
+            txt=str(value).upper()
+            if len(txt)>15:
+                words=txt.split()
+                middle=max(1,len(words)//2)
+                phrase(d,(462,y+28)," ".join(words[:middle]),21)
+                phrase(d,(462,y+61)," ".join(words[middle:]),21)
+                bottom=y+105
+            else:
+                phrase(d,(462,y+34),txt,27)
+                bottom=y+90
         d.line((462,bottom,699,bottom),fill=(194,137,73,180),width=2)
     p2=dest/"boy_four_spec_LOCKED.png";a.save(p2)
     a=Image.new("RGBA",(W,H));d=ImageDraw.Draw(a)
