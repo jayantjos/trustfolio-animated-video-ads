@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "asset_role": "V14_GREEN_BOY_VISUAL_MASTER_NOT_RELEASE_READY",
+  "requested_changes": [
+    "Remove 82-86s side-by-side comparison entirely",
+    "Premium TrustFolio website slogan and real Play Store QR CTA from 82-90s"
+  ],
+  "upload_status": "BINARY_UPLOAD_PENDING",
+  "expected_path": "assets/video/washing-machines/trustfolio_washing_greenboy_v14_90s_premium_cta_visual_master.mp4",
+  "sha256": "bb5457204ee588785228a0b8a6abe500be8c3d32c321f9879d9f9b8402da74d7",
+  "size_bytes": 19799374,
+  "duration_seconds": 90.026667,
+  "dimensions": [
+    720,
+    1280
+  ],
+  "fps": 24,
+  "video_codec": "h264",
+  "audio_codec": "aac",
+  "voice_status": "GREEN_BOY_PER_PRODUCT_HINDI_SPEECH_NOT_CREATED",
+  "voice_slots": [
+    {
+      "rank": 1,
+      "start_s": 32,
+      "end_s": 42,
+      "narration": "approved voice needed"
+    },
+    {
+      "rank": 2,
+      "start_s": 42,
+      "end_s": 52,
+      "narration": "approved voice needed"
+    },
+    {
+      "rank": 3,
+      "start_s": 52,
+      "end_s": 62,
+      "narration": "approved voice needed"
+    },
+    {
+      "rank": 4,
+      "start_s": 62,
+      "end_s": 72,
+      "narration": "approved voice needed"
+    },
+    {
+      "rank": 5,
+      "start_s": 72,
+      "end_s": 82,
+      "narration": "approved voice needed"
+    }
+  ],
+  "comparison_removed": true,
+  "cta": {
+    "start_s": 82,
+    "end_s": 90,
+    "site": "https://trustfolio.in",
+    "play_store": "https://play.google.com/store/apps/details?id=com.trustfolio.app",
+    "qr_verified": true
+  },
+  "publishing_enabled": false,
+  "prices_live_verified_at_publish": false
+}
