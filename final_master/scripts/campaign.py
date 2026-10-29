@@ -3,6 +3,8 @@
 No hardcoded product data, voice cloning, or social posting.
 """
 import argparse,hashlib,json,re,zipfile
+from decimal import Decimal,InvalidOperation
+from trustfolio_flow.live import check_receipt
 from pathlib import Path
 from urllib.parse import urlencode
 BAD={"","n/a","none","null","unknown","not available","-"}
@@ -10,6 +12,7 @@ SPEC_KEYS=("Capacity","Load Type","Energy Rating","Spin Speed","Automation Type"
 def require(condition,reason):
     if not condition: raise ValueError(reason)
 def plan(receipt,kit):
+    check_receipt(receipt)
     require(receipt.get("source")=="trustfolio_live_api","not a verified live API receipt")
     require(receipt.get("category")=="washing-machines","wrong category")
     mode=receipt.get("mode");require(mode in ("budget","brand_budget"),"unsupported mode")
@@ -29,8 +32,11 @@ def plan(receipt,kit):
         require(p.get("rank")==rank,"rank mismatch")
         pid=str(p.get("id") or "")
         require(pid and pid not in ids,"duplicate product ID");ids.add(pid)
-        price=p.get("price_inr")
-        require(type(price) in (int,float) and 0<price<=budget,"invalid or over-budget live price")
+        try:
+            price=Decimal(str(p.get("price_inr")))
+        except (InvalidOperation,TypeError,ValueError):
+            raise ValueError("invalid live price")
+        require(price.is_finite() and 0<price<=budget,"invalid or over-budget live price")
         require(p.get("live_price_status")=="ok","price not verified live")
         require(p.get("image_url","").startswith("https://"),"missing HTTPS product image")
         require(p.get("title") and p.get("brand") and p.get("platform"),"missing source identity")
@@ -39,7 +45,7 @@ def plan(receipt,kit):
         require(isinstance(src,dict),"missing source specifications")
         specs=[{"key":k,"value":str(src[k]).strip()} for k in SPEC_KEYS if k in src and str(src[k]).strip().lower() not in BAD][:4]
         require(len(specs)==4,"fewer than 4 valid source specifications")
-        output.append({"rank":rank,"id":pid,"brand":p["brand"],"title":p["title"],"price_inr":price,"platform":p["platform"],"image_url":p["image_url"],"specifications":specs})
+        output.append({"rank":rank,"id":pid,"brand":p["brand"],"title":p["title"],"price_inr":float(price),"platform":p["platform"],"image_url":p["image_url"],"specifications":specs})
     q={"budget":str(budget)}
     if mode=="brand_budget":q["brand"]=brand
     link="https://trustfolio.in/category/washing-machines/products?"+urlencode(q)
