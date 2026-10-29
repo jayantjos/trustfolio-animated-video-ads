@@ -43,7 +43,7 @@ def main():
             out=t/("part%02d.mp4"%i);normalize(extract(z,name,t),out);segments.append(out)
         green=extract(z,"08_green_boy_clean_master",t)
         for p in q["products"]:
-            rank=p["rank"];photo=Path(a.photos)/(str(rank)+".png")
+            rank=p["rank"];photo=Path(a.photos)/("rank_%02d.png"%rank)
             if not photo.is_file():raise ValueError("Approved product photo missing rank "+str(rank))
             layer=t/("panel%d.png"%rank);overlay(p,photo,layer)
             out=t/("rank%d.mp4"%rank)
