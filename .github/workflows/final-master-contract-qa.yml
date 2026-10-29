@@ -20,7 +20,8 @@ jobs:
       - name: Check approved asset archives
         run: python final_master/scripts/audit_assets.py
       - name: Check strict live-data contract with positive and negative samples
-        run: python -m unittest discover -s final_master/tests -p 'test_*.py' -v
+        run: python -m py_compile final_master/scripts/dialogues.py
+          python -m unittest discover -s final_master/tests -p 'test_*.py' -v
       - uses: actions/upload-artifact@v4
         with:
           name: final-master-qa-evidence
