@@ -61,6 +61,10 @@ jobs:
           BRAND: ${{ inputs.brand }}
         run: |
           set -euo pipefail
+          [[ "$BUDGET" =~ ^[0-9]{1,7}$ ]]
+          [[ "$MODE" == "budget" || "$MODE" == "brand_budget" ]]
+          [[ "$BRAND" =~ ^[A-Za-z0-9._-]{0,50}$ ]]
+          if [[ "$MODE" == "brand_budget" ]]; then [[ -n "$BRAND" ]]; else [[ -z "$BRAND" ]]; fi
           mkdir -p handoff
           tar -czf /tmp/video_live_client.tgz trustfolio_flow/__init__.py trustfolio_flow/cli.py trustfolio_flow/live.py
           scp -o BatchMode=yes -o StrictHostKeyChecking=yes /tmp/video_live_client.tgz "${USER}@${HOST}:/tmp/video_live_client_${GITHUB_RUN_ID}.tgz"
