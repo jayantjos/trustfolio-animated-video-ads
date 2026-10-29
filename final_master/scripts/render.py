@@ -5,7 +5,7 @@ from PIL import Image,ImageDraw,ImageFont
 
 PREFIX="TrustFolio_Washing_Machine_Master_Kit/assets/video/"
 STORY=["01_story_girl","02_friends_enter","03_blue_boy_dialogue","04_yellow_boy_dialogue","05_purple_girl_machine","06_green_boy_intro"]
-FONT="/usr/share/fonts/truetype/noto/NotoSansDevanagari-Regular.ttf"
+FONT="/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
 def cmd(*args):
     subprocess.run(["ffmpeg","-y","-loglevel","error",*map(str,args)],check=True)
 def extract(z,name,folder):
