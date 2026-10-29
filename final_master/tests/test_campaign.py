@@ -16,11 +16,11 @@ class ContractTests(unittest.TestCase):
     def test_valid_contract(self):self.assertFalse(self.checked_plan()["publish_allowed"])
     def test_overbudget_rejected(self):
         self.receipt["products"][0]["price_inr"]=27000
-        with self.assertRaises(ValueError):plan(self.receipt,self.kit)
+        with self.assertRaises(ValueError):self.checked_plan()
     def test_brand_mismatch_rejected(self):
         self.receipt.update(mode="brand_budget",brand="Samsung")
-        with self.assertRaises(ValueError):plan(self.receipt,self.kit)
+        with self.assertRaises(ValueError):self.checked_plan()
     def test_missing_specs_rejected(self):
         self.receipt["products"][0]["specifications"]={}
-        with self.assertRaises(ValueError):plan(self.receipt,self.kit)
+        with self.assertRaises(ValueError):self.checked_plan()
 if __name__=="__main__":unittest.main()
