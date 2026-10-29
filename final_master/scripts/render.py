@@ -32,10 +32,19 @@ def normalize(src,dst):
     cmd("-i",src,"-vf","scale=720:1280:flags=lanczos,fps=24","-ar","48000","-c:v","libx264","-preset","veryfast","-pix_fmt","yuv420p","-c:a","aac",dst)
 def main():
     p=argparse.ArgumentParser()
-    for x in ("kit","campaign","photos","output"):p.add_argument("--"+x,required=True)
+    for x in ("kit","campaign","photos","photo-qa","output"):p.add_argument("--"+x,required=True)
     a=p.parse_args()
     q=json.loads(Path(a.campaign).read_text())
     if q.get("status")!="DATA_READY_NOT_PUBLISHABLE" or q.get("publish_allowed") is not False or len(q.get("products",[]))!=5:raise ValueError("Strict live contract not satisfied")
+    review=json.loads(Path(a.photo_qa).read_text(encoding="utf-8"))
+    approvals=review.get("products")
+    if review.get("publication_approved") is not True or not isinstance(approvals,list) or len(approvals)!=5:
+        raise ValueError("Source model photos not approved for video")
+    for p,approved in zip(q["products"],approvals):
+        if p["rank"]!=approved.get("rank") or p["id"]!=approved.get("id") or p["image_url"]!=approved.get("image_url"):
+            raise ValueError("Approved photo does not match product identity")
+        if not all(approved.get(k) is True for k in ("model_identity_ok","product_photo_ok","commercial_usage_ok")):
+            raise ValueError("Source product photo lacks human quality approval")
     Path(a.output).parent.mkdir(parents=True,exist_ok=True)
     with tempfile.TemporaryDirectory() as tmp,zipfile.ZipFile(a.kit) as z:
         t=Path(tmp);segments=[]
