@@ -51,7 +51,7 @@ jobs:
           python final_master/scripts/campaign.py --kit assets/video/washing-machines/TrustFolio_Washing_Machine_Master_Kit.zip --receipt handoff/live.json --output handoff/campaign.json
       - name: Render approved source visual preview (audio/lips require separate release QA)
         run: |
-          python final_master/scripts/render.py --kit assets/video/washing-machines/TrustFolio_Washing_Machine_Master_Kit.zip --campaign handoff/campaign.json --photos handoff/photos --output handoff/review_only.mp4
+          python final_master/scripts/render.py --kit assets/video/washing-machines/TrustFolio_Washing_Machine_Master_Kit.zip --campaign handoff/campaign.json --photos handoff/photos --photo-qa handoff/photo_approved.json --output handoff/review_only.mp4
       - uses: actions/upload-artifact@v4
         if: always()
         with:
