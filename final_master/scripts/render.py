@@ -1,5 +1,5 @@
 """Approved-asset-only preview compositor; does not synthesize speech or publish."""
-import argparse,json,zipfile,tempfile,subprocess,shutil
+import argparse,json,zipfile,tempfile,subprocess,shutil,hashlib
 from pathlib import Path
 from PIL import Image,ImageDraw,ImageFont
 
@@ -54,6 +54,9 @@ def main():
         for p in q["products"]:
             rank=p["rank"];photo=Path(a.photos)/("rank_%02d.png"%rank)
             if not photo.is_file():raise ValueError("Approved product photo missing rank "+str(rank))
+            digest=hashlib.sha256(photo.read_bytes()).hexdigest()
+            if digest!=approvals[rank-1].get("image_sha256"):
+                raise ValueError("Product photo bytes differ from approved SHA256 at rank "+str(rank))
             layer=t/("panel%d.png"%rank);overlay(p,photo,layer)
             out=t/("rank%d.mp4"%rank)
             cmd("-i",green,"-loop","1","-i",layer,"-f","lavfi","-t","10","-i","anullsrc=channel_layout=stereo:sample_rate=48000",
