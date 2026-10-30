@@ -44,7 +44,7 @@ jobs:
           print("CUDA_AVAILABLE",torch.cuda.is_available())
           assert not torch.cuda.is_available()
           model=ChatterboxMultilingualTTS.from_pretrained(device="cpu")
-          text="नंबर एक पर है आई एफ बी की वॉशिंग मशीन। इसमें आठ किलो क्षमता और टॉप लोड डिज़ाइन है।"
+          text="पहली पसंद है आई एफ बी की वॉशिंग मशीन। इसकी क्षमता आठ किलो है और इसमें टॉप लोड डिज़ाइन मिलता है।"
           wav=model.generate(text, language_id="hi", audio_prompt_path="assets/video/washing-machines/original_greenboy_reference.wav")
           torchaudio.save("output/rank_01_cpu_test.wav",wav.cpu(),model.sr)
           seconds=wav.shape[-1]/model.sr
@@ -54,6 +54,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: greenboy-cpu-voice-audition
+          name: greenboy-cpu-pronunciation-retest
           path: output/
           retention-days: 3
