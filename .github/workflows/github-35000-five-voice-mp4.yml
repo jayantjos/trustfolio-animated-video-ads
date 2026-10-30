@@ -1,0 +1,51 @@
+name: GitHub render ₹35000 original-master 5-voice MP4 (REVIEW ONLY)
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/github-35000-five-voice-mp4.yml'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Retrieve latest successful original-rank five-voice artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,os,urllib.request
+          repo=os.environ["GITHUB_REPOSITORY"]
+          base=f"https://api.github.com/repos/{repo}"
+          headers={"Authorization":"Bearer "+os.environ["GH_TOKEN"],"Accept":"application/vnd.github+json"}
+          req=urllib.request.Request(base+"/actions/workflows/budget35000-five-voices-qa.yml/runs?branch=rebuild-final-assets-only-20261029&status=success&per_page=10",headers=headers)
+          runs=json.load(urllib.request.urlopen(req,timeout=25))["workflow_runs"]
+          if not runs:raise RuntimeError("No successful five-voice production input")
+          run=runs[0]
+          os.system("echo 'VOICE_SOURCE_RUN_ID="+str(run["id"])+"' >> $GITHUB_ENV")
+          print("VOICE_SOURCE_RUN_ID",run["id"])
+          PY
+      - uses: actions/download-artifact@v4
+        with:
+          name: budget35000-five-dynamic-voice-audition
+          path: audio-inputs
+          run-id: ${{ env.VOICE_SOURCE_RUN_ID }}
+          github-token: ${{ github.token }}
+      - name: Render final-length MP4 on GitHub only (no posting)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -qq -y ffmpeg
+          python3 final_master/scripts/github_review_video.py --kit assets/video/washing-machines/TrustFolio_Washing_Machine_Master_Kit.zip --audios audio-inputs --output review/trustfolio_35000_github_5voice_REVIEW.mp4
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trustfolio-35000-github-five-voice-mp4-review
+          path: review/
+          retention-days: 7
+# Deliberately no schedule or social publishing until exact photos and lipsync pass.

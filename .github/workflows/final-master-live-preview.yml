@@ -1,0 +1,62 @@
+name: Approved Final Master - LIVE Visual Preview (NO POST)
+on:
+  workflow_dispatch:
+    inputs:
+      budget:
+        description: INR ceiling
+        required: true
+        default: '25000'
+      mode:
+        description: budget or brand_budget
+        type: choice
+        options: [budget, brand_budget]
+        required: true
+      brand:
+        description: Required for brand_budget
+        default: ''
+permissions:
+  contents: read
+jobs:
+  live-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fonts-noto-core
+          python -m pip install 'Pillow>=10,<13'
+      - name: Asset integrity and validation tests
+        run: |
+          python final_master/scripts/audit_assets.py
+          python -m unittest discover -s final_master/tests -p 'test_*.py' -v
+      - name: Acquire fresh TrustFolio source rank and live prices
+        env:
+          BUDGET: ${{ inputs.budget }}
+          MODE: ${{ inputs.mode }}
+          BRAND: ${{ inputs.brand }}
+        run: |
+          mkdir -p handoff/photos
+          python -m trustfolio_flow.cli fetch-live --category washing-machines --budget "$BUDGET" --mode "$MODE" --brand "$BRAND" --output handoff/live.json
+      - name: Exact model photo integrity gate
+        run: |
+          python -m trustfolio_flow.v6_product_images --receipt handoff/live.json --outdir handoff/photos
+          python -m trustfolio_flow.v6_photo_registry --receipt handoff/live.json --pending handoff/photos/photo_review_pending.json --registry masters/washing-machines/approved_product_photos.json --output handoff/photo_approved.json
+      - name: Build strict campaign and caption
+        run: |
+          python final_master/scripts/campaign.py --kit assets/video/washing-machines/TrustFolio_Washing_Machine_Master_Kit.zip --receipt handoff/live.json --output handoff/campaign.json
+      - name: Render approved source visual preview (audio/lips require separate release QA)
+        run: |
+          python final_master/scripts/render.py --kit assets/video/washing-machines/TrustFolio_Washing_Machine_Master_Kit.zip --campaign handoff/campaign.json --photos handoff/photos --photo-qa handoff/photo_approved.json --output handoff/review_only.mp4
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: approved-final-master-live-preview-${{ github.run_id }}
+          path: handoff/
+          if-no-files-found: warn
+          retention-days: 3
+# Publish is intentionally impossible from this workflow.

@@ -1,0 +1,59 @@
+name: One-rank CPU Hindi voice audition (NO GPU OR PAID API)
+on:
+  push:
+    paths:
+      - '.github/workflows/cpu-greenboy-one-sample.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audition:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Retrieve approved reference audio from main without mutating it
+        run: |
+          git fetch --depth=1 origin main
+          mkdir -p assets/video/washing-machines
+          git show origin/main:assets/video/washing-machines/original_greenboy_reference.wav > assets/video/washing-machines/original_greenboy_reference.wav
+          python - <<'PY'
+          import pathlib,wave
+          p=pathlib.Path('assets/video/washing-machines/original_greenboy_reference.wav')
+          assert p.stat().st_size>100000
+          with wave.open(str(p),'rb') as w:
+              print("ORIGINAL_REFERENCE_SECONDS",round(w.getnframes()/w.getframerate(),2))
+          PY
+      - name: Install offline-capable voice model (CPU only)
+        run: |
+          python -m pip install --quiet chatterbox-tts
+      - name: Produce exactly one short Hindi speech sample
+        env:
+          HF_HUB_DISABLE_TELEMETRY: '1'
+          CUDA_VISIBLE_DEVICES: ''
+        run: |
+          mkdir -p output
+          python - <<'PY'
+          import torch, torchaudio, json
+          from chatterbox.mtl_tts import ChatterboxMultilingualTTS
+          print("CUDA_AVAILABLE",torch.cuda.is_available())
+          assert not torch.cuda.is_available()
+          model=ChatterboxMultilingualTTS.from_pretrained(device="cpu")
+          text="पहली पसंद है आई एफ बी की वॉशिंग मशीन। इसकी क्षमता आठ किलो है और इसमें टॉप लोड डिज़ाइन मिलता है।"
+          wav=model.generate(text, language_id="hi", audio_prompt_path="assets/video/washing-machines/original_greenboy_reference.wav")
+          torchaudio.save("output/rank_01_cpu_test.wav",wav.cpu(),model.sr)
+          seconds=wav.shape[-1]/model.sr
+          print("GENERATED_SECONDS",seconds)
+          with open("output/qa.json","w") as f:json.dump({"voice_matching":"NOT_YET_HUMAN_VERIFIED","audio_seconds":seconds,"cpu_only":True,"publish_allowed":False},f)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: greenboy-cpu-pronunciation-retest
+          path: output/
+          retention-days: 3
