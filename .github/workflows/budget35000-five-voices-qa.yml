@@ -1,0 +1,67 @@
+name: 35000 Five Dynamic Green Boy WAVs (review only, NO PUBLISH)
+on:
+  push:
+    paths:
+      - '.github/workflows/budget35000-five-voices-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  five-audios:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Use existing original WAV from main branch
+        run: |
+          git fetch --depth=1 origin main
+          git show origin/main:assets/video/washing-machines/original_greenboy_reference.wav > reference.wav
+          test -s reference.wav
+      - name: Fetch exact website Top 5 (budget 35000)
+        run: python final_master/scripts/budget35000_readonly.py --out output/products.json
+      - name: Install CPU voice engine
+        run: python -m pip install -q chatterbox-tts
+      - name: Make five distinct product-driven Hindi narrations on CPU
+        env:
+          CUDA_VISIBLE_DEVICES: ''
+          HF_HUB_DISABLE_TELEMETRY: '1'
+        run: |
+          python - <<'PY'
+          import json,hashlib,torch,torchaudio
+          from pathlib import Path
+          from chatterbox.mtl_tts import ChatterboxMultilingualTTS
+          source=json.loads(Path("output/products.json").read_text())
+          assert not torch.cuda.is_available()
+          model=ChatterboxMultilingualTTS.from_pretrained(device="cpu")
+          words={1:"पहली",2:"दूसरी",3:"तीसरी",4:"चौथी",5:"पाँचवीं"}
+          for row in source["products"]:
+              rank=row["rank"]
+              # Compact factual narration to fit the unchanged ten-second product segment.
+              facts=row["specifications"]
+              text=f"{words[rank]} पसंद, {row['brand']} की वॉशिंग मशीन। {facts[0]['label']} {facts[0]['value']}। {facts[1]['label']} {facts[1]['value']}।"
+              # No unverified price claim in spoken audio.
+              wav=model.generate(text,language_id="hi",audio_prompt_path="reference.wav")
+              seconds=wav.shape[-1]/model.sr
+              p=Path(f"output/rank_{rank:02d}.wav")
+              torchaudio.save(str(p),wav.cpu(),model.sr)
+              (Path(f"output/rank_{rank:02d}.json")).write_text(json.dumps({
+                 "rank":rank,"product_id":row["product_id"],"text":text,
+                 "seconds":round(seconds,2),"source_snapshot_sha256":source["snapshot_sha256"],
+                 "wav_sha256":hashlib.sha256(p.read_bytes()).hexdigest(),
+                 "fits_ten_seconds":seconds<=9.7,
+                 "voice_approved":False,"lip_sync_approved":False,"publish_allowed":False
+              },ensure_ascii=False,indent=2))
+              print("VOICE_RANK",rank,"SECONDS",round(seconds,2),"FITS_TEN",seconds<=9.7)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: budget35000-five-dynamic-voice-audition
+          path: output/
+          retention-days: 7
+# No Meta, no schedule, no automatic publication. Original master untouched.
