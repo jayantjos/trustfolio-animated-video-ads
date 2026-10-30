@@ -1,0 +1,34 @@
+name: CPU Hindi TTS readiness (GitHub runner only - NO VPS)
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/greenboy-cpu-readiness.yml'
+permissions:
+  contents: read
+jobs:
+  cpu-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: CPU and memory diagnostic without installing model
+        run: |
+          set -euo pipefail
+          echo "DIAGNOSTIC_SCOPE=GITHUB_HOSTED_RUNNER_NOT_USER_VPS"
+          echo "CPU_CORES=$(nproc)"
+          awk '/MemTotal:/ {print "RAM_KIB="$2}' /proc/meminfo
+          df -BG . | tail -1
+          echo "CUDA_TOOLKIT_PRESENT=$(if command -v nvidia-smi >/dev/null; then echo yes; else echo no; fi)"
+          python -m py_compile final_master/scripts/selfhost_voice.py
+          test -s assets/video/washing-machines/original_greenboy_reference.wav
+          python - <<'PY'
+          import hashlib, wave, pathlib
+          p=pathlib.Path("assets/video/washing-machines/original_greenboy_reference.wav")
+          with wave.open(str(p),"rb") as w:
+              print("REFERENCE_SECONDS",round(w.getnframes()/w.getframerate(),3))
+              print("REFERENCE_CHANNELS",w.getnchannels())
+              print("REFERENCE_SAMPLE_RATE",w.getframerate())
+          print("REFERENCE_SHA256",hashlib.sha256(p.read_bytes()).hexdigest())
+          print("CPU_INFERENCE=NOT_TESTED; VPS_HARDWARE=NOT_TESTED")
+          PY
