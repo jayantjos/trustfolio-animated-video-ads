@@ -3,7 +3,7 @@ import argparse,hashlib,json,shutil,subprocess,tempfile,urllib.request
 from pathlib import Path
 from PIL import Image,ImageDraw,ImageFont,ImageOps
 from github_review_video import STORY,ff,probe,extract
-import zipfile
+import zipfile,re
 
 def digest(p): return hashlib.sha256(Path(p).read_bytes()).hexdigest()
 def line(row):
@@ -42,7 +42,7 @@ def layer(p,photo,out):
   pic=src.convert('RGBA');pic.thumbnail((224,330),Image.Resampling.LANCZOS)
   im.alpha_composite(pic,(x+(w-pic.width)//2,y))
  y+=340
- title=p['title']
+ title=re.split(r'\s+\d(?:\.\d)?\s+[\d,]+\s+Ratings\b',p['title'],maxsplit=1,flags=re.I)[0].strip()
  # Full model title is retained, reducing type only if needed to fit the existing region.
  size=21 if len(title)<130 else 18
  text(title,size);y+=8;text(f"INR {p['price_inr']:,.0f}",27,'#703b19')
