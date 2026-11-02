@@ -16,7 +16,8 @@ class GateTests(unittest.TestCase):
    payload={"products":rows,"budget_inr":35000,"snapshot_sha256":snap}
    r=check(payload,d,{"duration_seconds":82.12,"source_snapshot_sha256":snap})
    self.assertFalse(r["publish_allowed"])
-   self.assertIn("90-second master timeline not preserved",r["failures"])
+   self.assertNotIn("invalid natural-duration video",r["failures"])
+   self.assertIn("required original scenes or product chapters missing",r["failures"])
    self.assertTrue(any("lip_sync_verified" in f for f in r["failures"]))
  def test_product_voice_mismatch_blocks(self):
   r=check({"products":[],"budget_inr":35000,"snapshot_sha256":"a"*64},"/missing",{})
