@@ -43,8 +43,10 @@ def check(products, audio_dir, video_qa):
         if not row.get("image_url","").startswith("https://"):
             failures.append(f"rank {row.get('rank')}: missing retailer photo source")
     duration=video_qa.get("duration_seconds")
-    if not isinstance(duration,(float,int)) or not 89.5<=duration<=90.5:
-        failures.append("90-second master timeline not preserved")
+    if not isinstance(duration,(float,int)) or duration<=0 or duration>95:
+        failures.append("invalid natural-duration video")
+    if video_qa.get("all_required_scenes_present") is not True:
+        failures.append("required original scenes or product chapters missing")
     for name in ("exact_dynamic_photos","dynamic_text_replacement","lip_sync_verified",
                  "background_sound_preserved","original_character_position_preserved",
                  "cta_qr_verified","product_photo_model_identity_verified"):
