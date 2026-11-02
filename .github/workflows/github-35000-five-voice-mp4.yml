@@ -42,6 +42,15 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -qq -y ffmpeg
           python3 final_master/scripts/github_review_video.py --kit assets/video/washing-machines/TrustFolio_Washing_Machine_Master_Kit.zip --audios audio-inputs --output review/trustfolio_35000_github_5voice_REVIEW.mp4
+      - name: Enforce release gate and record unmet QA conditions (never publish)
+        shell: bash
+        run: |
+          set -eu
+          if python3 final_master/scripts/release_gate.py --products audio-inputs/products.json --audios audio-inputs --video-qa review/trustfolio_35000_github_5voice_REVIEW.mp4.qa.json --out review/release_gate.json; then
+            echo 'All release conditions passed, but preview job does not publish.'
+          else
+            echo 'REVIEW_ONLY: release gate blocked, no social publishing.'
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:
