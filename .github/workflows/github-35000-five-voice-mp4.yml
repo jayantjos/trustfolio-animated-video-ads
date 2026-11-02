@@ -11,6 +11,8 @@ jobs:
   render:
     runs-on: ubuntu-latest
     timeout-minutes: 40
+    env:
+      RESUME_RENDER_RUN: ${{ contains(github.event.head_commit.message, '[resume-render]') && '41396034761' || '' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -19,12 +21,28 @@ jobs:
         with:
           python-version: '3.11'
       - uses: actions/download-artifact@v4
+        if: env.RESUME_RENDER_RUN == ''
         with:
           name: budget35000-five-dynamic-voice-audition
           path: cached-voices
           run-id: 41073504968
           github-token: ${{ github.token }}
+      - uses: actions/download-artifact@v4
+        if: env.RESUME_RENDER_RUN != ''
+        with:
+          name: trustfolio-35000-complete-video-review
+          path: resume
+          run-id: ${{ env.RESUME_RENDER_RUN }}
+          github-token: ${{ github.token }}
+      - name: Resume only failed visual compositing from frozen snapshot and existing WAVs
+        if: env.RESUME_RENDER_RUN != ''
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -qq -y ffmpeg fonts-dejavu-core
+          python -m pip install -q 'Pillow>=10,<13'
+          cp -a resume/inputs inputs
       - name: Fetch one current website snapshot and reuse matching voices
+        if: env.RESUME_RENDER_RUN == ''
         run: |
           sudo apt-get update -qq
           sudo apt-get install -qq -y ffmpeg fonts-dejavu-core
