@@ -1,4 +1,4 @@
-name: GitHub complete 35000 washing machine review
+name: Correct frozen 35000 video audio and CTA
 on:
   workflow_dispatch:
   push:
@@ -11,8 +11,6 @@ jobs:
   render:
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    env:
-      RESUME_RENDER_RUN: ${{ contains(github.event.head_commit.message, '[resume-render]') && '41396034761' || '' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -21,78 +19,26 @@ jobs:
         with:
           python-version: '3.11'
       - uses: actions/download-artifact@v4
-        if: env.RESUME_RENDER_RUN == ''
-        with:
-          name: budget35000-five-dynamic-voice-audition
-          path: cached-voices
-          run-id: 41073504968
-          github-token: ${{ github.token }}
-      - uses: actions/download-artifact@v4
-        if: env.RESUME_RENDER_RUN != ''
         with:
           name: trustfolio-35000-complete-video-review
-          path: resume
-          run-id: ${{ env.RESUME_RENDER_RUN }}
+          path: checkpoint
+          run-id: 41397080007
           github-token: ${{ github.token }}
-      - name: Resume only failed visual compositing from frozen snapshot and existing WAVs
-        if: env.RESUME_RENDER_RUN != ''
+      - name: Prepare CPU tools for required soundtrack repair and missing budget voice
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -qq -y ffmpeg fonts-dejavu-core
-          python -m pip install -q 'Pillow>=10,<13'
-          cp -a resume/inputs inputs
-      - name: Fetch one current website snapshot and reuse matching voices
-        if: env.RESUME_RENDER_RUN == ''
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -qq -y ffmpeg fonts-dejavu-core
-          python -m pip install -q 'Pillow>=10,<13'
-          python final_master/scripts/budget35000_readonly.py --out inputs/products.json
-          python final_master/scripts/complete_review.py --prepare --inputs inputs --cached cached-voices
-          python - <<'PY'
-          import json,os
-          from pathlib import Path
-          needed=json.loads(Path("inputs/voices_needed.json").read_text())
-          with open(os.environ["GITHUB_ENV"],"a") as f:f.write("NEED_VOICES="+str(bool(needed)).lower()+"\n")
-          PY
-      - name: Generate only genuinely changed product narrations using existing CPU engine
-        if: env.NEED_VOICES == 'true'
+          sudo apt-get install -y -qq ffmpeg fonts-dejavu-core
+          python -m pip install -q chatterbox-tts demucs 'opencv-python-headless<4.12' qrcode Pillow
+          git show origin/main:assets/video/washing-machines/original_greenboy_reference.wav > reference.wav
+      - name: Repair existing MP4 and validate timing and QR
         env:
           CUDA_VISIBLE_DEVICES: ''
           HF_HUB_DISABLE_TELEMETRY: '1'
-        run: |
-          git show origin/main:assets/video/washing-machines/original_greenboy_reference.wav > reference.wav
-          python -m pip install -q chatterbox-tts
-          python - <<'PY'
-          import sys,json,hashlib,torch,torchaudio
-          from pathlib import Path
-          sys.path.insert(0,"final_master/scripts")
-          from complete_review import line
-          from chatterbox.mtl_tts import ChatterboxMultilingualTTS
-          source=json.loads(Path("inputs/products.json").read_text())
-          model=ChatterboxMultilingualTTS.from_pretrained(device="cpu")
-          for row in json.loads(Path("inputs/voices_needed.json").read_text()):
-              rank=row["rank"];text=line(row)
-              wav=model.generate(text,language_id="hi",audio_prompt_path="reference.wav")
-              seconds=wav.shape[-1]/model.sr
-              p=Path(f"inputs/rank_{rank:02d}.wav")
-              torchaudio.save(str(p),wav.cpu(),model.sr)
-              Path(f"inputs/rank_{rank:02d}.json").write_text(json.dumps(dict(rank=rank,product_id=row["product_id"],text=text,seconds=seconds,source_snapshot_sha256=source["snapshot_sha256"],wav_sha256=hashlib.sha256(p.read_bytes()).hexdigest(),fits_ten_seconds=seconds<=9.7,voice_approved=False,publish_allowed=False),ensure_ascii=False,indent=2))
-          PY
-      - name: Render all original scenes and five complete product regions
-        run: |
-          python final_master/scripts/complete_review.py --kit assets/video/washing-machines/TrustFolio_Washing_Machine_Master_Kit.zip --inputs inputs --output review/TrustFolio_Washing_Machines_35000_Complete_Review.mp4
-          cp inputs/products.json review/products.json
-      - name: Record production blockers without publishing
-        if: success()
-        run: |
-          python final_master/scripts/release_gate.py --products inputs/products.json --audios inputs --video-qa review/TrustFolio_Washing_Machines_35000_Complete_Review.mp4.qa.json --out review/release_gate.json || test "$?" = 2
+        run: python final_master/scripts/repair_checkpoint.py --source checkpoint --out corrected
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: trustfolio-35000-complete-video-review
-          path: |
-            review/
-            inputs/
+          name: trustfolio-35000-corrected-video
+          path: corrected/
           retention-days: 14
-# Review only. No schedules, publishing, paid services, GPU or production merge.
+# No publication or schedule. Frozen data and five WAVs are reused.
