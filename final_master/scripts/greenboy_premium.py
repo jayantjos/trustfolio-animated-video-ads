@@ -22,9 +22,14 @@ budget_words = {35000: 'पैंतीस हज़ार'}.get(budget, str(bud
 lines = [f'{budget_words} रुपये के बजट में देखिए पाँच बेहतरीन वॉशिंग मशीनें!']
 brands = ['सैमसंग', 'गोदरेज', 'बॉश', 'व्हर्लपूल', 'एल जी']
 models = []
+verified_models = {
+    '69f419329a622ea2d7ccb736': ('WFEON ZUS 9014 5.0 IDCRM GLWH', 'https://www.flipkart.com/p/itm85c805abf4849', 'डब्ल्यू एफ ई ऑन, ज़ेड यू एस, नौ शून्य एक चार'),
+    '6a2d5c9956fa4e642c57742f': ('TX311SWO', 'https://www.flipkart.com/p/itm2d9a0b5dbfb1c?pid=WMNHMVUFQN4G2TMT', 'टी एक्स, तीन एक एक, एस डब्ल्यू ओ'),
+}
 for p, brand in zip(products, brands, strict=True):
     codes = re.findall(r'\b[A-Z]{2,}\d[A-Z0-9]*(?:/[A-Z0-9]+)?\b', p['title'])
-    code = codes[0] if len(codes) == 1 else None
+    verified = verified_models.get(p['product_id'])
+    code = verified[0] if verified else (codes[0] if len(codes) == 1 else None)
     models.append(code)
     facts = []
     for spec in p['specifications']:
@@ -43,7 +48,8 @@ for p, brand in zip(products, brands, strict=True):
         else:
             raise ValueError(spec)
     assert len(facts) == 4
-    name = f'{brand}, मॉडल {code}' if code else brand
+    spoken_code = verified[2] if verified else code
+    name = f'{brand}, मॉडल {spoken_code}' if spoken_code else brand
     lines.append(f'{name}। ' + ', '.join(facts[:-1]) + ' और ' + facts[-1] + '।')
 
 def ff(*args):
@@ -85,7 +91,12 @@ def overlay(index, frame):
         text(488,57,f'#{index} {p["brand"]}',29,190)
         specs = {x['label']:x['value'] for x in p['specifications']}
         text(488,98,f'{specs["Capacity"]} · {specs["Load Type"]}',24,190)
-        text(488,131,models[index-1] or 'Model unverified',21,190)
+        code = models[index-1] or 'Model unverified'
+        if code.startswith('WFEON ZUS '):
+            text(488,126,'WFEON ZUS 9014',20,190)
+            text(488,149,'5.0 IDCRM GLWH',18,190)
+        else:
+            text(488,131,code,21,190)
         draw.rounded_rectangle((479,480,650,580),radius=12,fill='#e9bd72',outline='#b9833e',width=2)
         text(487,488,f'₹{p["price_inr"]:,.0f}',39,154)
         text(487,536,p['price_label'].split(' - ')[0],23,153)
@@ -111,8 +122,16 @@ torch.set_num_threads(2)
 torch.manual_seed(35000)
 engine = ChatterboxMultilingualTTS.from_pretrained(device='cpu')
 voice_paths = []
+prior_qa = Path('first-pass/QA.json')
+prior = json.loads(prior_qa.read_text()) if prior_qa.exists() else {}
+reference_sha = hashlib.sha256(reference.read_bytes()).hexdigest()
 for i,line in enumerate(lines):
     path = root / f'greenboy_{i}.wav'
+    previous = Path(f'first-pass/greenboy_{i}.wav')
+    if previous.exists() and prior.get('reference_sha256') == reference_sha and prior.get('texts', [None]*6)[i] == line:
+        path.write_bytes(previous.read_bytes())
+        voice_paths.append(path)
+        continue
     speech = engine.generate(line,language_id='hi',audio_prompt_path=str(reference),exaggeration=0.5,cfg_weight=0.5,temperature=0.8)
     torchaudio.save(str(path),speech.cpu(),engine.sr)
     assert 1 < seconds(path) < 35, (line, seconds(path))
@@ -174,7 +193,7 @@ for t in timings:
 ff('-i',target,'-f','null','-')
 report = dict(duration=seconds(target), reference_sha256=hashlib.sha256(reference.read_bytes()).hexdigest(),
               voice_engine='Chatterbox Multilingual CPU, Hindi, cfg=.5 exaggeration=.5 temperature=.8',
-              texts=lines, timing=timings, model_codes=models, voice_identity_approved=False,
+              texts=lines, timing=timings, model_codes=models, retailer_model_evidence=verified_models, voice_identity_approved=False,
               listening_qa='Pending perceptual comparison', localized_lip_sync_verified=False,
               background='Original separated music/SFX beds under new speech, other scenes use source audio',
               publish_allowed=False)
