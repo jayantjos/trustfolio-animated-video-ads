@@ -1,4 +1,4 @@
-name: Mobile readability correction
+name: Green Boy premium Hindi final review
 on:
   workflow_dispatch:
   push:
@@ -10,9 +10,14 @@ permissions:
 jobs:
   render:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 50
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
       - uses: actions/download-artifact@v4
         with:
           name: trustfolio-35000-complete-video-review
@@ -25,14 +30,30 @@ jobs:
           path: source
           run-id: 41678115525
           github-token: ${{ github.token }}
-      - name: Render visual overlays with original audio packets
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -qq -y ffmpeg fonts-dejavu-core fonts-noto-core
-          python -m pip install -q Pillow
-          python final_master/scripts/mobile_readability.py source checkpoint mobile
-      - uses: actions/upload-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
           name: trustfolio-35000-mobile
-          path: mobile/
+          path: mobile
+          run-id: 41770643307
+          github-token: ${{ github.token }}
+      - name: Render using the approved Green Boy reference on CPU
+        env:
+          CUDA_VISIBLE_DEVICES: ''
+          HF_HUB_DISABLE_TELEMETRY: '1'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -qq -y ffmpeg fonts-dejavu-core
+          python -m pip install -q chatterbox-tts Pillow
+          ref=assets/video/washing-machines/original_greenboy_reference.wav
+          if [ ! -s "$ref" ]; then git show "origin/main:$ref" > "$ref"; fi
+          python final_master/scripts/greenboy_premium.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trustfolio-35000-greenboy-premium
+          path: |
+            premium/TrustFolio_35000_GreenBoy_Premium.mp4
+            premium/QA.json
+            premium/mobile_*.png
+            premium/greenboy_*.wav
           retention-days: 14
