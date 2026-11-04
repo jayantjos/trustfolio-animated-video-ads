@@ -1,4 +1,4 @@
-name: Green Boy premium Hindi final review
+name: Green Boy product-first mobile review
 on:
   workflow_dispatch:
   push:
@@ -40,7 +40,7 @@ jobs:
         with:
           name: trustfolio-35000-greenboy-premium
           path: first-pass
-          run-id: 41774141787
+          run-id: 41775015374
           github-token: ${{ github.token }}
       - name: Render using the approved Green Boy reference on CPU
         env:
