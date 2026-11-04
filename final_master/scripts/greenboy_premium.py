@@ -20,13 +20,14 @@ assert [p['rank'] for p in products] == [1, 2, 3, 4, 5]
 budget = snapshot['budget_inr']
 budget_words = {35000: 'पैंतीस हज़ार'}.get(budget, str(budget))
 lines = [f'{budget_words} रुपये के बजट में देखिए पाँच बेहतरीन वॉशिंग मशीनें!']
-brands = ['सैमसंग', 'गोदरेज', 'बॉश', 'व्हर्लपूल', 'एल जी']
+brands = {'Samsung':'सैमसंग', 'Godrej':'गोदरेज', 'Bosch':'बॉश', 'Whirlpool':'व्हर्लपूल', 'LG':'एल जी'}
 models = []
 verified_models = {
     '69f419329a622ea2d7ccb736': ('WFEON ZUS 9014 5.0 IDCRM GLWH', 'https://www.flipkart.com/p/itm85c805abf4849', 'डब्ल्यू एफ ई ऑन, ज़ेड यू एस, नौ शून्य एक चार'),
     '6a2d5c9956fa4e642c57742f': ('TX311SWO', 'https://www.flipkart.com/p/itm2d9a0b5dbfb1c?pid=WMNHMVUFQN4G2TMT', 'टी एक्स, तीन एक एक, एस डब्ल्यू ओ'),
 }
-for p, brand in zip(products, brands, strict=True):
+for p in products:
+    brand = brands.get(p['brand'], p['brand'])
     codes = re.findall(r'\b[A-Z]{2,}\d[A-Z0-9]*(?:/[A-Z0-9]+)?\b', p['title'])
     verified = verified_models.get(p['product_id'])
     code = verified[0] if verified else (codes[0] if len(codes) == 1 else None)
@@ -72,6 +73,12 @@ def overlay(index, frame):
         box = (470,60,695,255)
         draw.rounded_rectangle(box, radius=12, fill='#f3deae', outline='#a97127', width=3)
         layer.paste(im.crop((474,65,691,249)), (474,65))
+        draw.rectangle((474,66,690,114), fill='#f3deae')
+        amount = f'₹{budget:,}'
+        size = 43
+        while draw.textlength(amount, font=font(size)) > 205:
+            size -= 1
+        draw.text((478,70), amount, font=font(size), fill='#4c2b16')
         draw.line((486,245,680,245), fill='#b27d32', width=2)
     else:
         p = products[index-1]
