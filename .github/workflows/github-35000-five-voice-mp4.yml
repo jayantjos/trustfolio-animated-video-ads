@@ -36,6 +36,12 @@ jobs:
           path: mobile
           run-id: 41770643307
           github-token: ${{ github.token }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: trustfolio-35000-greenboy-premium
+          path: first-pass
+          run-id: 41774141787
+          github-token: ${{ github.token }}
       - name: Render using the approved Green Boy reference on CPU
         env:
           CUDA_VISIBLE_DEVICES: ''
