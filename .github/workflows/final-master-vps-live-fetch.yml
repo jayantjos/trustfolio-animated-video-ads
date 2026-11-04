@@ -1,0 +1,105 @@
+name: Final Master - VPS Live Fetch Parity (NO POST)
+on:
+  workflow_dispatch:
+    inputs:
+      budget:
+        description: Budget in INR
+        required: true
+        default: '25000'
+      mode:
+        description: Budget or brand_budget
+        required: true
+        type: choice
+        options: [budget, brand_budget]
+      brand:
+        description: Required for brand_budget, e.g. IFB
+        default: ''
+permissions:
+  contents: read
+jobs:
+  source-parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate inputs
+        env:
+          BUDGET: ${{ inputs.budget }}
+          MODE: ${{ inputs.mode }}
+          BRAND: ${{ inputs.brand }}
+        run: |
+          python - <<'PY'
+          import os
+          from trustfolio_flow.live import campaign
+          campaign("washing-machines",os.environ["BUDGET"],os.environ["MODE"],os.environ["BRAND"])
+          print("SAME_PUBLIC_TOP5_AND_LIVE_PRICE_CONTRACT_AS_IMAGE_ADS")
+          PY
+      - name: Configure SSH using video-repo secrets
+        env:
+          KEY: ${{ secrets.TF_DEPLOY_SSH_KEY }}
+          HOSTKEY: ${{ secrets.TF_DEPLOY_KNOWN_HOSTS }}
+          HOST: ${{ secrets.TF_DEPLOY_HOST }}
+          USER: ${{ secrets.TF_DEPLOY_USER }}
+        run: |
+          set -euo pipefail
+          [[ "$HOST" == "200.234.47.87" && "$USER" == "scraperuser" ]]
+          [[ -n "$KEY" && "$HOSTKEY" == "$HOST ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMw5OgsY7J3PcG28EZ15uhvX3gwB2AC7YZ9NuvbGm0KC" ]]
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$HOSTKEY" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
+          ssh-keygen -y -P '' -f ~/.ssh/id_ed25519 >/dev/null
+      - name: Fetch live product JSON from VPS network (same ads-repo strategy)
+        env:
+          HOST: ${{ secrets.TF_DEPLOY_HOST }}
+          USER: ${{ secrets.TF_DEPLOY_USER }}
+          BUDGET: ${{ inputs.budget }}
+          MODE: ${{ inputs.mode }}
+          BRAND: ${{ inputs.brand }}
+        run: |
+          set -euo pipefail
+          [[ "$BUDGET" =~ ^[0-9]{1,7}$ ]]
+          [[ "$MODE" == "budget" || "$MODE" == "brand_budget" ]]
+          [[ "$BRAND" =~ ^[A-Za-z0-9._-]{0,50}$ ]]
+          if [[ "$MODE" == "brand_budget" ]]; then [[ -n "$BRAND" ]]; else [[ -z "$BRAND" ]]; fi
+          mkdir -p handoff
+          tar -czf /tmp/video_live_client.tgz trustfolio_flow/__init__.py trustfolio_flow/cli.py trustfolio_flow/live.py
+          scp -o BatchMode=yes -o StrictHostKeyChecking=yes /tmp/video_live_client.tgz "${USER}@${HOST}:/tmp/video_live_client_${GITHUB_RUN_ID}.tgz"
+          ssh -o BatchMode=yes -o StrictHostKeyChecking=yes "${USER}@${HOST}" "RUN_ID='$GITHUB_RUN_ID' BUDGET='$BUDGET' MODE='$MODE' BRAND='$BRAND' bash -se" <<'REMOTE'
+          set -euo pipefail
+          work="$(mktemp -d)"
+          trap 'rm -rf "$work" "/tmp/video_live_client_${RUN_ID}.tgz"' EXIT
+          tar -xzf "/tmp/video_live_client_${RUN_ID}.tgz" -C "$work"
+          cd "$work"
+          python3 -m trustfolio_flow.cli fetch-live --category washing-machines --budget "$BUDGET" --mode "$MODE" --brand "$BRAND" --output receipt.json
+          python3 - <<'PY'
+          import json
+          from trustfolio_flow.live import check_receipt
+          obj=json.load(open('receipt.json'))
+          check_receipt(obj)
+          print("VPS_LIVE_TOP5_AND_FRESH_PRICE_RECEIPT_VERIFIED")
+          PY
+          cp receipt.json "/tmp/video_live_receipt_${RUN_ID}.json"
+          REMOTE
+          scp -o BatchMode=yes -o StrictHostKeyChecking=yes "${USER}@${HOST}:/tmp/video_live_receipt_${GITHUB_RUN_ID}.json" handoff/live.json
+          ssh -o BatchMode=yes -o StrictHostKeyChecking=yes "${USER}@${HOST}" "rm -f '/tmp/video_live_receipt_${GITHUB_RUN_ID}.json'"
+      - name: Validate receipt again in CI and build caption handoff
+        run: |
+          python - <<'PY'
+          import json
+          from trustfolio_flow.live import check_receipt
+          r=json.load(open('handoff/live.json'))
+          check_receipt(r)
+          print('LIVE_RANKS='+','.join(str(x['rank']) for x in r['products']))
+          print('LIVE_API_PATH=GET /api/products/top; POST /api/live-prices')
+          PY
+          python final_master/scripts/campaign.py --receipt handoff/live.json --kit assets/video/washing-machines/TrustFolio_Washing_Machine_Master_Kit.zip --output handoff/campaign.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: washing-machine-vps-live-receipt-${{ github.run_id }}
+          path: handoff/
+          retention-days: 1
+# No Meta uploads or product-photo approvals. SSH secrets must exist in THIS repository.

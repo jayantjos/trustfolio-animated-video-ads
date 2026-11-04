@@ -1,0 +1,62 @@
+name: Test VPS Live API - Budget and IFB (no posting)
+on:
+  push:
+    branches: [rebuild-final-assets-only-20261029]
+    paths: ['.github/workflows/test-vps-live-api-two-modes.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  fetch:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - mode: budget
+            brand: ''
+          - mode: brand_budget
+            brand: IFB
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure strictly pinned SSH host
+        env:
+          KEY: ${{ secrets.TF_DEPLOY_SSH_KEY }}
+          HOST: ${{ secrets.TF_DEPLOY_HOST }}
+          USER: ${{ secrets.TF_DEPLOY_USER }}
+          HOSTKEY: ${{ secrets.TF_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          [[ "$HOST" == '200.234.47.87' && "$USER" == 'scraperuser' ]]
+          expected='200.234.47.87 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMw5OgsY7J3PcG28EZ15uhvX3gwB2AC7YZ9NuvbGm0KC'
+          [[ "$HOSTKEY" == "$expected" && -n "$KEY" ]]
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$HOSTKEY" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
+          ssh-keygen -y -P '' -f ~/.ssh/id_ed25519 >/dev/null
+      - name: Run live API from VPS, verify strict latest prices
+        env:
+          MODE: ${{ matrix.mode }}
+          BRAND: ${{ matrix.brand }}
+        run: |
+          set -euo pipefail
+          scp -o BatchMode=yes -o StrictHostKeyChecking=yes trustfolio_flow/live.py scraperuser@200.234.47.87:/tmp/trustfolio_video_live_${GITHUB_RUN_ID}_${MODE}.py
+          ssh -o BatchMode=yes -o StrictHostKeyChecking=yes scraperuser@200.234.47.87 "TF_MODE='$MODE' TF_BRAND='$BRAND' TF_RUN='$GITHUB_RUN_ID' python3 - " <<'PY'
+          import importlib.util,os
+          p="/tmp/trustfolio_video_live_"+os.environ["TF_RUN"]+"_"+os.environ["TF_MODE"]+".py"
+          try:
+              spec=importlib.util.spec_from_file_location("trustfolio_live",p)
+              module=importlib.util.module_from_spec(spec)
+              spec.loader.exec_module(module)
+              x=module.fetch_live("washing-machines",25000,os.environ["TF_MODE"],os.environ["TF_BRAND"])
+              module.check_receipt(x)
+              assert len(x["products"])==5
+              print("LIVE_FETCH_SUCCESS MODE="+os.environ["TF_MODE"]+" RANKS=1,2,3,4,5")
+              for item in x["products"]:
+                  print("RANK=%d ID=%s PRICE_INR=%s BRAND=%s"%(item["rank"],item["id"],item["price_inr"],item["brand"]))
+          finally:
+              os.unlink(p)
+          PY
+# One GET and one POST per mode, no files saved on VPS, no social posting.
