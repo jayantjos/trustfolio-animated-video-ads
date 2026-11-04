@@ -6,7 +6,7 @@ import re
 import subprocess
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 root = Path('premium')
 root.mkdir(exist_ok=True)
@@ -51,7 +51,10 @@ for p in products:
     assert len(facts) == 4
     spoken_code = verified[2] if verified else code
     name = f'{brand}, मॉडल {spoken_code}' if spoken_code else brand
-    lines.append(f'{name}। ' + ', '.join(facts[:-1]) + ' और ' + facts[-1] + '।')
+    capacity = facts[0].split(' क्षमता')[0]
+    load_type = next(f for f in facts if f in ('फ्रंट लोड', 'टॉप लोड'))
+    benefit = next((f for f in facts if 'हीटर' in f or 'स्टार' in f), 'पूरी तरह ऑटोमैटिक')
+    lines.append(f'{brand} की {capacity} की {load_type} मशीन। इसमें {benefit} है।' if benefit != 'पूरी तरह ऑटोमैटिक' else f'{brand} की {capacity} की {load_type} मशीन। यह पूरी तरह ऑटोमैटिक है।')
 
 def ff(*args):
     subprocess.run(['ffmpeg','-nostdin','-v','error','-y',*map(str,args)],check=True)
@@ -121,6 +124,28 @@ def overlay(index, frame):
     layer.save(out)
     return out
 
+def product_shot(rank):
+    product = products[rank - 1]
+    image = Image.new('RGB', (720, 1280), '#f5e5c5')
+    draw = ImageDraw.Draw(image)
+    draw.rounded_rectangle((36, 48, 684, 1190), radius=34, fill='#fff5df', outline='#ba8a49', width=4)
+    top = rank % 2 == 1
+    heading_y = 117 if top else 827
+    photo_y = 312 if top else 150
+    draw.text((72, heading_y), f'#{rank}  {product["brand"]}', font=font(56), fill='#4c2b16')
+    draw.text((76, heading_y+78), models[rank-1] or '', font=font(25), fill='#684321')
+    photo = Image.open(f'checkpoint/review/rank_{rank:02d}_source.png').convert('RGBA')
+    photo = ImageOps.contain(photo, (510, 548), Image.Resampling.LANCZOS)
+    x, y = (720-photo.width)//2, photo_y+(548-photo.height)//2
+    image.paste(photo,(x,y),photo)
+    draw.rounded_rectangle((72, 1000, 618, 1140), radius=20, fill='#e6bd76')
+    draw.text((94, 1009), f'₹{product["price_inr"]:,.0f}', font=font(56), fill='#4c2b16')
+    status = 'Catalog price • not live-verified' if product['price_label'].startswith('CATALOG') else 'Live price in campaign snapshot'
+    draw.text((96, 1084), status, font=font(22), fill='#684321')
+    path = root / f'product_shot_{rank}.png'
+    image.save(path)
+    return path
+
 import torch
 import torchaudio
 from chatterbox.mtl_tts import ChatterboxMultilingualTTS
@@ -168,9 +193,14 @@ def segment(start, stop, voice=None):
         bed_name = 'intro_bed' if voice == 0 else 'product_bed'
         bed = f'source/stems/htdemucs/{bed_name}/no_vocals.wav'
         args += ['-i',art,'-i',voice_paths[voice],'-stream_loop','-1','-i',bed]
+        hero = ''
+        if voice:
+            args += ['-i', product_shot(voice)]
+            hero = ";[spec][4:v]overlay=0:0:enable='lt(t,2.1)'[v]"
+        panel_output = 'spec' if voice else 'v'
         graph = (
             f'[0:v]setpts=(PTS-STARTPTS)*{duration/source_len},fps=24[v0];'
-            '[v0][1:v]overlay=0:0[v];'
+            f'[v0][1:v]overlay=0:0[{panel_output}]{hero};'
             '[2:a]aresample=48000,adelay=80:all=1,apad[n];'
             f'[3:a]volume=0.36,aresample=48000,atrim=duration={duration}[b];'
             '[b][n]amix=inputs=2:duration=first:normalize=0,alimiter=limit=0.95[a]'
