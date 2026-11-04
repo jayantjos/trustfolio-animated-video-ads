@@ -1,4 +1,4 @@
-name: Correct frozen 35000 video audio and CTA
+name: Mobile readability correction
 on:
   workflow_dispatch:
   push:
@@ -10,35 +10,29 @@ permissions:
 jobs:
   render:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
       - uses: actions/download-artifact@v4
         with:
           name: trustfolio-35000-complete-video-review
           path: checkpoint
           run-id: 41397080007
           github-token: ${{ github.token }}
-      - name: Prepare CPU tools for required soundtrack repair and missing budget voice
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg fonts-dejavu-core
-          python -m pip install -q chatterbox-tts demucs 'opencv-python-headless<4.12' qrcode Pillow
-          git show origin/main:assets/video/washing-machines/original_greenboy_reference.wav > reference.wav
-      - name: Repair existing MP4 and validate timing and QR
-        env:
-          CUDA_VISIBLE_DEVICES: ''
-          HF_HUB_DISABLE_TELEMETRY: '1'
-        run: python final_master/scripts/repair_checkpoint.py --source checkpoint --out corrected
-      - uses: actions/upload-artifact@v4
-        if: always()
+      - uses: actions/download-artifact@v4
         with:
           name: trustfolio-35000-corrected-video
-          path: corrected/
+          path: source
+          run-id: 41678115525
+          github-token: ${{ github.token }}
+      - name: Render visual overlays with original audio packets
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -qq -y ffmpeg fonts-dejavu-core fonts-noto-core
+          python -m pip install -q Pillow
+          python final_master/scripts/mobile_readability.py source checkpoint mobile
+      - uses: actions/upload-artifact@v4
+        with:
+          name: trustfolio-35000-mobile
+          path: mobile/
           retention-days: 14
-# No publication or schedule. Frozen data and five WAVs are reused.
